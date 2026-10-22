@@ -60,7 +60,8 @@ Show reported usage limits and reset times so the user can monitor available all
 
 ## Tasks
 
-The user reviews this task list before implementation starts.
+The user approved this scope and task list on 2026-10-22.
+Proposed architecture records remain open for the scheduled decision task.
 Each task should fit one work session; split it if the investigation shows otherwise.
 
 - [ ] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
