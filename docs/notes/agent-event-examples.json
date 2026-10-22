@@ -1,0 +1,392 @@
+{
+  "description": "Fictional examples reconstructed from installed-agent hook shapes. No captured session values. This wrapper is not the companion event contract.",
+  "checked_on": "2026-10-22",
+  "compatibility_record": "agent-event-compatibility.md",
+  "examples": [
+    {
+      "id": "codex-session-start",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "permission_mode": "default",
+        "model": "example-model",
+        "source": "startup",
+        "hook_event_name": "SessionStart"
+      }
+    },
+    {
+      "id": "codex-turn-submit",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "turn_id": "example-turn",
+        "permission_mode": "default",
+        "model": "example-model",
+        "prompt": "Example request.",
+        "hook_event_name": "UserPromptSubmit"
+      }
+    },
+    {
+      "id": "codex-approval",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "turn_id": "example-turn",
+        "permission_mode": "default",
+        "model": "example-model",
+        "hook_event_name": "PermissionRequest",
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "printf example",
+          "description": "Example approval"
+        }
+      }
+    },
+    {
+      "id": "codex-question-open",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "turn_id": "example-turn",
+        "permission_mode": "default",
+        "model": "example-model",
+        "tool_use_id": "example-tool-call",
+        "hook_event_name": "PreToolUse",
+        "tool_name": "request_user_input",
+        "tool_input": {
+          "questions": [
+            {
+              "question": "Choose an example value.",
+              "header": "Example",
+              "options": [
+                {
+                  "label": "A",
+                  "description": "First example"
+                },
+                {
+                  "label": "B",
+                  "description": "Second example"
+                }
+              ],
+              "id": "example_question"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "codex-question-resolved",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "turn_id": "example-turn",
+        "permission_mode": "default",
+        "model": "example-model",
+        "tool_use_id": "example-tool-call",
+        "hook_event_name": "PostToolUse",
+        "tool_name": "request_user_input",
+        "tool_input": {
+          "questions": [
+            {
+              "question": "Choose an example value.",
+              "header": "Example",
+              "options": [
+                {
+                  "label": "A",
+                  "description": "First example"
+                },
+                {
+                  "label": "B",
+                  "description": "Second example"
+                }
+              ],
+              "id": "example_question"
+            }
+          ]
+        },
+        "tool_response": "{\"answers\":{\"example_question\":{\"answers\":[\"A\"]}}}"
+      }
+    },
+    {
+      "id": "codex-response-ready",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "turn_id": "example-turn",
+        "permission_mode": "default",
+        "model": "example-model",
+        "last_assistant_message": "Example response.",
+        "hook_event_name": "Stop",
+        "stop_hook_active": false
+      }
+    },
+    {
+      "id": "codex-session-end",
+      "agent": "codex",
+      "version": "0.163.0",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "codex-example-session",
+        "transcript_path": "/example/runtime/codex/transcript.jsonl",
+        "cwd": "/example/project",
+        "reason": "other",
+        "hook_event_name": "SessionEnd"
+      }
+    },
+    {
+      "id": "claude-session-start",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "source": "startup",
+        "hook_event_name": "SessionStart"
+      }
+    },
+    {
+      "id": "claude-turn-submit",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "permission_mode": "default",
+        "prompt": "Example request.",
+        "hook_event_name": "UserPromptSubmit"
+      }
+    },
+    {
+      "id": "claude-approval",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "permission_mode": "default",
+        "effort": {
+          "level": "high"
+        },
+        "hook_event_name": "PermissionRequest",
+        "tool_name": "Write",
+        "tool_input": {
+          "file_path": "/example/project/example.txt",
+          "content": "Example content."
+        },
+        "permission_suggestions": [
+          {
+            "type": "setMode",
+            "mode": "acceptEdits",
+            "destination": "session"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude-question-open",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "permission_mode": "default",
+        "tool_use_id": "example-tool-call",
+        "effort": {
+          "level": "high"
+        },
+        "hook_event_name": "PreToolUse",
+        "tool_name": "AskUserQuestion",
+        "tool_input": {
+          "questions": [
+            {
+              "question": "Choose an example value.",
+              "header": "Example",
+              "options": [
+                {
+                  "label": "A",
+                  "description": "First example"
+                },
+                {
+                  "label": "B",
+                  "description": "Second example"
+                }
+              ],
+              "multiSelect": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "claude-question-resolved",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "permission_mode": "default",
+        "tool_use_id": "example-tool-call",
+        "effort": {
+          "level": "high"
+        },
+        "hook_event_name": "PostToolUse",
+        "tool_name": "AskUserQuestion",
+        "tool_input": {
+          "questions": [
+            {
+              "question": "Choose an example value.",
+              "header": "Example",
+              "options": [
+                {
+                  "label": "A",
+                  "description": "First example"
+                },
+                {
+                  "label": "B",
+                  "description": "Second example"
+                }
+              ],
+              "multiSelect": false
+            }
+          ],
+          "answers": {
+            "Choose an example value.": "A"
+          }
+        },
+        "tool_response": {
+          "questions": [
+            {
+              "question": "Choose an example value.",
+              "header": "Example",
+              "options": [
+                {
+                  "label": "A",
+                  "description": "First example"
+                },
+                {
+                  "label": "B",
+                  "description": "Second example"
+                }
+              ],
+              "multiSelect": false
+            }
+          ],
+          "answers": {
+            "Choose an example value.": "A"
+          }
+        },
+        "duration_ms": 1
+      }
+    },
+    {
+      "id": "claude-response-ready",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "permission_mode": "default",
+        "last_assistant_message": "Example response.",
+        "effort": {
+          "level": "high"
+        },
+        "hook_event_name": "Stop",
+        "stop_hook_active": false,
+        "background_tasks": [],
+        "session_crons": []
+      }
+    },
+    {
+      "id": "claude-session-end",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "reason": "other",
+        "hook_event_name": "SessionEnd"
+      }
+    },
+    {
+      "id": "claude-question-permission",
+      "agent": "claude",
+      "version": "2.1.306",
+      "evidence": "reconstructed_from_observed_runtime_shape",
+      "payload": {
+        "session_id": "claude-example-session",
+        "transcript_path": "/example/runtime/claude/transcript.jsonl",
+        "cwd": "/example/project",
+        "prompt_id": "example-prompt",
+        "permission_mode": "default",
+        "effort": {
+          "level": "high"
+        },
+        "hook_event_name": "PermissionRequest",
+        "tool_name": "AskUserQuestion",
+        "tool_input": {
+          "questions": [
+            {
+              "question": "Choose an example value.",
+              "header": "Example",
+              "options": [
+                {
+                  "label": "A",
+                  "description": "First example"
+                },
+                {
+                  "label": "B",
+                  "description": "Second example"
+                }
+              ],
+              "multiSelect": false
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

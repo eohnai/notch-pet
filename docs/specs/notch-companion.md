@@ -64,7 +64,7 @@ The user approved this scope and task list on 2026-10-22.
 Proposed architecture records remain open for the scheduled decision task.
 Each task should fit one work session; split it if the investigation shows otherwise.
 
-- [ ] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
+- [x] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
 - [ ] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
 - [ ] Settle proposed architecture records using the compatibility findings and user review.
 - [ ] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
@@ -87,6 +87,10 @@ Each task should fit one work session; split it if the investigation shows other
 - [ ] Verify the first-use workflow and document local packaging, supported versions, setup, removal, and known limits.
 
 ## Coverage check
+
+Task 1 evidence: [compatibility matrix](../notes/agent-event-compatibility.md) and
+[fictional payload examples](../notes/agent-event-examples.json).
+Installed-agent runtime checks used a local mock provider. Full interactive Otty verification remains part of adapter and final workflow checks.
 
 | Acceptance area | Tasks |
 |---|---|
