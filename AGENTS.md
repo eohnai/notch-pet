@@ -3,7 +3,7 @@
 - Read `docs/STATUS.md` before working on this project.
 - Read the active specification and relevant decision records before changing code.
 - Keep proposed decisions distinct from accepted decisions.
-- The repository currently contains planning documents only.
+- The repository contains a native app shell and project records.
 - Do not start implementation until the user approves the task list.
 - Never commit, push, or open a pull request without the user's explicit instruction.
 - Preserve existing Codex, Claude Code, and Otty configuration during future integration work.

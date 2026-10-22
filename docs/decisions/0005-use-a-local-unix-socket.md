@@ -1,6 +1,6 @@
 # 0005: Deliver local events through a Unix-domain socket
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-10-22
 
 ## Context
@@ -17,15 +17,19 @@ The hook must not wait indefinitely when the app is unavailable.
 
 ## Decision
 
-Open. Recommend a small helper and a user-scoped Unix-domain socket.
+Use a small helper and a user-scoped Unix-domain socket.
 Define message limits, access permissions, timeouts, and disconnected behavior before implementation.
+The user approved this recommendation on 2026-10-22.
 
 ## Reasoning
 
-A local macOS-only app does not need a network listener for hook events. ^[inferred]
+The socket avoids port allocation. A file spool would add cleanup and stale-event handling.
+The user approved this reason during architecture review.
 
 ## Consequences
 
 Delivery failure must not grant permission, alter agent decisions, or delay normal agent operation indefinitely.
 The initial design may lose events while the app is closed; represent unknown state honestly after restart.
+Keep the socket and any runtime files outside the repository.
+The next event-contract task defines payload bounds and ordering. Transport reliability has not been tested yet.
 

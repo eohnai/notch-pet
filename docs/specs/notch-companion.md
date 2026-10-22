@@ -40,12 +40,12 @@ Show reported usage limits and reset times so the user can monitor available all
 ## Decisions
 
 - [0001: Use SwiftUI and AppKit](../decisions/0001-use-swiftui-and-appkit.md) — accepted.
-- [0002: Use MVVM with services and shared stores](../decisions/0002-use-mvvm-with-services.md) — proposed.
-- [0003: Store local state without a database](../decisions/0003-store-state-without-a-database.md) — proposed.
-- [0004: Receive events through agent hooks](../decisions/0004-receive-agent-hook-events.md) — proposed.
-- [0005: Deliver events through a Unix socket](../decisions/0005-use-a-local-unix-socket.md) — proposed.
-- [0006: Import asset-only pet packs](../decisions/0006-import-asset-only-pet-packs.md) — proposed.
-- [0007: Read usage through supported interfaces](../decisions/0007-read-supported-usage-data.md) — proposed.
+- [0002: Use MVVM with services and shared stores](../decisions/0002-use-mvvm-with-services.md) — accepted.
+- [0003: Store local state without a database](../decisions/0003-store-state-without-a-database.md) — accepted.
+- [0004: Receive events through agent hooks](../decisions/0004-receive-agent-hook-events.md) — accepted.
+- [0005: Deliver events through a Unix socket](../decisions/0005-use-a-local-unix-socket.md) — accepted.
+- [0006: Import asset-only pet packs](../decisions/0006-import-asset-only-pet-packs.md) — accepted.
+- [0007: Read usage through supported interfaces](../decisions/0007-read-supported-usage-data.md) — accepted.
 
 ## My calls
 
@@ -61,13 +61,13 @@ Show reported usage limits and reset times so the user can monitor available all
 ## Tasks
 
 The user approved this scope and task list on 2026-10-22.
-Proposed architecture records remain open for the scheduled decision task.
+The user approved architecture recommendations 0002–0007 and proceeding directly to the app shell on 2026-10-22.
 Each task should fit one work session; split it if the investigation shows otherwise.
 
 - [x] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
 - [x] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
-- [ ] Settle proposed architecture records using the compatibility findings and user review.
-- [ ] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
+- [x] Settle proposed architecture records using the compatibility findings and user review.
+- [x] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
 - [ ] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
 - [ ] Add the local event bridge with checks for malformed input and an unavailable app.
 - [ ] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
@@ -95,6 +95,12 @@ Installed-agent runtime checks used a local mock provider. Full interactive Otty
 Task 2 evidence: [usage-source compatibility](../notes/usage-source-compatibility.md).
 Codex account reads returned real quota windows without agent turns.
 Claude field support and account eligibility were checked; live quota forwarding remains unverified until the forwarding task.
+
+Task 3 evidence: decisions 0002–0007 are accepted after user review on 2026-10-22.
+The architecture preserves the investigations' coverage limits and distinguishes unknown account identity from confirmed account grouping.
+
+Task 4 implementation: `Package.swift`, `Sources/NotchPet/NotchPetApp.swift`, `Resources/Info.plist`, and `scripts/run.sh`.
+The build and launch succeeded. The user's screenshot confirms the menu, and the user confirmed that selecting Quit closes the app.
 
 | Acceptance area | Tasks |
 |---|---|

@@ -1,6 +1,6 @@
 # 0003: Store local state without a database
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-10-22
 
 ## Context
@@ -15,16 +15,20 @@ The user questioned whether a database was necessary. Searchable history has not
 
 ## Decision
 
-Open. Recommend no database for the first version.
+Use no database for the first version.
 Keep live state in memory, preferences in UserDefaults, and assets in Application Support.
-An optional JSON usage cache must include its observation time.
+Any later JSON usage cache must include local receipt time and any available source measurement time.
+The user approved this recommendation on 2026-10-22. This decision does not require a usage cache.
 
 ## Reasoning
 
-The requested data does not need historical queries or relational joins. ^[inferred]
+Current requirements need no history queries. SQLite would add schema and migration work.
+The user approved this reason during architecture review.
 
 ## Consequences
 
 Restart recovery uses fresh session evidence rather than treating saved status as live.
+Keep runtime files, imported packs, and captured session data outside the repository.
+Local receipt time does not establish when a provider measured usage.
 Revisit SQLite if the user requests persistent session history or usage analytics.
 

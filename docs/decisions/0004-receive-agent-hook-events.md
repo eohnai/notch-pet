@@ -1,12 +1,13 @@
 # 0004: Receive lifecycle events through agent hooks
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-10-22
 
 ## Context
 
 The first supported agents are Codex CLI and Claude Code in Otty.
-Both document lifecycle hooks. Exact payload coverage still needs local verification.
+Controlled checks verified approval, response-stop, structured-question, and graceful-end hooks in both installed agents.
+Normal interactive Otty sessions, interruption, and abrupt process loss remain unverified.
 Otty can also install agent hooks, so configuration must coexist.
 
 ## Options
@@ -18,15 +19,24 @@ Otty can also install agent hooks, so configuration must coexist.
 
 ## Decision
 
-Open. Recommend hooks first, with explicit source-coverage limitations.
+Use official agent hooks, with explicit source-coverage limitations.
 Use separate adapters for agent events and terminal navigation.
+The user approved this recommendation on 2026-10-22.
 
 ## Reasoning
 
-The user's existing terminal workflow favors integration without replacing their session host. ^[inferred]
+Controlled checks verified relevant structured events. Transcript and terminal parsing would add format dependencies.
+The user approved this reason during architecture review.
 
 ## Consequences
 
 Do not promise detection of arbitrary natural-language questions.
-Document gaps before implementing adapters. Preserve existing configuration during setup and removal.
+Classify structured-question tools separately from command approvals. A response stop does not prove task success.
+Use agent plus source session ID for sessions. Keep pane identity separate and validate it against live Otty state.
+Ambiguous or stale pane identity makes navigation unavailable. Missing lifecycle evidence can leave a session unknown.
+Preserve existing configuration during setup and removal. Respect Codex hook trust review; do not install a trust bypass.
+
+## Evidence
+
+See the [event compatibility record](../notes/agent-event-compatibility.md) for checked versions, payload shapes, and remaining checks.
 

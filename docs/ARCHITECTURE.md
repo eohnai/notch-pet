@@ -1,13 +1,15 @@
-# Architecture proposal
+# Architecture
 
-## Recommendation
+## Accepted structure
 
 Use Model-View-ViewModel (MVVM) for presentation, with separate services for integration and storage.
 A view draws the interface. A view model prepares its state and handles user actions.
 Models describe sessions, alerts, usage limits, and pets.
 Services receive events, track state, open terminal panes, and access files.
 
-This recommendation is proposed. SwiftUI and AppKit are the only accepted technology choices so far.
+The user accepted decisions 0002–0007 on 2026-10-22 after reviewing the compatibility findings.
+SwiftUI and AppKit were already accepted in decision 0001.
+Acceptance chooses the design; the compatibility records still define what has and has not been verified.
 
 ## Boundaries
 
@@ -40,21 +42,22 @@ They do not create agent lifecycle events or start agent turns.
 
 ## Data without a database
 
-| Data | Proposed storage | Reason |
+| Data | Storage | Reason |
 |---|---|---|
 | Active sessions and alerts | Memory | They describe live processes |
 | Size, selected pet, sounds, placement | `UserDefaults` | Small preference values |
 | Imported pets and manifests | Application Support files | Images already use files |
-| Optional last usage snapshot | Small JSON file in Application Support | Useful after restart, with a stale label |
+| Optional later usage cache | Small JSON file in Application Support | Must retain receipt time, source measurement time if supplied, and a stale label |
 | Credentials | Existing provider-managed authentication | The app does not copy tokens |
 
 Do not persist a session as still working after the app restarts without fresh evidence.
 Use SQLite later only if searchable history or persistent analytics becomes a requirement.
 Adding quota display alone does not require a database.
+Keep runtime files, imported packs, and captured session data outside this repository.
 
-## Decisions to review
+## Accepted decisions
 
-| Choice | Recommendation | Alternative and tradeoff |
+| Choice | Accepted approach | Alternative and tradeoff |
 |---|---|---|
 | Presentation structure | MVVM plus services and shared stores | View-owned state is quicker initially, but duplicates session state |
 | Persistence | Memory, preferences, and files | SQLite supports history queries, but adds schemas and migrations |
@@ -63,13 +66,26 @@ Adding quota display alone does not require a database.
 | Custom pet format | JSON manifest and transparent PNG frame sequences | Sprite atlases reduce file count, but are harder to author |
 | Usage source | Provider-supported interfaces | Private endpoints may expose more data, but add authentication and compatibility work |
 
-No dependency-injection framework, event broker, backend service, or web account is proposed.
+No dependency-injection framework, event broker, backend service, or web account is needed for this scope.
 Pass service dependencies explicitly. Keep the first version small.
+
+Local delivery can lose events while the app is closed. Do not replay unverified activity as live state after restart.
+The event-contract task defines message fields, bounds, and ordering before bridge implementation.
+
+## Local app shell
+
+The first executable is a dependency-free Swift package targeting macOS 13 or later with Swift 6 tools.
+`NotchPetApp` owns the SwiftUI `MenuBarExtra` scene. Its private `CompanionMenu` presents status and Quit.
+Quit calls AppKit's application termination action. The bundle's `LSUIElement` flag keeps it out of the Dock.
+`bash scripts/run.sh` builds and launches a development app bundle under the user's temporary directory.
+This keeps build products outside the repository and works with installed Command Line Tools.
+This is a local development launch path; distribution packaging remains a later task.
 
 ## State and attention rules
 
 - Identify sessions by agent and source session identifier, rather than project folder alone.
 - Keep pane identity separate from session identity.
+- Validate inherited Otty pane selectors against live state. Ambiguous matches make pane navigation unavailable.
 - Include event identity, source ordering where available, and observation time in the event contract.
 - Define rules for duplicate events, delayed events, and restarted sessions before integrating the UI.
 - Distinguish working, approval needed, response ready, failed, interrupted, ended, and unknown states.
@@ -91,6 +107,11 @@ Pass service dependencies explicitly. Keep the first version small.
 - Account allowance is shared across sessions; never add the same allowance across panes.
 - Keep snapshots isolated by provider and account when identity is available.
 - Do not combine sessions into an account total when account identity cannot be established.
+- Keep Claude observations separate and label them account unverified when supported identity is absent.
+- Record local receipt time separately from provider measurement time, which the investigated quota shapes do not establish.
+- Repeated status-line delivery does not prove a fresh provider measurement.
+- Prefer Codex's full bucket map when present; do not count its compatibility view as another allowance.
+- Merge sparse Codex updates into a full snapshot, or read a new full snapshot.
 - Preserve the user's existing Claude Code status-line output when adding a forwarding wrapper.
 - Use bounded refreshes with backoff; avoid frequent account requests while idle.
 
@@ -117,8 +138,11 @@ Checked on 2026-10-22. Documentation establishes interfaces; it does not prove t
 - [Claude Code status lines](https://code.claude.com/docs/en/statusline#rate-limit-usage) expose eligible accounts' usage percentages and reset timestamps.
 - [Codex App Server](https://learn.chatgpt.com/docs/app-server) documents `account/rateLimits/read` and rate-limit update notifications.
 
-Verify hook payloads and pane identity on the installed versions.
-Verify a read-only Codex usage connection alongside normal CLI sessions without starting a conversation.
-Verify Claude Code status-line forwarding without replacing existing output.
-Record unsupported account modes explicitly rather than using private endpoint fallbacks.
+The [event compatibility record](notes/agent-event-compatibility.md) verifies controlled hook dispatch and fresh Otty pane navigation.
+It also records a stale inherited pane selector. Normal interactive Otty event behavior remains unverified.
+The [usage-source record](notes/usage-source-compatibility.md) verifies short read-only Codex quota reads without conversations.
+Claude eligibility and installed fields were checked; live forwarding and output preservation remain unverified.
+Later adapter tasks must check interactive behavior, abrupt process loss, and hook trust.
+Later usage tasks must check long-running coexistence, account changes, and Claude forwarding behavior.
+Unsupported account modes remain explicit limitations. Do not introduce private endpoint fallbacks.
 
