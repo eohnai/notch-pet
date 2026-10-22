@@ -46,6 +46,7 @@ Show reported usage limits and reset times so the user can monitor available all
 - [0005: Deliver events through a Unix socket](../decisions/0005-use-a-local-unix-socket.md) — accepted.
 - [0006: Import asset-only pet packs](../decisions/0006-import-asset-only-pet-packs.md) — accepted.
 - [0007: Read usage through supported interfaces](../decisions/0007-read-supported-usage-data.md) — accepted.
+- [0008: Use conservative event ordering](../decisions/0008-define-event-ordering.md) — accepted.
 
 ## My calls
 
@@ -68,7 +69,7 @@ Each task should fit one work session; split it if the investigation shows other
 - [x] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
 - [x] Settle proposed architecture records using the compatibility findings and user review.
 - [x] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
-- [ ] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
+- [x] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
 - [ ] Add the local event bridge with checks for malformed input and an unavailable app.
 - [ ] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
 - [ ] Add the Codex event adapter using verified hook coverage.
@@ -101,6 +102,13 @@ The architecture preserves the investigations' coverage limits and distinguishes
 
 Task 4 implementation: `Package.swift`, `Sources/NotchPet/NotchPetApp.swift`, `Resources/Info.plist`, and `scripts/run.sh`.
 The build and launch succeeded. The user's screenshot confirms the menu, and the user confirmed that selecting Quit closes the app.
+
+Task 5 evidence: [version-1 event contract](../contracts/agent-events-v1.md),
+[fictional validation and state cases](../contracts/agent-events-v1-cases.json), and
+[accepted ordering decision 0008](../decisions/0008-define-event-ordering.md).
+`python3 scripts/check-event-contract.py` passes 68 message cases, 37 state sequences with 122 steps, and four memory-capacity checks.
+The checker also verifies the document policy values and local links.
+It is a reference model; real transport, deadlines, adapters, and shared-store behavior remain unimplemented.
 
 | Acceptance area | Tasks |
 |---|---|

@@ -70,7 +70,8 @@ No dependency-injection framework, event broker, backend service, or web account
 Pass service dependencies explicitly. Keep the first version small.
 
 Local delivery can lose events while the app is closed. Do not replay unverified activity as live state after restart.
-The event-contract task defines message fields, bounds, and ordering before bridge implementation.
+The [version-1 event contract](contracts/agent-events-v1.md) defines message fields, bounds, and ordering before bridge implementation.
+[Decision 0008](decisions/0008-define-event-ordering.md) records conservative ordering without persistent helper state.
 
 ## Local app shell
 
@@ -96,6 +97,11 @@ This is a local development launch path; distribution packaging remains a later 
 - Keep every session accessible when several need attention.
 - Mark stale sessions unknown when their state cannot be confirmed.
 - A stale Otty pane link may only activate Otty; never create a replacement session automatically.
+
+The version-1 contract specifies these requirements as provisional observations with a two-minute freshness limit.
+Unknown state retains unresolved requests as unconfirmed notices.
+It does not support working-state recovery after an observed end reuses the same source session ID.
+The bridge, adapters, and store remain future implementation tasks.
 
 ## Limits display
 

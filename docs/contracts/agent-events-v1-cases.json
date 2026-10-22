@@ -1,0 +1,3652 @@
+{
+  "description": "Fictional contract cases. Expected states are specified independently of the reference model. No captured session data.",
+  "policy": {
+    "raw_hook_bytes": 262144,
+    "frame_bytes": 16384,
+    "delivery_age_ms": 30000,
+    "future_skew_ms": 2000,
+    "freshness_ms": 120000,
+    "sessions": 128,
+    "event_ids": 4096,
+    "turn_ids": 256,
+    "requests": 64
+  },
+  "messages": [
+    {
+      "name": "minimal session start",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "all optional session fields",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "turn_id": "turn-a",
+        "cwd": "/example/project",
+        "terminal": {
+          "kind": "otty",
+          "pane_selector": "fictional-selector"
+        }
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "claude question",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "claude",
+        "session_id": "fictional-session",
+        "hook_event_name": "PreToolUse",
+        "observed_at_ms": 1000000,
+        "turn_id": "turn-a",
+        "tool_name": "AskUserQuestion",
+        "tool_use_id": "tool-a"
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "tool identity may be absent",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "PermissionRequest",
+        "observed_at_ms": 1000000,
+        "tool_name": "Bash"
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "maximum identity bytes",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "maximum multibyte identity",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732ba",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "maximum path bytes",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "cwd": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "maximum tool name bytes",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "PreToolUse",
+        "observed_at_ms": 1000000,
+        "tool_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "largest timestamp integer",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 9007199254740991
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "zero timestamp",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 0
+      },
+      "expect": "valid"
+    },
+    {
+      "name": "missing version",
+      "message": {
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "missing_field"
+    },
+    {
+      "name": "missing event_id",
+      "message": {
+        "version": 1,
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "missing_field"
+    },
+    {
+      "name": "missing agent",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "missing_field"
+    },
+    {
+      "name": "missing session_id",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "missing_field"
+    },
+    {
+      "name": "missing hook_event_name",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "observed_at_ms": 1000000
+      },
+      "expect": "missing_field"
+    },
+    {
+      "name": "missing observed_at_ms",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart"
+      },
+      "expect": "missing_field"
+    },
+    {
+      "name": "invalid version True",
+      "message": {
+        "version": true,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "version"
+    },
+    {
+      "name": "invalid version 1.0",
+      "message": {
+        "version": 1.0,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "version"
+    },
+    {
+      "name": "invalid version 2",
+      "message": {
+        "version": 2,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "version"
+    },
+    {
+      "name": "invalid version '1'",
+      "message": {
+        "version": "1",
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "version"
+    },
+    {
+      "name": "invalid version None",
+      "message": {
+        "version": null,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "version"
+    },
+    {
+      "name": "unknown field excludes source content",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "prompt": "fictional omitted content"
+      },
+      "expect": "unknown_field"
+    },
+    {
+      "name": "uppercase UUID",
+      "message": {
+        "version": 1,
+        "event_id": "AAAAAAAA-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "event_id"
+    },
+    {
+      "name": "malformed UUID",
+      "message": {
+        "version": 1,
+        "event_id": "not-a-uuid",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "event_id"
+    },
+    {
+      "name": "UUID must be a string",
+      "message": {
+        "version": 1,
+        "event_id": 1,
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "event_id"
+    },
+    {
+      "name": "unsupported provider",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "other",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "agent"
+    },
+    {
+      "name": "agent object rejected",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": {},
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "agent"
+    },
+    {
+      "name": "empty session",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "session_id"
+    },
+    {
+      "name": "oversized session",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "session_id"
+    },
+    {
+      "name": "multibyte overflow",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b\u732b",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "session_id"
+    },
+    {
+      "name": "session null",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": null,
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "session_id"
+    },
+    {
+      "name": "control in session",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional\u0000session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "session_id"
+    },
+    {
+      "name": "escaped unpaired surrogate",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "\ud800",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "expect": "session_id"
+    },
+    {
+      "name": "unsupported hook",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "Interrupt",
+        "observed_at_ms": 1000000
+      },
+      "expect": "hook"
+    },
+    {
+      "name": "array hook",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": [],
+        "observed_at_ms": 1000000
+      },
+      "expect": "hook"
+    },
+    {
+      "name": "invalid timestamp True",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": true
+      },
+      "expect": "timestamp"
+    },
+    {
+      "name": "invalid timestamp 1.5",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1.5
+      },
+      "expect": "timestamp"
+    },
+    {
+      "name": "invalid timestamp -1",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": -1
+      },
+      "expect": "timestamp"
+    },
+    {
+      "name": "invalid timestamp 9007199254740992",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 9007199254740992
+      },
+      "expect": "timestamp"
+    },
+    {
+      "name": "invalid timestamp None",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": null
+      },
+      "expect": "timestamp"
+    },
+    {
+      "name": "missing tool name",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "PostToolUse",
+        "observed_at_ms": 1000000
+      },
+      "expect": "tool_name"
+    },
+    {
+      "name": "oversized tool name",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "PreToolUse",
+        "observed_at_ms": 1000000,
+        "tool_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect": "tool_name"
+    },
+    {
+      "name": "tool fields forbidden on stop",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "Stop",
+        "observed_at_ms": 1000000,
+        "tool_use_id": "tool-a"
+      },
+      "expect": "tool_fields"
+    },
+    {
+      "name": "tool name forbidden on session start",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "tool_name": "Bash"
+      },
+      "expect": "tool_fields"
+    },
+    {
+      "name": "empty turn",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "turn_id": ""
+      },
+      "expect": "turn_id"
+    },
+    {
+      "name": "null tool ID",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "PostToolUse",
+        "observed_at_ms": 1000000,
+        "tool_name": "Bash",
+        "tool_use_id": null
+      },
+      "expect": "tool_use_id"
+    },
+    {
+      "name": "oversized turn",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "turn_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect": "turn_id"
+    },
+    {
+      "name": "relative path",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "cwd": "example/project"
+      },
+      "expect": "cwd"
+    },
+    {
+      "name": "oversized path",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "cwd": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expect": "cwd"
+    },
+    {
+      "name": "path control",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "cwd": "/example/\nproject"
+      },
+      "expect": "cwd"
+    },
+    {
+      "name": "null pane object",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "terminal": null
+      },
+      "expect": "terminal"
+    },
+    {
+      "name": "unknown pane kind",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "terminal": {
+          "kind": "other",
+          "pane_selector": "fictional"
+        }
+      },
+      "expect": "terminal"
+    },
+    {
+      "name": "empty pane selector",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "terminal": {
+          "kind": "otty",
+          "pane_selector": ""
+        }
+      },
+      "expect": "terminal"
+    },
+    {
+      "name": "oversized pane selector",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "terminal": {
+          "kind": "otty",
+          "pane_selector": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": "terminal"
+    },
+    {
+      "name": "unknown pane field",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "terminal": {
+          "kind": "otty",
+          "pane_selector": "fictional",
+          "trusted": true
+        }
+      },
+      "expect": "terminal"
+    },
+    {
+      "name": "nested pane value",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000,
+        "terminal": {
+          "kind": "otty",
+          "pane_selector": {
+            "value": "fictional"
+          }
+        }
+      },
+      "expect": "terminal"
+    },
+    {
+      "name": "duplicate root key",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":1000000,\"version\":1}\n",
+      "expect": "duplicate_key"
+    },
+    {
+      "name": "duplicate nested key",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":1000000,\"terminal\":{\"kind\":\"otty\",\"kind\":\"otty\",\"pane_selector\":\"fictional\"}}\n",
+      "expect": "duplicate_key"
+    },
+    {
+      "name": "no LF",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":1000000}",
+      "expect": "framing"
+    },
+    {
+      "name": "two frames",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":1000000}\n{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":1000000}\n",
+      "expect": "framing"
+    },
+    {
+      "name": "pretty multiline JSON",
+      "raw": "{\n  \"version\": 1,\n  \"event_id\": \"00000000-0000-4000-8000-000000000001\",\n  \"agent\": \"codex\",\n  \"session_id\": \"fictional-session\",\n  \"hook_event_name\": \"SessionStart\",\n  \"observed_at_ms\": 1000000\n}\n",
+      "expect": "framing"
+    },
+    {
+      "name": "truncated object",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":1000000\n",
+      "expect": "json"
+    },
+    {
+      "name": "array root",
+      "raw": "[]\n",
+      "expect": "object_required"
+    },
+    {
+      "name": "NaN",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":NaN}\n",
+      "expect": "nonfinite"
+    },
+    {
+      "name": "infinity",
+      "raw": "{\"version\":1,\"event_id\":\"00000000-0000-4000-8000-000000000001\",\"agent\":\"codex\",\"session_id\":\"fictional-session\",\"hook_event_name\":\"SessionStart\",\"observed_at_ms\":Infinity}\n",
+      "expect": "nonfinite"
+    },
+    {
+      "name": "invalid UTF-8",
+      "hex": "ff0a",
+      "expect": "utf8"
+    },
+    {
+      "name": "frame exactly at bound",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "pad_to_bytes": 16384,
+      "expect": "valid"
+    },
+    {
+      "name": "frame one byte too large",
+      "message": {
+        "version": 1,
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "agent": "codex",
+        "session_id": "fictional-session",
+        "hook_event_name": "SessionStart",
+        "observed_at_ms": 1000000
+      },
+      "pad_to_bytes": 16385,
+      "expect": "frame_too_large"
+    }
+  ],
+  "sequences": [
+    {
+      "name": "normal approval and response",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000065",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1000000
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "idle",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000066",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000001,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000067",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000068",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1000003,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000069",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000004,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000004,
+          "monotonic_ms": 1000004,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "response_ready",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000006a",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionEnd",
+            "observed_at_ms": 1000005
+          },
+          "wall_ms": 1000005,
+          "monotonic_ms": 1000005,
+          "outcome": "ended",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "claude question merge and resolution",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000006b",
+            "agent": "claude",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "claude",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000006c",
+            "agent": "claude",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "AskUserQuestion",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "claude",
+              "session_id": "fictional-session",
+              "status": "question_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000006d",
+            "agent": "claude",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "AskUserQuestion",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "merged_request",
+          "expect": [
+            {
+              "agent": "claude",
+              "session_id": "fictional-session",
+              "status": "question_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000006e",
+            "agent": "claude",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1000003,
+            "turn_id": "a",
+            "tool_name": "AskUserQuestion",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "claude",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "question has priority over approval",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000006f",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000070",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000071",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "request_user_input",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "question_needed",
+              "pending": 2,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000072",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1000003,
+            "turn_id": "a",
+            "tool_name": "request_user_input",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000073",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000004,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000004,
+          "monotonic_ms": 1000004,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "response_ready",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate does not refresh freshness",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000074",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000074",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1020000,
+          "monotonic_ms": 1020000,
+          "outcome": "duplicate",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1119999,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "conflicting event ID",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000075",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000075",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a",
+            "cwd": "/example/changed"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "event_id_conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "event_id_conflict"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "same folder and equal IDs across agents remain distinct",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000076",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a",
+            "cwd": "/example/project"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000077",
+            "agent": "claude",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "cwd": "/example/project"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "claude",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            },
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000078",
+            "agent": "codex",
+            "session_id": "second-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "cwd": "/example/project"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "claude",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            },
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            },
+            {
+              "agent": "codex",
+              "session_id": "second-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "older capture cannot replace attention",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000079",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000007a",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000010,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000010,
+          "monotonic_ms": 1000010,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000007b",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000005,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000011,
+          "monotonic_ms": 1000011,
+          "outcome": "ambiguous_capture_order",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "ambiguous_capture_order"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "equal capture timestamps are ambiguous",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000007c",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000007d",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "ambiguous_capture_order",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "ambiguous_capture_order"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "old turn captured later cannot change new turn",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000007e",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000007f",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000001,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "response_ready",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000080",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000002,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000081",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000003,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "retired_turn",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120002,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "overlapping turns preserve input",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000082",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000083",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000084",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000002,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "overlapping_turns"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a late approval after stop becomes unconfirmed",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000085",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000086",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000001,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "response_ready",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000087",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "activity_after_stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "end blocks activity and ambiguous reuse",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000088",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000089",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionEnd",
+            "observed_at_ms": 1000001
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "ended",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000008a",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000002,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "terminal_restriction",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000008b",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1000003
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "terminal_restriction",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "reused_session_id"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000008c",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000004,
+            "turn_id": "c"
+          },
+          "wall_ms": 1000004,
+          "monotonic_ms": 1000004,
+          "outcome": "terminal_restriction",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "reused_session_id"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delayed end cannot leave working state",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000008d",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000010,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000010,
+          "monotonic_ms": 1000010,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000008e",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionEnd",
+            "observed_at_ms": 1000005
+          },
+          "wall_ms": 1000011,
+          "monotonic_ms": 1000011,
+          "outcome": "ended",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "uncorrelated completion cannot clear request",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000008f",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000090",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000091",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "guessed"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_resolution"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000092",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000003,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "resolved_but_unknown",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "uncorrelated_resolution"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000093",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000004,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000004,
+          "monotonic_ms": 1000004,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "wrong tool name cannot resolve a request",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000094",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000095",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "request_user_input",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "question_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000096",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_resolution"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "conflicting request kind preserves question",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000097",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000098",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "request_user_input",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "question_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-000000000099",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "request_conflict"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "missing turn identity cannot clear input",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000009a",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000009b",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_activity"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000009c",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000002
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "no baseline means unknown with unconfirmed input",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000009d",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000000,
+            "turn_id": "a",
+            "tool_name": "request_user_input",
+            "tool_use_id": "q"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_activity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stop without baseline does not invent success",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000009e",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "uncorrelated_stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delivery age and future skew boundaries",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-00000000009f",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1000000
+          },
+          "wall_ms": 1030001,
+          "monotonic_ms": 1030001,
+          "outcome": "delivery_time",
+          "expect": []
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a0",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1002001
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "delivery_time",
+          "expect": []
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a1",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1000000
+          },
+          "wall_ms": 1030000,
+          "monotonic_ms": 1030000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "idle",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1119999,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "idle",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "future tolerance does not add extra lifetime",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a2",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1002000
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 2000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "idle",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 2119999,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "idle",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 2120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "input expiry retains an unconfirmed notice",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a3",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a4",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120001,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "expired"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a5",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1120002,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1120002,
+          "monotonic_ms": 1120002,
+          "outcome": "resolved_but_unknown",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a6",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1120003,
+            "turn_id": "b"
+          },
+          "wall_ms": 1120003,
+          "monotonic_ms": 1120003,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "repeated start and submit are not heartbeats",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a7",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a8",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1001000
+          },
+          "wall_ms": 1001000,
+          "monotonic_ms": 1001000,
+          "outcome": "repeated_start",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000a9",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1002000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1002000,
+          "monotonic_ms": 1002000,
+          "outcome": "repeated_submit",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "repeated request opening is not a heartbeat",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000aa",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000ab",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000ac",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1001000,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1001000,
+          "monotonic_ms": 1001000,
+          "outcome": "merged_request",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120001,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "repeated stop is not a heartbeat",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000ad",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000ae",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000001,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "response_ready",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000af",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1001000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1001000,
+          "monotonic_ms": 1001000,
+          "outcome": "repeated_stop",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "response_ready",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120001,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unmatched completion does not refresh",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b0",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b1",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PostToolUse",
+            "observed_at_ms": 1001000,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "unknown"
+          },
+          "wall_ms": 1001000,
+          "monotonic_ms": 1001000,
+          "outcome": "unmatched_completion",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ordinary tool observations do not clear input",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b2",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b3",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b4",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000002,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b5",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000003,
+            "turn_id": "a",
+            "tool_name": "Read",
+            "tool_use_id": "other"
+          },
+          "wall_ms": 1000003,
+          "monotonic_ms": 1000003,
+          "outcome": "no_change",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stale Otty hints cannot establish activity",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b6",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionStart",
+            "observed_at_ms": 1000000,
+            "terminal": {
+              "kind": "otty",
+              "pane_selector": "fictional-stale-selector"
+            }
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "idle",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "wake invalidates live observations",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b7",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "wake",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "clock_or_wake"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b8",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "no_change",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "clock_or_wake"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000b9",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000002,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "clock_change invalidates live observations",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000ba",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "clock_change",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "clock_or_wake"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000bb",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "no_change",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "clock_or_wake"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000bc",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000002,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fresh app starts without saved sessions",
+      "steps": [
+        {
+          "operation": "advance",
+          "monotonic_ms": 1000000,
+          "expect": []
+        }
+      ]
+    },
+    {
+      "name": "reordered JSON keys are still a duplicate",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000bd",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "turn_id": "a",
+            "observed_at_ms": 1000000,
+            "hook_event_name": "UserPromptSubmit",
+            "session_id": "fictional-session",
+            "agent": "codex",
+            "event_id": "00000000-0000-0000-0000-0000000000bd",
+            "version": 1
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "duplicate",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a stop cannot clear a different turns request",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000be",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000bf",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "other",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_activity"
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c0",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000002,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "resolved_but_unknown",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_activity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a new turn while working is ambiguous",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c1",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c2",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000001,
+            "turn_id": "b"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "overlapping_turns"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "uncorrelated stop preserves a known request",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c3",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c4",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PermissionRequest",
+            "observed_at_ms": 1000001,
+            "turn_id": "a",
+            "tool_name": "Bash",
+            "tool_use_id": "t"
+          },
+          "wall_ms": 1000001,
+          "monotonic_ms": 1000001,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "approval_needed",
+              "pending": 1,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c5",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "Stop",
+            "observed_at_ms": 1000002,
+            "turn_id": "other"
+          },
+          "wall_ms": 1000002,
+          "monotonic_ms": 1000002,
+          "outcome": "conflict",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 1,
+              "reason": "uncorrelated_stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "an ended session stays ended after elapsed time and wake",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c6",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "SessionEnd",
+            "observed_at_ms": 1000000
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "ended",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 2000000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "wake",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "ended",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delivery rejection does not refresh existing working state",
+      "steps": [
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c7",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "UserPromptSubmit",
+            "observed_at_ms": 1000000,
+            "turn_id": "a"
+          },
+          "wall_ms": 1000000,
+          "monotonic_ms": 1000000,
+          "outcome": "applied",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "message": {
+            "version": 1,
+            "event_id": "00000000-0000-0000-0000-0000000000c8",
+            "agent": "codex",
+            "session_id": "fictional-session",
+            "hook_event_name": "PreToolUse",
+            "observed_at_ms": 980000,
+            "turn_id": "a",
+            "tool_name": "Bash"
+          },
+          "wall_ms": 1010001,
+          "monotonic_ms": 1010001,
+          "outcome": "delivery_time",
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "working",
+              "pending": 0,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "operation": "advance",
+          "monotonic_ms": 1120000,
+          "expect": [
+            {
+              "agent": "codex",
+              "session_id": "fictional-session",
+              "status": "unknown",
+              "pending": 0,
+              "reason": "expired"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
