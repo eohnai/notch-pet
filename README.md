@@ -2,6 +2,7 @@
 
 A macOS companion for Codex CLI and Claude Code in Otty, under development.
 The current app provides a menu-bar control and Quit action.
+It also runs a local event receiver and bundles a silent hook helper.
 Agent notifications, the notch interface, the detachable pet, and usage limits are planned next.
 
 The working name is `notch-pet`; the user has not chosen a product name.
@@ -35,6 +36,69 @@ bash scripts/run.sh --build-only
 
 On success, the command prints the app bundle's absolute path. Build messages go to stderr.
 This is a development bundle; distribution packaging and signing are a later task.
+
+## Local event bridge
+
+The app listens at `/private/tmp/notch-pet-<uid>/events-v1.sock` while it runs.
+The directory has mode `0700`. The socket has mode `0600`.
+Both endpoints check the connected user's numeric ID.
+The receiver validates [version-1 envelopes](docs/contracts/agent-events-v1.md) before calling its consumer.
+The current shell discards validated observations. Session state and agent setup are later tasks.
+
+The bundle includes `Contents/MacOS/NotchPetHook`.
+Run it with `--agent codex` or `--agent claude`, with one raw hook JSON object on stdin.
+It forwards only the contract's allowed fields, including an optional unverified `OTTY_PANE_ID` hint.
+It never opens transcripts or forwards prompt text, commands, or raw tool input.
+Handled errors return exit `0` with empty stdout and stderr.
+There is no acknowledgement, retry, queue, or saved activity.
+
+The helper limits stdin, connection, and writing to 50 ms each.
+It also enforces a shared 250 ms deadline after executable entry.
+Process launch time is additional. Future hook setup must also set the agent's execution timeout.
+The receiver allows 100 ms to finish one frame, including fragmented reads.
+A successful write does not prove that an observation reached session state.
+
+The app holds `listener.lock` while it owns the endpoint.
+It recovers an owned stale socket only after a refused connection and an unchanged file identity.
+It leaves active listeners, symlinks, and unrelated files intact.
+Normal shutdown removes only its own socket. The lock file and directory remain for later launches.
+These checks separate users and coordinate app instances. They do not authenticate an agent running as the same user.
+
+## Verify the bridge
+
+Quit Notch Pet before running the process checks. They refuse to replace an existing socket.
+The Swift tests use isolated temporary directories. The process checks use the standard endpoint and fictional input.
+Neither command installs hooks or changes agent settings.
+
+Build the bundle and helper first:
+
+```bash
+bash scripts/run.sh --build-only
+```
+
+Run the Swift tests with full Xcode selected for this command only:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-dev/build
+```
+
+The tested Command Line Tools installation cannot import the test frameworks.
+The app and helper still build with Command Line Tools.
+The Swift tests also use `/usr/bin/python3` to serialize the existing fictional contract cases.
+They check the production Swift decoder, rather than the Python reference validator.
+
+Run the helper process checks and contract reference checks:
+
+```bash
+python3 scripts/check-event-bridge.py
+python3 scripts/check-event-contract.py
+git diff --check
+```
+
+Success means all Swift tests pass and the process checker prints `Bridge process checks passed`.
+The contract checker prints four `PASS` lines. The diff check prints nothing.
+Process timings include launch time. They are observations on this Mac, not a real-time scheduling guarantee.
 
 ## Start here
 

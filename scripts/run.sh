@@ -18,6 +18,7 @@ binary_dir="$(swift build --package-path "$project_dir" --scratch-path "$build_d
 mkdir -p "$app_dir/Contents/MacOS"
 cp "$project_dir/Resources/Info.plist" "$app_dir/Contents/Info.plist"
 cp "$binary_dir/NotchPet" "$app_dir/Contents/MacOS/NotchPet"
+cp "$binary_dir/NotchPetHook" "$app_dir/Contents/MacOS/NotchPetHook"
 /usr/bin/plutil -lint "$app_dir/Contents/Info.plist" >&2
 
 if [[ "${1:-}" == "--build-only" ]]; then

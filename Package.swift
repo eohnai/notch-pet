@@ -6,9 +6,13 @@ let package = Package(
     name: "NotchPet",
     platforms: [.macOS(.v13)],
     products: [
-        .executable(name: "NotchPet", targets: ["NotchPet"])
+        .executable(name: "NotchPet", targets: ["NotchPet"]),
+        .executable(name: "NotchPetHook", targets: ["NotchPetHook"])
     ],
     targets: [
-        .executableTarget(name: "NotchPet")
+        .target(name: "EventBridge"),
+        .executableTarget(name: "NotchPet", dependencies: ["EventBridge"]),
+        .executableTarget(name: "NotchPetHook", dependencies: ["EventBridge"]),
+        .testTarget(name: "EventBridgeTests", dependencies: ["EventBridge"])
     ]
 )

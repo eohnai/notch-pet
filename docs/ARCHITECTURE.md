@@ -101,7 +101,19 @@ This is a local development launch path; distribution packaging remains a later 
 The version-1 contract specifies these requirements as provisional observations with a two-minute freshness limit.
 Unknown state retains unresolved requests as unconfirmed notices.
 It does not support working-state recovery after an observed end reuses the same source session ID.
-The bridge, adapters, and store remain future implementation tasks.
+The bridge is implemented in the shared `EventBridge` Swift target.
+`NotchPetHook` projects raw hook input and makes one bounded delivery attempt.
+`BridgeAppDelegate` starts the receiver and stops it during normal app termination.
+The receiver hands validated envelopes and receipt times to a callback on its worker queue.
+The current shell discards that callback's observations. Adapters and the store remain future implementation tasks.
+The shared store must enqueue callback work promptly and apply ordering and expiry before publishing session state.
+
+The app holds a user-owned `listener.lock` file while it owns the socket.
+It never removes the lock file, which prevents separate processes from locking different replacement files.
+It recovers only an owned socket whose connection is refused and whose file identity remains unchanged.
+Shutdown checks that identity before removing its socket.
+These checks coordinate local instances within the accepted same-user boundary; they do not authenticate an agent.
+Runtime files remain under `/private/tmp/notch-pet-<uid>/`.
 
 ## Limits display
 

@@ -70,7 +70,7 @@ Each task should fit one work session; split it if the investigation shows other
 - [x] Settle proposed architecture records using the compatibility findings and user review.
 - [x] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
 - [x] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
-- [ ] Add the local event bridge with checks for malformed input and an unavailable app.
+- [x] Add the local event bridge with checks for malformed input and an unavailable app.
 - [ ] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
 - [ ] Add the Codex event adapter using verified hook coverage.
 - [ ] Add the Claude Code event adapter using verified hook coverage.
@@ -108,7 +108,29 @@ Task 5 evidence: [version-1 event contract](../contracts/agent-events-v1.md),
 [accepted ordering decision 0008](../decisions/0008-define-event-ordering.md).
 `python3 scripts/check-event-contract.py` passes 68 message cases, 37 state sequences with 122 steps, and four memory-capacity checks.
 The checker also verifies the document policy values and local links.
-It is a reference model; real transport, deadlines, adapters, and shared-store behavior remain unimplemented.
+The checker remains a reference model. Task 6 supplies real transport and deadline checks.
+Adapters and shared-store behavior remain unimplemented.
+
+Task 6 implementation: the shared `Sources/EventBridge/` target, `Sources/NotchPetHook/main.swift`,
+app lifecycle ownership, and the bundled helper in `scripts/run.sh`.
+The receiver validates one bounded envelope per connection and checks peer user IDs, endpoint ownership,
+permissions, delivery age, framing, and deadlines.
+The helper projects allowed fields, has one delivery attempt, and returns silently on handled failures.
+It neither installs hooks nor retains messages. The current app discards validated observations.
+
+`env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`
+passes 15 tests, including all 68 existing contract message cases through the production Swift decoder.
+`python3 scripts/check-event-bridge.py` passes unavailable-app, 15 fictional hook projections,
+exact raw-input capacity, invalid-input, open-stdin, and busy-socket checks through actual helper processes.
+`bash scripts/run.sh --build-only` builds both bundled executables with Command Line Tools.
+A local smoke check also verified app startup, silent helper invocation, and owned-socket removal on Quit.
+Full Xcode is needed for tests on this Mac; the selected Command Line Tools cannot import test frameworks.
+
+The shared-store task can consume `EventBridgeServer.start(onEnvelope:)` and call `stop()` at shutdown.
+The callback runs on the bridge worker and must return promptly.
+`ReceivedHookEnvelope` contains `envelope`, `receiptWallMs`, and `receiptMonotonicNs`.
+`HookEnvelopeV1.decode(frame:)` and `EventBridgeClient.send(_:)` are the common wire interfaces.
+Adapters, ordering, freshness expiry, and live session presentation remain later tasks.
 
 | Acceptance area | Tasks |
 |---|---|
