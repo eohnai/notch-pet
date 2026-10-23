@@ -2,28 +2,27 @@
 
 ## Now
 
-The Codex event adapter is implemented and verified with fictional inputs. Its changes remain uncommitted.
-The full Swift suite passes 41 tests. The contract checker, helper process checks, and app build also pass.
-The user approved splitting Codex implementation from interactive Otty verification. That verification is next.
-The Claude adapter, hook setup, and live session presentation remain unimplemented.
+The Codex adapter is committed as `badee7a`. Partial interactive verification now covers its main event paths in Otty.
+Real helper events reached the production bridge, inbox, and store through a temporary receiver with a loopback mock provider.
+The user questioned further probing, so testing stopped and temporary processes, panes, and the Otty setting were cleaned up.
+The verification task remains open. No production code changed this session.
 
 ## Next
 
-1. Run `next-task` to verify installed Codex in interactive Otty sessions using isolated configuration.
-2. Read `docs/notes/agent-event-compatibility.md`, the fictional examples, the version-1 contract, and decisions 0004 and 0008.
-3. Get approval for the verification plan. The CLI now reports `0.164.0`; earlier controlled runtime evidence covers `0.163.0`.
-4. Check hook trust, approval handling, structured-question availability, concurrent sessions, and lifecycle limits through the actual adapter path.
-5. Preserve existing Codex, Claude Code, and Otty configuration. Keep runtime files and captures outside Git. Do not read credentials.
-6. Reuse `CodexEventAdapter`, `SessionObservationV1`, `SessionEventInbox`, and `SessionStore`. Do not infer source ordering or navigation validity.
-7. The reference-model and socket-test follow-ups below remain proposed work outside the approved task list.
+1. Read the partial interactive findings in `docs/notes/agent-event-compatibility.md` before planning more work.
+2. Review whether remaining interactive checks should precede the Claude adapter or move to final workflow verification. No deferral or task split is accepted yet.
+3. Keep the interactive Codex task unchecked until its remaining scope is resolved and verified.
+4. The visible notch and pet interfaces remain later tasks. This session verified event delivery and shared state only.
+5. Preserve existing Codex, Claude Code, and Otty configuration. Keep runtime files outside Git and do not read credentials.
+6. The reference-model and socket-test follow-ups remain proposed work outside the approved task list.
 
 ## Blockers
 
-- None blocks planning interactive Codex verification.
-- Installed Codex is `0.164.0`. The prior runtime checks covered `0.163.0`; fictional checks do not verify this newer CLI's interactive behavior.
+- Interactive verification stopped after the user questioned further probing. Controlled hook trust, default-mode question dispatch, explicit denial, graceful end, controlled abrupt loss, prose questions, and interactive unavailable-receiver behavior remain unverified.
+- Installed Codex `0.164.0` now has partial interactive Otty evidence with a mock provider. Real-provider behavior remains unverified.
 - Stale: `scripts/check-event-contract.py` allows a previously conflicting turn ID to restore working state. The accepted contract requires an unseen turn ID. The production store enforces that rule through `recoveryRequiresAnUnseenTurnIdentity`. A reference-model correction is proposed follow-up work.
 - The existing `invalidFramesNeverReachCallback` test has a timing assumption at the frame-size boundary. One full run observed two callbacks instead of one. A temporary probe measured writes of 8192, 4096, 4096, and 1 bytes. Delaying only the final extra byte by 5 ms allowed the complete valid prefix in all ten trials. The contract rejects extra bytes only when already buffered. The final full run passed. The bridge and existing test remain unchanged, and the temporary probe was removed. A test correction is proposed follow-up work.
-- The app has no live session presentation or installed agent hooks. Fictional store checks do not establish normal interactive provider behavior.
+- The app has no live session presentation or installed user hooks. Temporary isolated hooks exercised the helper and production state path only.
 - Clock and wake tests use injected values. Physical sleep/wake, fullscreen, Spaces, and display changes remain later checks.
 - Without a verified heartbeat, observations become unknown after two minutes. Reused source IDs after an observed end remain unknown.
 - Inbox overflow makes nonterminal sessions unknown. The inbox retains at most 128 queued observations alongside one active batch.
@@ -34,7 +33,7 @@ The Claude adapter, hook setup, and live session presentation remain unimplement
 - Claude live quota forwarding and output preservation remain checks for the forwarding task. Anonymous observations must remain separate.
 - Codex long-running coexistence, cross-process quota notifications, account changes, and other account modes remain unverified.
 - The event investigation found a stale inherited `OTTY_PANE_ID`. Future navigation must validate live identity.
-- Normal interactive events in Otty, interruptions, abrupt termination, and MCP elicitation remain adapter and final-workflow checks.
+- Interactive approval cancellation emitted unsupported `Interrupt` without a resolving `Stop`. The retained approval notice kept later activity unknown. This matches version 1 but limits recovery. No contract or code change is accepted.
 
 ## Progress
 
@@ -46,27 +45,29 @@ _Generated by the progress script at checkpoint. Do not edit by hand._
 
 ## Verification
 
-- All results below are from 2026-10-23.
-- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`: final exit 0 with 41 tests across four suites. This includes eight adapter tests and 18 store tests.
-- The adapter checks cover all seven reconstructed Codex examples, ten unsupported hook names, content and source-metadata omission, missing identities, malformed input, UTF-8 byte bounds, raw-input capacity, and parser deadlines. A regression check preserves the existing Claude turn mapping.
-- Store checks exercise nine projected hook/tool combinations, including structured questions, command approvals, matching request resolution, prose questions remaining response ready, graceful end, duplicates, and uncorrelated requests. The real socket check sends a projected fictional Codex submit through the bridge, bounded inbox, and store.
-- Existing production Swift checks still cover all 68 contract message cases, all 37 state sequences with 122 steps, and the store's memory, ordering, concurrency, and lifecycle regressions.
-- `bash scripts/run.sh --build-only`: exit 0. Both bundled executables build with Command Line Tools, and the bundled Info.plist passes validation. Products remain under the user's temporary directory.
-- `python3 scripts/check-event-bridge.py`: exit 0 with `Bridge process checks passed`. Five unavailable-app invocations, 15 fictional hook projections, exact raw-input capacity, malformed input, held-open stdin, and a busy socket pass. Helper process times were 6–531 ms including launch. The held-open stdin case finished in 76 ms.
-- `python3 scripts/check-event-contract.py`: exit 0 after the documentation changes. Document policy and links, 68 message cases, 37 state sequences with 122 steps, and four memory-capacity checks pass. The recorded reference-model gap remains unchanged.
-- `bash /Users/ianhoe/.agents/skills/progress/scripts/progress.sh`: exit 0 with 8 done, 14 open, and 0 blocked after the approved task split.
-- `git diff --check`: exit 0 after the checkpoint update.
-- The initial adapter test build failed because `CodexEventAdapter` did not exist. After implementation, `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --filter CodexEventAdapterTests` passed eight tests.
-- The first full suite found two incorrect expectations in the new store checks. Inspection confirmed that `SessionEnd` does not refresh metadata and an uncorrelated request returns `conflict`. The corrected tests verify those existing rules, including retained unconfirmed requests. The final full suite passed without changing store production code.
-- Swift tests first failed inside the sandbox because the compiler cache was not writable. Approved runs outside the sandbox passed. The bundle build and helper socket checks also used approved access outside the sandbox.
-- The existing socket-boundary test passed in the final full suite. Its earlier timing limitation remains recorded under Blockers.
-- Interactive Otty sessions, installed hooks, and physical sleep/wake were not checked this session. Fictional checks do not establish normal provider behavior.
-- Commit `72aef81` contains the previous shared-store work. The working tree was clean at session start.
+- Results below are from 2026-10-23 and this partial verification session.
+- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`: approved retry exit 0, 41 tests across four suites. The initial sandboxed run failed on compiler-cache access.
+- `python3 /private/tmp/notch-pet-codex-interactive/build-receiver.py`: final exit 0. The temporary receiver linked existing production modules. Initial probe builds exposed an environment/target mismatch, cache access restrictions, and a wrong temporary property reference. No repository source changed.
+- `python3 /private/tmp/notch-pet-codex-interactive/control.py start`, `capture`, `raw`, and `summary`: interactive text, approval, question, concurrency, interruption, and expiry evidence recorded outside Git. These are partial observations, not a completed automated acceptance suite.
+- Twenty-one actual helper invocations returned exit 0 with empty stdout and stderr. Subprocess durations were 7.24–484.19 ms including launch and capture overhead. `Interrupt` was silently omitted from version-1 delivery.
+- An approved temporary marker existed. The cancelled approval's marker remained absent. Explicit denial-menu handling was not exercised.
+- The structured-question selection displayed answer A. Matching hook identities cleared its request and reached response ready on the fresh question turn.
+- Concurrent sessions in the same folder stayed separate. A waiting approval expired to unknown and retained an unconfirmed notice. Interruption left that request unresolved through a later turn.
+- `python3 /private/tmp/notch-pet-codex-interactive/control.py close`: exit 0. Only disposable panes closed, and original panes remained present.
+- `python3 /private/tmp/notch-pet-codex-interactive/otty-setting.py restore`: exit 0. Exact original Otty files restored and configuration reloaded. SHA-256 fingerprints matched. Codex and Claude configuration fingerprints also matched.
+- Otty's advertised transient setting mode was unavailable. The user approved a temporary local setting change. Input initially remained disabled after the first reload and became available after a subsequent reload. Cleanup restored the original disabled setting.
+- The temporary receiver exited 0 after its stop signal and removed its socket. `python3 /private/tmp/notch-pet-codex-interactive/cleanup-provider.py` exited 0 and stopped the single temporary provider process.
+- `python3 scripts/check-event-contract.py`: exit 0 after documentation updates. Document policy and links, 68 message cases, 37 state sequences with 122 steps, and four memory-capacity boundaries pass.
+- `bash /Users/ianhoe/.agents/skills/progress/scripts/progress.sh`: exit 0, 8 done, 14 open, and 0 blocked. The interactive task remains unchecked.
+- `git diff --check`: exit 0 after documentation updates.
+- The planned `/private/tmp/notch-pet-codex-interactive/verify.py` was not completed or run. Full interactive acceptance is not claimed.
+- No credentials or user transcripts were inspected. Runtime state, selected hook metadata, and CLI captures remain outside Git in `/private/tmp/notch-pet-codex-interactive/`.
 - Current branch: `planning/initial-scope`. No remote is configured, so the comparison default is `main`.
-- The adapter, tests, README, architecture, compatibility note, specification, and checkpoint remain uncommitted. The agent did not stage files, change branches, commit, push, or open a pull request.
-- No agent configuration, credentials, captured sessions, or provider accounts were read or changed. All test inputs were fictional.
+- The working tree was clean at session start. This session changes only the compatibility note, specification evidence, and checkpoint. No files were staged, committed, pushed, or submitted as a pull request.
 
 ## Log
+
+- 2026-10-23: Recorded partial interactive Codex 0.164.0 verification in Otty with a loopback mock provider. Confirmed main event paths and conservative interruption limits. The user questioned further probing, so cleanup restored configuration and the task remains open.
 
 - 2026-10-23: Implemented the Codex event adapter after the approved split from interactive verification. Verified 41 Swift tests, the app build, helper process checks, and contract checker. The next task verifies installed Codex in interactive Otty sessions with isolated configuration.
 

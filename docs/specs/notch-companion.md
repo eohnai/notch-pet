@@ -176,6 +176,17 @@ These checks establish implementation behavior with fictional inputs.
 Task 9 must verify installed Codex in interactive Otty sessions using isolated configuration.
 The planning version check found `0.164.0`; the earlier controlled runtime evidence covers `0.163.0`.
 
+Task 9 partial evidence, 2026-10-23: Codex `0.164.0` ran interactively in two isolated Otty panes with a loopback mock provider.
+Actual helper events reached the production bridge, inbox, and store through a temporary receiver.
+Observed paths include text turns, command approval and cancellation, an accepted marker write, structured-question selection,
+concurrent same-folder sessions, freshness expiry, and an unsupported `Interrupt` event.
+Interruption left an unresolved approval notice and prevented later same-session activity from restoring known state.
+This follows the accepted contract and remains a documented usability limit.
+The user questioned further probing, so cleanup restored configuration and closed only disposable panes.
+The task remains unchecked because controlled trust, default-mode question dispatch, explicit denial,
+graceful end, controlled abrupt loss, prose questions, and interactive unavailable-receiver checks remain incomplete.
+See the [partial interactive findings](../notes/agent-event-compatibility.md#partial-interactive-codex-verification-2026-10-23).
+
 | Acceptance area | Tasks |
 |---|---|
 | Source feasibility and architecture | 1–3 |

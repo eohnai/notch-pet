@@ -8,7 +8,7 @@ The parent process had a stale `OTTY_PANE_ID`, so an inherited identifier needs 
 
 The application remains a native SwiftUI/AppKit project. These checks add no application code.
 The Python probes are temporary investigation tools outside this repository.
-All architecture proposals remain open for the scheduled decision task.
+At that checkpoint, architecture proposals remained open. Decisions 0002–0007 were accepted later on 2026-10-22.
 
 ## Evidence boundaries
 
@@ -137,7 +137,7 @@ No hook installation or removal was performed in this investigation.
 
 ## Implications for later tasks
 
-These are findings to review during the architecture task, not accepted architecture decisions.
+These were investigation findings for architecture review. The accepted decisions are recorded separately in `docs/decisions/`.
 
 - Keep pane identity separate from source session identity. Validate any inherited selector against live Otty state.
 - A verified agent-session match may help when a parent environment identifier is stale. Ambiguous matches need an unavailable navigation state.
@@ -170,6 +170,82 @@ It must include hook trust, approval handling, structured-question availability,
 No live hooks, agent settings, credentials, or captured sessions were read or changed during this implementation.
 
 ## Commands and retained local evidence
+
+### Partial interactive Codex verification, 2026-10-23
+
+Codex `0.164.0` ran its interactive CLI in two disposable Otty `1.6.2` panes in the same temporary folder.
+Each process used isolated Codex configuration and `--no-daemon`.
+A loopback mock provider supplied fixed text and tool calls without provider accounts or paid model calls.
+These checks establish the tested interactive CLI paths, not real-provider behavior or visible app presentation.
+
+The actual `NotchPetHook --agent codex` executable forwarded events to the normal socket.
+A temporary receiver linked the existing production bridge, inbox, observation mapping, and store modules.
+It saved projected fields and state snapshots outside Git. The wrapper retained hook field names and selected identities, without conversation content.
+No production source code changed.
+
+| Interactive check | Observed result |
+|---|---|
+| First text turn | `SessionStart`, `UserPromptSubmit`, and `Stop` reached the store as idle, working, and response ready. |
+| Command approval | The CLI showed its approval prompt. `PermissionRequest` reached the store as approval needed. This event omitted `tool_use_id`. |
+| Approval accepted | Selecting yes created only the temporary approved marker. `PostToolUse` and `Stop` followed. |
+| Approval cancelled | Escape interrupted the approval turn. The temporary denied marker remained absent. This did not establish the explicit denial-menu path. |
+| Structured question | With the isolated question feature enabled, `PreToolUse` opened question needed. Selecting option A was visible in the CLI. Matching `PostToolUse` and `Stop` cleared the request and reached response ready. |
+| Default question availability | The request schema advertised `request_user_input` even with the isolated feature set to false. A question call in that configuration was not exercised. |
+| Concurrent sessions | Distinct source session IDs in the same folder remained separate. One session retained an approval notice while the other showed a question. Their pane hints remained distinct and unverified for navigation. |
+| Freshness | An approval waiting longer than two minutes became unknown and retained an unconfirmed notice. An expired question request later cleared without restoring same-turn freshness. |
+| Interruption | Cancelling the approval emitted `Interrupt`, outside version 1. The helper silently omitted it. No correlated `Stop` resolved that interrupted turn's request. |
+| Subsequent activity after interruption | The store retained the old request and remained unknown through a later turn. This follows the accepted conservative rules and is a usability limit, not verified recovery. |
+| Hook trust | Initial startup displayed a hook-review dialog. Later sessions dispatched hooks. A controlled before-trust/after-trust comparison was not retained, so normal trust verification remains incomplete. No bypass flag was used. |
+| Cleanup | Only disposable panes were closed. The receiver exited normally and removed its socket. The local provider was stopped. Original panes remained present. |
+
+Across 21 helper invocations, every helper returned exit `0` with empty stdout and stderr.
+Measured subprocess durations were 7.24–484.19 ms, including launch and capture overhead.
+These measurements do not isolate the helper's internal 250 ms deadline.
+The `Interrupt` invocation is included in that count but was not delivered as a version-1 event.
+
+Otty initially refused scripted input because `ipc-allow-send-keys` was disabled.
+The user approved enabling it temporarily. The advertised `--transient` mode returned `Transient config not yet implemented`.
+The probe backed up the configuration, changed the local setting, and reloaded Otty.
+Input became available after a subsequent reload. Cleanup restored the exact original files and matching SHA-256 fingerprints.
+Codex and Claude configuration fingerprints also matched. No credentials or user transcripts were inspected.
+
+Inherited session metadata selected a different tab during the first layout attempt.
+Those first disposable panes disappeared before input, for an undetermined reason.
+Replacement panes used the uniquely labeled notch-pet tab instead.
+This reinforces the requirement to validate navigation identity against live context.
+
+The user questioned the extent of verification, and probing stopped after the main paths above.
+The task remains open. Controlled hook trust, default-mode question dispatch, explicit approval denial, graceful `SessionEnd`,
+controlled abrupt loss, prose-question behavior, and interactive unavailable-receiver behavior remain unverified.
+The planned all-in-one `verify.py` check was not completed or run.
+Do not infer complete interactive compatibility from these partial results.
+
+Temporary evidence: `/private/tmp/notch-pet-codex-interactive/`.
+It contains disposable probes, isolated state, selected hook metadata, CLI captures, and store snapshots.
+Only this summary belongs in Git. The temporary evidence may disappear.
+
+Commands used include:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build
+python3 /private/tmp/notch-pet-codex-interactive/build-receiver.py
+python3 /private/tmp/notch-pet-codex-interactive/provider.py
+/private/tmp/notch-pet-codex-interactive/receiver
+python3 /private/tmp/notch-pet-codex-interactive/control.py start
+python3 /private/tmp/notch-pet-codex-interactive/control.py summary
+python3 /private/tmp/notch-pet-codex-interactive/control.py close
+python3 /private/tmp/notch-pet-codex-interactive/otty-setting.py restore
+python3 /private/tmp/notch-pet-codex-interactive/cleanup-provider.py
+python3 scripts/check-event-contract.py
+```
+
+The Swift suite passed 41 tests. The contract checker passed 68 message cases, 37 state sequences with 122 steps,
+four memory-capacity checks, document policy, and local links.
+The first sandboxed Swift run failed on compiler-cache access. The approved retry passed.
+The temporary receiver initially needed the package's Xcode environment and macOS deployment target.
+A temporary probe property reference was corrected from `paneSelector` to `terminal?.paneSelector` before its successful build.
+
+### Earlier investigation evidence
 
 The temporary investigation directory is `/private/tmp/notch-pet-events-sx8yq6zw`.
 It is outside Git and is disposable. It contains mock-provider scripts, raw probe output, and temporary agent state.
