@@ -2,28 +2,33 @@
 
 ## Now
 
-The local event bridge is implemented, verified, and committed as `9be4368`.
-The app owns the receiver and bundles the silent hook helper. It discards validated observations until the shared store exists.
-The version-1 contract and conservative ordering decision remain accepted.
+The shared session store is implemented and verified. Its changes remain uncommitted.
+The app now retains validated observations through a bounded inbox and publishes shared session snapshots.
+The final full Swift suite passes 31 tests. The contract checker, helper checks, and app build also pass.
 Agent adapters, hook setup, and live session presentation remain unimplemented.
 
 ## Next
 
-1. Run `next-task` for the shared-session-store task in `docs/specs/notch-companion.md`.
-2. Read `docs/contracts/agent-events-v1.md`, decision 0008, and the existing fictional state cases before planning.
-3. Get approval for that task's plan. Consume `ReceivedHookEnvelope` through `EventBridgeServer.start(onEnvelope:)`.
-4. Keep the bridge callback prompt. It runs on the receive worker; receipt times use wall-clock milliseconds and monotonic nanoseconds.
-5. Keep runtime files outside Git and preserve existing Codex, Claude Code, and Otty configuration.
+1. Run `next-task` for the Codex event adapter in `docs/specs/notch-companion.md`.
+2. Read the event compatibility notes, fictional examples, version-1 contract, and decisions 0004 and 0008 before planning.
+3. Get approval for that task's plan. Keep provider compatibility separate from the existing contract-level hook mapping.
+4. Use `SessionObservationV1`, `SessionEventInbox`, and `SessionStore` for shared ordering and freshness rules.
+5. Preserve existing Codex, Claude Code, and Otty configuration. Keep runtime files outside Git.
+6. The reference-model and socket-test follow-ups below are proposed work. They have not been added to the approved task list.
 
 ## Blockers
 
-- None blocks planning the shared session store.
-- The current shell discards observations. Passing transport checks does not establish ordering, expiry, adapter behavior, or visible notifications.
-- The helper has bounded waits and a shared deadline. Process launch time is additional; future hook setup must bound execution through each agent's configuration.
-- Peer checks were exercised with a real same-user socket and a mismatched expected user ID. A process running under a second actual user was not tested.
-- The listener currently polls every 10 ms when idle. Its CPU and memory cost remains for the scheduled profiling task.
-- Full Xcode is required for tests on this Mac. The selected Command Line Tools cannot import XCTest or Swift Testing; app and helper builds still work.
+- None blocks planning the Codex adapter.
+- Stale: `scripts/check-event-contract.py` allows a previously conflicting turn ID to restore working state. The accepted contract requires an unseen turn ID. The production store enforces that rule through `recoveryRequiresAnUnseenTurnIdentity`. A reference-model correction is proposed follow-up work.
+- The existing `invalidFramesNeverReachCallback` test has a timing assumption at the frame-size boundary. One full run observed two callbacks instead of one. A temporary probe measured writes of 8192, 4096, 4096, and 1 bytes. Delaying only the final extra byte by 5 ms allowed the complete valid prefix in all ten trials. The contract rejects extra bytes only when already buffered. The final full run passed. The bridge and existing test remain unchanged, and the temporary probe was removed. A test correction is proposed follow-up work.
+- The app has no live session presentation or installed agent hooks. Fictional store checks do not establish normal interactive provider behavior.
+- Clock and wake tests use injected values. Physical sleep/wake, fullscreen, Spaces, and display changes remain later checks.
 - Without a verified heartbeat, observations become unknown after two minutes. Reused source IDs after an observed end remain unknown.
+- Inbox overflow makes nonterminal sessions unknown. The inbox retains at most 128 queued observations alongside one active batch.
+- The helper has bounded waits and a shared deadline. Process launch time is additional. Future hook setup must bound execution through each agent's configuration.
+- Peer checks use a real same-user socket and a mismatched expected user ID. A process running under a second actual user remains untested.
+- The listener polls every 10 ms when idle. The app checks clocks during receipt and through an expiry timer while observations remain fresh. CPU and memory costs remain for profiling.
+- Full Xcode is required for tests on this Mac. Command Line Tools still build the app and helper.
 - Claude live quota forwarding and output preservation remain checks for the forwarding task. Anonymous observations must remain separate.
 - Codex long-running coexistence, cross-process quota notifications, account changes, and other account modes remain unverified.
 - The event investigation found a stale inherited `OTTY_PANE_ID`. Future navigation must validate live identity.
@@ -31,34 +36,36 @@ Agent adapters, hook setup, and live session presentation remain unimplemented.
 
 ## Progress
 
-_Generated by the progress script at checkpoint; don't edit by hand._
+_Generated by the progress script at checkpoint. Do not edit by hand._
 | Spec | Status | Due | Done | Left | Blocked | Next task |
 |---|---|---|---|---|---|---|
-| notch-companion | in progress | - | 6 | 15 | 0 | Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events. |
-| **Total** | | | **6** | **15** | **0** | |
+| notch-companion | in progress | - | 7 | 14 | 0 | Add the Codex event adapter using verified hook coverage. |
+| **Total** | | | **7** | **14** | **0** | |
 
 ## Verification
 
-- Checkpoint refresh: `git status --short --untracked-files=all` and `git diff --stat` returned no output before this records update. `git log -8 --oneline` confirms the user's bridge commit `9be4368` (2026-10-23).
-- This records-only refresh did not rerun application checks. The implementation checks below ran earlier in this session against the committed code.
-- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`: exit 0; 15 Swift Testing tests in two suites pass (2026-10-23).
-- The production Swift decoder passes all 68 existing contract message cases. Socket tests cover fragmented reads, extra buffered bytes, malformed input, delivery age, stale and active sockets, replacement paths, permissions, peer checks, stalled reads, write backpressure, broken connections, exclusive ownership, and stop/restart.
-- `python3 scripts/check-event-bridge.py`: exit 0; five unavailable-app invocations, 15 fictional hook projections, the exact 262144-byte raw-input boundary, invalid input, held-open stdin, and a busy socket pass. Final output: `Bridge process checks passed` (2026-10-23).
-- The final bundled helper process times were 7–464 ms including launch; the held-open stdin check finished in 75 ms. These observations include startup and do not measure a real agent's hook-launch overhead.
-- `bash scripts/run.sh --build-only`: exit 0; both executables build with Command Line Tools and the bundled Info.plist passes validation. Products remain under the user's temporary directory.
-- `python3 /private/tmp/notch-pet-app-smoke.py`: exit 0; the development app creates its receiver, its bundled helper returns silently, and normal Quit removes the owned socket (2026-10-23). The temporary smoke script is outside Git; it is not required by the durable bridge tests.
-- `python3 scripts/check-event-contract.py`: exit 0; document policy and links, 68 messages, 37 state sequences with 122 steps, and four memory-capacity boundaries pass.
-- `bash /Users/ianhoe/.agents/skills/progress/scripts/progress.sh`: exit 0; 6 done, 15 open, 0 blocked.
-- `git diff --check`: exit 0.
-- Earlier test attempts found sandbox compiler-cache restrictions, an edit during compilation, unavailable test-framework imports, and two missing `try` expressions in test macros. The final successful command above resolves these verification issues without changing global tool selection.
-- A later rerun exposed a timing-sensitive test that assumed four delayed writes would all succeed before socket closure. A 40 ms interval reproduced the failure after the correct 100 ms receiver timeout. The test now observes closure while sending fragmented input; the final full suite passes.
-- Final review moved the input-size check before appending bytes, so an oversized frame is rejected before growing the frame buffer beyond its limit. The final suite, bundled-helper checks, and app smoke check all pass after that change.
-- Socket process checks required execution outside the sandbox because local socket binding was denied inside it.
-- The user committed the bridge as `9be4368` after implementation. Current branch: `planning/initial-scope`; no remote is configured, so the comparison default is `main`.
-- Only this checkpoint update to `docs/STATUS.md` remains uncommitted. The agent did not stage files, change branches, commit, push, or open a pull request.
-- No agent configuration, credentials, captured sessions, or provider accounts were read or changed. All inputs were fictional; runtime files stay outside the repository.
+- All results below are from 2026-10-23.
+- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`: final exit 0 with 31 tests across three suites, including 16 store tests.
+- Production Swift checks cover all 68 existing contract message cases and all 37 state sequences with 122 steps. Store tests also cover four memory limits, retained unconfirmed requests, byte-distinct Unicode identities, concurrent producers, inbox overflow, expiry before publication, clock changes, unseen-turn recovery, and a real socket callback reaching the store.
+- `python3 scripts/check-event-contract.py`: exit 0. Document policy and links, 68 messages, 37 state sequences with 122 steps, and four memory-capacity boundaries pass. Its unseen-turn recovery gap is recorded above.
+- `python3 scripts/check-event-bridge.py`: final exit 0 with `Bridge process checks passed`. Five unavailable-app invocations, 15 fictional hook projections, the exact 262144-byte raw-input boundary, invalid input, held-open stdin, and a busy socket pass. Helper process times were 7–187 ms including launch. The held-open stdin case finished in 73 ms.
+- `bash scripts/run.sh --build-only`: exit 0. Both bundled executables build with Command Line Tools, and the bundled Info.plist passes validation. Products remain under the user's temporary directory.
+- `bash /Users/ianhoe/.agents/skills/progress/scripts/progress.sh`: exit 0 with 7 done, 14 open, and 0 blocked.
+- `git diff --check`: final exit 0 after the checkpoint update.
+- The initial duplicate-expiry test failed because `SessionState` did not yet exist. It passes after implementation.
+- The first fixture-loader attempt failed because Foundation rejected deliberately invalid Unicode in the fixture's message cases. The harness now extracts only the valid state sequences with Python, as the existing parser tests do.
+- Focused regressions reproduced unsafe recovery with a previously conflicting turn and expiry against an old monotonic clock range. Both pass after store corrections. The full suite passed after those changes.
+- An earlier full-suite run failed the existing maximum-frame test. The temporary diagnostic and the remaining test limitation are described above. The final full-suite run passed without changing bridge production code or its existing tests.
+- Swift tests required compiler-cache access outside the sandbox. Helper socket checks first failed with `PermissionError: [Errno 1] Operation not permitted`, then passed outside the sandbox.
+- Physical sleep/wake and app UI smoke checks were not run this session. The real bridge-to-store test covers callback delivery through the production inbox and store.
+- Commit `948ecf0` already contains the prior checkpoint refresh. The working tree was clean at session start.
+- Current branch: `planning/initial-scope`. No remote is configured, so the comparison default is `main`.
+- The implementation, tests, architecture, specification, and checkpoint remain uncommitted. The agent did not stage files, change branches, commit, push, or open a pull request.
+- No agent configuration, credentials, captured sessions, or provider accounts were read or changed. All test inputs were fictional.
 
 ## Log
+
+- 2026-10-23: Implemented the approved shared session store, bounded bridge handoff, and lifecycle expiry handling. Verified 31 Swift tests, the contract checker, helper process checks, and the app build. Recorded two proposed reference/test follow-ups. The Codex adapter is next.
 
 - 2026-10-23: Refreshed the checkpoint after the user's bridge commit `9be4368`. Confirmed a clean working tree before this records update, regenerated progress, and retained the verified shared-session-store handoff.
 

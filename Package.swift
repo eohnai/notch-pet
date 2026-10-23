@@ -11,8 +11,10 @@ let package = Package(
     ],
     targets: [
         .target(name: "EventBridge"),
-        .executableTarget(name: "NotchPet", dependencies: ["EventBridge"]),
+        .target(name: "SessionState", dependencies: ["EventBridge"]),
+        .executableTarget(name: "NotchPet", dependencies: ["EventBridge", "SessionState"]),
         .executableTarget(name: "NotchPetHook", dependencies: ["EventBridge"]),
-        .testTarget(name: "EventBridgeTests", dependencies: ["EventBridge"])
+        .testTarget(name: "EventBridgeTests", dependencies: ["EventBridge"]),
+        .testTarget(name: "SessionStateTests", dependencies: ["SessionState", "EventBridge"])
     ]
 )

@@ -71,7 +71,7 @@ Each task should fit one work session; split it if the investigation shows other
 - [x] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
 - [x] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
 - [x] Add the local event bridge with checks for malformed input and an unavailable app.
-- [ ] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
+- [x] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
 - [ ] Add the Codex event adapter using verified hook coverage.
 - [ ] Add the Claude Code event adapter using verified hook coverage.
 - [ ] Add reversible hook setup that preserves existing Otty and agent configuration.
@@ -109,14 +109,14 @@ Task 5 evidence: [version-1 event contract](../contracts/agent-events-v1.md),
 `python3 scripts/check-event-contract.py` passes 68 message cases, 37 state sequences with 122 steps, and four memory-capacity checks.
 The checker also verifies the document policy values and local links.
 The checker remains a reference model. Task 6 supplies real transport and deadline checks.
-Adapters and shared-store behavior remain unimplemented.
+At that checkpoint, adapters and shared-store behavior remained unimplemented.
 
 Task 6 implementation: the shared `Sources/EventBridge/` target, `Sources/NotchPetHook/main.swift`,
 app lifecycle ownership, and the bundled helper in `scripts/run.sh`.
 The receiver validates one bounded envelope per connection and checks peer user IDs, endpoint ownership,
 permissions, delivery age, framing, and deadlines.
 The helper projects allowed fields, has one delivery attempt, and returns silently on handled failures.
-It neither installs hooks nor retains messages. The current app discards validated observations.
+It neither installs hooks nor retains messages. At that checkpoint, the app discarded validated observations.
 
 `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`
 passes 15 tests, including all 68 existing contract message cases through the production Swift decoder.
@@ -130,7 +130,32 @@ The shared-store task can consume `EventBridgeServer.start(onEnvelope:)` and cal
 The callback runs on the bridge worker and must return promptly.
 `ReceivedHookEnvelope` contains `envelope`, `receiptWallMs`, and `receiptMonotonicNs`.
 `HookEnvelopeV1.decode(frame:)` and `EventBridgeClient.send(_:)` are the common wire interfaces.
-Adapters, ordering, freshness expiry, and live session presentation remain later tasks.
+At that checkpoint, adapters, ordering, freshness expiry, and live session presentation remained later tasks.
+
+Task 7 implementation: `Sources/SessionState/` contains the contract mapping, observable shared store, and bounded bridge inbox.
+`NotchPetApp` owns the store and connects the bridge callback through the inbox.
+The store enforces ordering, request identity, retained unconfirmed notices, terminal restrictions, freshness, and memory limits.
+Snapshots keep source session identity separate from project paths and unverified pane hints.
+The app invalidates observations on sleep, wake, and clock notifications.
+Its expiry timer runs only while fresh observations exist.
+Provider compatibility, hook setup, terminal navigation, and live session presentation remain later tasks.
+
+`Tests/SessionStateTests/SessionStoreTests.swift` checks all 37 existing state sequences with 122 steps.
+It also checks four memory limits, concurrent delivery, inbox overflow, delayed publication, byte-distinct Unicode identities,
+clock changes, recovery with unseen turns, and a real bridge callback reaching the store.
+The Python reference model still permits recovery with a previously conflicting turn ID.
+The production store follows the accepted contract's stricter unseen-turn rule, covered by a separate Swift regression.
+The reference-model correction is a proposed follow-up, outside this implementation task.
+
+`env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`
+passes 31 tests across three suites, including 16 shared-store tests.
+The contract checker, helper process checks, and development app bundle build also pass.
+An earlier full run exposed a timing assumption in the existing `invalidFramesNeverReachCallback` test.
+Its maximum-size valid frame and final extra byte require separate writes on this Mac.
+A temporary diagnostic confirmed acceptance when that extra byte arrives after the receiver checks buffered bytes.
+This matches the contract's buffered-extra-byte rule.
+The final full run passed. The bridge and existing test remain unchanged, with the diagnostic removed.
+Physical sleep/wake and live provider behavior remain later verification work.
 
 | Acceptance area | Tasks |
 |---|---|

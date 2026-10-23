@@ -105,8 +105,38 @@ The bridge is implemented in the shared `EventBridge` Swift target.
 `NotchPetHook` projects raw hook input and makes one bounded delivery attempt.
 `BridgeAppDelegate` starts the receiver and stops it during normal app termination.
 The receiver hands validated envelopes and receipt times to a callback on its worker queue.
-The current shell discards that callback's observations. Adapters and the store remain future implementation tasks.
-The shared store must enqueue callback work promptly and apply ordering and expiry before publishing session state.
+The app now owns one observable `SessionStore` in the `SessionState` target.
+`SessionObservationV1.init(received:)` maps the seven accepted hooks into shared event meanings.
+This mapping implements the version-1 contract. It does not verify provider compatibility or install agent hooks.
+The separate Codex and Claude adapter tasks still own provider coverage and live integration checks.
+
+`SessionEventInbox.receive(_:)` enqueues observations without waiting for the main actor.
+The inbox retains at most 128 queued observations and schedules one drain at a time.
+One active batch can coexist with the next queued batch.
+Each batch preserves enqueue order. Receipt order does not prove source order.
+An overflow drops excess observations and makes all nonterminal sessions unknown after applying the retained batch.
+This avoids retaining an unbounded UI queue or claiming complete evidence after a local drop.
+
+The main actor serializes store changes and publishes immutable `SessionSnapshot` values.
+The store checks delivery age, duplicate identity, ordering, requests, freshness, and the accepted memory limits.
+It retains SHA-256 digests for event comparisons instead of complete old envelopes.
+Source identities compare UTF-8 bytes so distinct Unicode forms cannot merge sessions, turns, or requests.
+Snapshots retain project paths and unverified pane hints only from compatible observations.
+Unknown sessions expose pending requests as unconfirmed notices.
+Recovery requires a different, previously unseen turn identity with no unresolved requests.
+An observed end retains its terminal restriction for the app run.
+
+`SessionStore.apply(_:)` applies one normalized observation.
+`applyBatch(_:observationsLost:wallMs:monotonicNs:)` expires delayed observations before publishing the batch.
+`advance(monotonicNs:)` checks expiry. `checkClocks(wallMs:monotonicNs:)` also checks clock continuity.
+Backward clock samples and wall/monotonic elapsed-time differences above two seconds invalidate nonterminal observations.
+New evidence after a monotonic reset uses deadlines in the new clock range.
+The app checks clocks during receipt and schedules a timer while fresh observations exist.
+The timer checks after one second or at the nearest expiry, whichever comes first.
+An empty or entirely unknown store has no expiry timer.
+Sleep, wake, and system clock notifications invalidate live observations and exclude earlier queued receipts.
+`invalidateClocks()` retains unresolved notices and terminal restrictions.
+These injected lifecycle checks do not establish physical sleep/wake or window recovery behavior on the target Mac.
 
 The app holds a user-owned `listener.lock` file while it owns the socket.
 It never removes the lock file, which prevents separate processes from locking different replacement files.
