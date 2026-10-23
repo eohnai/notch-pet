@@ -147,6 +147,28 @@ These are findings to review during the architecture task, not accepted architec
 - Test normal interactive CLI sessions in Otty during adapter verification and final acceptance.
 - Add trust review to future Codex setup verification. Listing a hook alone does not establish that it runs.
 
+## Codex adapter implementation, 2026-10-23
+
+The user approved separate implementation and interactive verification tasks.
+`CodexEventAdapter` now projects the seven hook shapes recorded above into the existing version-1 envelope.
+The helper routes `--agent codex` through this adapter with its existing bounded parser and shared deadline.
+Source turn and tool-call IDs remain optional. The adapter never substitutes `prompt_id`, a pane ID, or a generated source identity.
+Generated event UUIDs identify helper invocations only.
+The shared contract mapping and store still own question classification, ordering, request matching, and freshness.
+
+Fictional checks cover all seven reconstructed Codex payloads and ten unsupported hook names.
+They also cover omitted content, untrusted source metadata, byte bounds, malformed input, missing identities, and parser deadlines.
+Store checks cover approval, structured questions, matching resolution, response-ready prose questions, graceful end, and uncorrelated requests.
+A real local socket check sends a projected fictional Codex submit through the inbox to the shared store.
+The existing helper process checks exercise the adapter route and unavailable-app behavior.
+
+`codex --version` reported `codex-cli 0.164.0` during planning on 2026-10-23.
+The earlier runtime investigation used `0.163.0`. These fictional checks do not extend that runtime evidence to `0.164.0`.
+The next task must verify installed Codex in interactive Otty sessions using isolated configuration.
+It must include hook trust, approval handling, structured-question availability, concurrent sessions, and lifecycle limits.
+`Interrupt` remains outside version 1. Abrupt loss must not imply an observed graceful end.
+No live hooks, agent settings, credentials, or captured sessions were read or changed during this implementation.
+
 ## Commands and retained local evidence
 
 The temporary investigation directory is `/private/tmp/notch-pet-events-sx8yq6zw`.

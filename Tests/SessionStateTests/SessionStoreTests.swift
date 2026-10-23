@@ -304,6 +304,78 @@ struct SessionStoreTests {
 
     private func expectation() -> DeliverySignal { DeliverySignal() }
 
+    @Test func codexAdapterPreservesSharedSessionMeanings() throws {
+        // Seed each store just before the adapter's real capture time. No wall-clock sleeps are needed.
+        let cases: [(String, String?, SessionStatus)] = [
+            ("SessionStart", nil, .idle), ("UserPromptSubmit", nil, .working),
+            ("PreToolUse", "Bash", .working), ("PreToolUse", "request_user_input", .questionNeeded),
+            ("PermissionRequest", "Bash", .approvalNeeded),
+            ("PermissionRequest", "request_user_input", .questionNeeded),
+            ("PostToolUse", "request_user_input", .working),
+            ("Stop", nil, .responseReady), ("SessionEnd", nil, .ended)
+        ]
+        for (hook, tool, status) in cases {
+            var source: [String: Any] = ["session_id": "fictional", "hook_event_name": hook,
+                                         "turn_id": "a", "cwd": "/example"]
+            if let tool { source["tool_name"] = tool; source["tool_use_id"] = "call" }
+            // Prose questions are deliberately absent from the wire projection.
+            if hook == "Stop" { source["last_assistant_message"] = "Which option should I use?" }
+            let input = try JSONSerialization.data(withJSONObject: source)
+            let envelope = try CodexEventAdapter.project(rawHook: input, paneSelector: "unverified-pane")
+            let now = envelope.observedAtMs
+            let store = SessionStore()
+            if hook != "SessionStart" && hook != "UserPromptSubmit" {
+                #expect(store.apply(try observation(1, observedAtMs: now - 2,
+                                                   monotonicNs: 1_000_000_000)) == .applied)
+                if hook == "PostToolUse" || hook == "Stop" {
+                    #expect(store.apply(try observation(2, hook: "PreToolUse", toolUseID: "call",
+                        toolName: "request_user_input", observedAtMs: now - 1,
+                        monotonicNs: 1_001_000_000)) == .applied)
+                }
+            }
+            let value = SessionObservationV1(envelope: envelope, receiptWallMs: now,
+                                             receiptMonotonicNs: 1_002_000_000)
+            #expect(store.apply(value) == (hook == "SessionEnd" ? .ended : .applied))
+            let snapshot = try #require(store.sessions.first)
+            #expect(snapshot.status == status, "\(hook), \(tool ?? "no tool")")
+            #expect(snapshot.key == SessionKey(agent: "codex", sessionID: "fictional"))
+            #expect(envelope.cwd == "/example" && envelope.terminal?.paneSelector == "unverified-pane")
+            if hook == "SessionEnd" {
+                // Terminal handling clears requests without refreshing captured metadata.
+                #expect(snapshot.projectPath == nil && snapshot.paneSelector == nil)
+            } else {
+                #expect(snapshot.projectPath == "/example" && snapshot.paneSelector == "unverified-pane")
+            }
+            if status == .questionNeeded || status == .approvalNeeded {
+                #expect(snapshot.pendingRequests.count == 1)
+                #expect(snapshot.pendingRequests.first?.toolUseID == "call")
+                #expect(snapshot.pendingRequests.first?.isConfirmed == true)
+            } else {
+                #expect(snapshot.pendingRequests.isEmpty)
+            }
+            #expect(store.apply(value) == .duplicate)
+        }
+    }
+
+    @Test func codexAdapterDoesNotInventMissingTurnOrRequestIdentity() throws {
+        let store = SessionStore()
+        let envelope = try CodexEventAdapter.project(rawHook: Data("""
+        {"session_id":"fictional","hook_event_name":"PermissionRequest","tool_name":"request_user_input",
+         "prompt_id":"not-a-codex-turn","id":"not-a-tool-call"}
+        """.utf8))
+        let value = SessionObservationV1(envelope: envelope, receiptWallMs: envelope.observedAtMs,
+                                         receiptMonotonicNs: 1_000_000_000)
+        #expect(envelope.turnID == nil && envelope.toolUseID == nil)
+        #expect(store.apply(value) == .conflict)
+        let snapshot = try #require(store.sessions.first)
+        #expect(snapshot.status == .unknown && snapshot.currentTurnID == nil)
+        #expect(snapshot.reason == .uncorrelatedActivity)
+        #expect(snapshot.pendingRequests.count == 1)
+        #expect(snapshot.pendingRequests.first?.turnID == nil)
+        #expect(snapshot.pendingRequests.first?.toolUseID == nil)
+        #expect(snapshot.pendingRequests.first?.isConfirmed == false)
+    }
+
     @Test func actualBridgeCallbackReachesSharedStore() async throws {
         let directory = "/private/tmp/notch-pet-store-test-\(UUID().uuidString)"
         defer { try? FileManager.default.removeItem(atPath: directory) }
@@ -319,9 +391,9 @@ struct SessionStoreTests {
         }
         try server.start { inbox.receive($0) }
         defer { server.stop() }
-        let envelope = try HookEnvelopeV1.project(rawHook: Data("""
+        let envelope = try CodexEventAdapter.project(rawHook: Data("""
         {"session_id":"fictional-bridge","hook_event_name":"UserPromptSubmit","turn_id":"a","cwd":"/example"}
-        """.utf8), agent: "codex")
+        """.utf8))
         try EventBridgeClient(endpoint: endpoint).send(envelope)
         #expect(await delivered.wait())
         #expect(store.sessions.first?.status == .working)

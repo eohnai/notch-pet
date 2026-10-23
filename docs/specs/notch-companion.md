@@ -64,6 +64,7 @@ Show reported usage limits and reset times so the user can monitor available all
 The user approved this scope and task list on 2026-10-22.
 The user approved architecture recommendations 0002–0007 and proceeding directly to the app shell on 2026-10-22.
 Each task should fit one work session; split it if the investigation shows otherwise.
+The user approved splitting Codex implementation from interactive Otty verification on 2026-10-23.
 
 - [x] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
 - [x] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
@@ -72,7 +73,8 @@ Each task should fit one work session; split it if the investigation shows other
 - [x] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
 - [x] Add the local event bridge with checks for malformed input and an unavailable app.
 - [x] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
-- [ ] Add the Codex event adapter using verified hook coverage.
+- [x] Implement the Codex event adapter and verify it with fictional inputs.
+- [ ] Verify installed Codex in interactive Otty sessions using isolated configuration.
 - [ ] Add the Claude Code event adapter using verified hook coverage.
 - [ ] Add reversible hook setup that preserves existing Otty and agent configuration.
 - [ ] Add the Otty navigation adapter with checks for correct-pane and closed-pane behavior.
@@ -157,15 +159,32 @@ This matches the contract's buffered-extra-byte rule.
 The final full run passed. The bridge and existing test remain unchanged, with the diagnostic removed.
 Physical sleep/wake and live provider behavior remain later verification work.
 
+Task 8 implementation: `Sources/EventBridge/CodexEventAdapter.swift` owns Codex raw payload projection.
+`HookEnvelopeV1.project` routes Codex input through the adapter while retaining common parser bounds and helper deadlines.
+The adapter accepts only the seven investigated version-1 hook shapes and preserves supplied source identities.
+It does not copy conversation content, read transcripts, infer missing identities, or install hooks.
+`SessionObservationV1`, `SessionEventInbox`, and `SessionStore` retain shared meanings, ordering, and freshness rules.
+The existing Claude projection remains in place for its separate adapter task.
+
+`Tests/EventBridgeTests/CodexEventAdapterTests.swift` checks all seven fictional Codex examples,
+ten unsupported hook names, metadata and content omission, missing identities, input bounds, and parser deadlines.
+`Tests/SessionStateTests/SessionStoreTests.swift` checks projected Codex session meanings and uncorrelated requests.
+Its real socket check now projects through `CodexEventAdapter` before delivery to the inbox and store.
+The full Swift suite passes 41 tests across four suites, including eight adapter tests and 18 store tests.
+The app bundle build, helper process checks, and contract checker also pass.
+These checks establish implementation behavior with fictional inputs.
+Task 9 must verify installed Codex in interactive Otty sessions using isolated configuration.
+The planning version check found `0.164.0`; the earlier controlled runtime evidence covers `0.163.0`.
+
 | Acceptance area | Tasks |
 |---|---|
 | Source feasibility and architecture | 1–3 |
 | Local launch and event delivery | 4–6 |
-| Honest session state and both agents | 7–9 |
-| Reversible setup and terminal behavior | 10–11 |
-| Session alerts and notch presentation | 12 |
-| Pet interaction, imports, and preferences | 13–15 |
-| Both providers' usage limits | 2, 16–18 |
-| Desktop recovery and resource use | 19–20 |
-| End-to-end acceptance and handoff | 21 |
+| Honest session state and both agents | 7–10 |
+| Reversible setup and terminal behavior | 11–12 |
+| Session alerts and notch presentation | 13 |
+| Pet interaction, imports, and preferences | 14–16 |
+| Both providers' usage limits | 2, 17–19 |
+| Desktop recovery and resource use | 20–21 |
+| End-to-end acceptance and handoff | 22 |
 

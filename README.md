@@ -43,7 +43,8 @@ The app listens at `/private/tmp/notch-pet-<uid>/events-v1.sock` while it runs.
 The directory has mode `0700`. The socket has mode `0600`.
 Both endpoints check the connected user's numeric ID.
 The receiver validates [version-1 envelopes](docs/contracts/agent-events-v1.md) before calling its consumer.
-The current shell discards validated observations. Session state and agent setup are later tasks.
+The app retains validated observations in a shared session store with bounded ordering and freshness rules.
+Live session presentation and agent setup are later tasks.
 
 The bundle includes `Contents/MacOS/NotchPetHook`.
 Run it with `--agent codex` or `--agent claude`, with one raw hook JSON object on stdin.
@@ -63,6 +64,23 @@ It recovers an owned stale socket only after a refused connection and an unchang
 It leaves active listeners, symlinks, and unrelated files intact.
 Normal shutdown removes only its own socket. The lock file and directory remain for later launches.
 These checks separate users and coordinate app instances. They do not authenticate an agent running as the same user.
+
+## Codex event adapter
+
+`CodexEventAdapter.project(rawHook:paneSelector:)` selects Codex fields for the existing version-1 envelope.
+The helper uses this adapter when invoked with `--agent codex`.
+It accepts `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, `Stop`, and `SessionEnd`.
+It preserves source session, turn, and tool-call identities when supplied. It does not invent missing identities.
+The shared store classifies `request_user_input` as a question and other permission requests as approval requests.
+A stop means response ready, including when assistant prose contains a question. It does not prove task success.
+
+The adapter uses the existing bounded parser, field validation, and helper deadline.
+An inherited pane selector remains an unverified hint until the terminal adapter validates it.
+The fictional checks cover projection, session meanings, and actual socket delivery through the bounded inbox.
+They do not establish installed Codex compatibility in interactive Otty sessions.
+The earlier controlled hook investigation covered Codex `0.163.0`. The CLI now reports `0.164.0`.
+Interactive checks with isolated configuration are the next task. No hooks are installed by this implementation.
+See the [compatibility record](docs/notes/agent-event-compatibility.md) for evidence boundaries and known limits.
 
 ## Verify the bridge
 

@@ -4,7 +4,7 @@ public enum BridgeError: Error {
     case invalidMessage, timeout, unavailable, unsafeEndpoint
 }
 
-/// The wire contract only. Agent adapters interpret these fields in a later task.
+/// The wire contract. Provider projection and shared session meanings are separate concerns.
 public struct HookEnvelopeV1: Encodable, Sendable {
     public let version: Int
     public let eventID: String
@@ -113,18 +113,35 @@ public struct HookEnvelopeV1: Encodable, Sendable {
     }
 
     static func project(rawHook: Data, agent: String, paneSelector: String?, deadline: UInt64?) throws -> Self {
-        guard rawHook.count <= rawHookLimit else { throw BridgeError.invalidMessage }
+        if agent == "codex" {
+            return try CodexEventAdapter.project(rawHook: rawHook, paneSelector: paneSelector, deadline: deadline)
+        }
+        guard agent == "claude" else { throw BridgeError.invalidMessage }
+        // Preserve the existing Claude projection until its separate adapter task.
         let observed = wallMilliseconds()
-        var parser = StrictJSON(data: rawHook, maxDepth: 64, deadline: deadline)
-        guard case .object(let source) = try parser.parse() else { throw BridgeError.invalidMessage }
-        var fields: [String: JSONValue] = [
-            "version": .number("1"), "event_id": .string(UUID().uuidString.lowercased()),
-            "agent": .string(agent), "observed_at_ms": .number(String(observed))
-        ]
+        let source = try rawFields(rawHook, deadline: deadline)
+        var fields: [String: JSONValue] = [:]
         for name in ["session_id", "hook_event_name", "tool_use_id", "tool_name", "cwd"] {
             fields[name] = source[name]
         }
-        fields["turn_id"] = source[agent == "claude" ? "prompt_id" : "turn_id"]
+        fields["turn_id"] = source["prompt_id"]
+        return try projected(fields, agent: agent, observedAtMs: observed, paneSelector: paneSelector)
+    }
+
+    static func rawFields(_ rawHook: Data, deadline: UInt64?) throws -> [String: JSONValue] {
+        guard rawHook.count <= rawHookLimit else { throw BridgeError.invalidMessage }
+        var parser = StrictJSON(data: rawHook, maxDepth: 64, deadline: deadline)
+        guard case .object(let source) = try parser.parse() else { throw BridgeError.invalidMessage }
+        return source
+    }
+
+    static func projected(_ sourceFields: [String: JSONValue], agent: String, observedAtMs: Int64,
+                          paneSelector: String?) throws -> Self {
+        var fields = sourceFields
+        fields["version"] = .number("1")
+        fields["event_id"] = .string(UUID().uuidString.lowercased())
+        fields["agent"] = .string(agent)
+        fields["observed_at_ms"] = .number(String(observedAtMs))
         if let paneSelector {
             fields["terminal"] = .object(["kind": .string("otty"), "pane_selector": .string(paneSelector)])
         }

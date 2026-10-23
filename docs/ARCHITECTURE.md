@@ -108,7 +108,11 @@ The receiver hands validated envelopes and receipt times to a callback on its wo
 The app now owns one observable `SessionStore` in the `SessionState` target.
 `SessionObservationV1.init(received:)` maps the seven accepted hooks into shared event meanings.
 This mapping implements the version-1 contract. It does not verify provider compatibility or install agent hooks.
-The separate Codex and Claude adapter tasks still own provider coverage and live integration checks.
+`CodexEventAdapter` owns Codex raw field selection and its explicit seven-hook coverage boundary.
+`HookEnvelopeV1.project` routes Codex payloads through that adapter and preserves the helper's parser deadline.
+The wire validator still enforces common field bounds. The store still owns ordering and freshness.
+The adapter uses the investigation's payload shapes without inferring missing identities or reading transcripts.
+Its checks use fictional inputs. Interactive Codex verification and the Claude adapter remain separate tasks.
 
 `SessionEventInbox.receive(_:)` enqueues observations without waiting for the main actor.
 The inbox retains at most 128 queued observations and schedules one drain at a time.
