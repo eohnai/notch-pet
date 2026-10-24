@@ -102,10 +102,11 @@ def main() -> None:
         assert not os.path.lexists(ENDPOINT), "quit the app first; existing socket left untouched"
 
         minimal = b'{"session_id":"fictional","hook_event_name":"SessionStart"}'
-        for _ in range(5):
-            invoke(helper, minimal)
+        for agent in ("codex", "claude"):
+            for _ in range(5):
+                invoke(helper, minimal, agent)
         assert not os.path.lexists(ENDPOINT)
-        print("PASS unavailable app: five silent zero-exit invocations; no spool or socket created")
+        print("PASS unavailable app: five silent zero-exit invocations per agent; no spool or socket created")
 
         examples = json.loads((ROOT / "docs/notes/agent-event-examples.json").read_text())["examples"]
         identities = set()
@@ -134,12 +135,14 @@ def main() -> None:
             listener.listen(8)
             listener.settimeout(0.15)
             try:
-                for raw in [b"{}", b"[", b"\xff", b" " * 262145,
-                            b'{"session_id":"a","session_id":"b","hook_event_name":"SessionStart"}',
-                            b'{"session_id":"a","hook_event_name":"Interrupt"}']:
-                    invoke(helper, raw)
+                for agent in ("codex", "claude"):
+                    for raw in [b"{}", b"[", b"\xff", b" " * 262145,
+                                b'{"session_id":"a","session_id":"b","hook_event_name":"SessionStart"}']:
+                        invoke(helper, raw, agent)
+                    for hook in ("Interrupt", "StopFailure", "Notification", "Elicitation", "ElicitationResult"):
+                        invoke(helper, json.dumps({"session_id": "a", "hook_event_name": hook}).encode(), agent)
+                    invoke(helper, minimal, agent, pane="invalid\npane")
                 invoke(helper, minimal, "unsupported")
-                invoke(helper, minimal, pane="invalid\npane")
                 try:
                     listener.accept()
                     raise AssertionError("invalid input reached listener")
@@ -150,16 +153,17 @@ def main() -> None:
         print("PASS malformed, oversized, unsupported, and invalid-pane input dropped before connection")
 
         environment = {"PATH": os.environ.get("PATH", "/usr/bin:/bin")}
-        process = subprocess.Popen([str(helper), "--agent", "codex"], stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment)
-        started = time.monotonic()
-        # Keep the input pipe open. The helper must time out instead of waiting for EOF.
-        process.wait(timeout=0.75)
-        elapsed = time.monotonic() - started
-        process.stdin.close()
-        assert process.returncode == 0 and process.stdout.read() == process.stderr.read() == b""
-        assert elapsed < 0.75
-        print(f"PASS open stdin dropped within {elapsed * 1000:.0f} ms including launch")
+        for agent in ("codex", "claude"):
+            process = subprocess.Popen([str(helper), "--agent", agent], stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment)
+            started = time.monotonic()
+            # Keep the input pipe open. The helper must time out instead of waiting for EOF.
+            process.wait(timeout=0.75)
+            elapsed = time.monotonic() - started
+            process.stdin.close()
+            assert process.returncode == 0 and process.stdout.read() == process.stderr.read() == b""
+            assert elapsed < 0.75
+            print(f"PASS {agent} open stdin dropped within {elapsed * 1000:.0f} ms including launch")
 
         with socket.socket(socket.AF_UNIX) as listener:
             listener.bind(str(ENDPOINT))
@@ -177,7 +181,8 @@ def main() -> None:
                         break
                 else:
                     raise AssertionError("could not saturate the test socket")
-                invoke(helper, minimal)
+                for agent in ("codex", "claude"):
+                    invoke(helper, minimal, agent)
             finally:
                 for peer in fillers:
                     peer.close()

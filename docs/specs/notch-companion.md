@@ -47,6 +47,7 @@ Show reported usage limits and reset times so the user can monitor available all
 - [0006: Import asset-only pet packs](../decisions/0006-import-asset-only-pet-packs.md) — accepted.
 - [0007: Read usage through supported interfaces](../decisions/0007-read-supported-usage-data.md) — accepted.
 - [0008: Use conservative event ordering](../decisions/0008-define-event-ordering.md) — accepted.
+- [0009: Defer remaining Codex interactive checks](../decisions/0009-defer-remaining-codex-interactive-checks.md) — accepted.
 
 ## My calls
 
@@ -65,6 +66,8 @@ The user approved this scope and task list on 2026-10-22.
 The user approved architecture recommendations 0002–0007 and proceeding directly to the app shell on 2026-10-22.
 Each task should fit one work session; split it if the investigation shows otherwise.
 The user approved splitting Codex implementation from interactive Otty verification on 2026-10-23.
+The user approved moving the unchecked Codex interactive task immediately before final workflow verification on 2026-10-24.
+Task numbers below follow this revised order. Earlier checkpoints use the original order.
 
 - [x] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
 - [x] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
@@ -74,8 +77,7 @@ The user approved splitting Codex implementation from interactive Otty verificat
 - [x] Add the local event bridge with checks for malformed input and an unavailable app.
 - [x] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
 - [x] Implement the Codex event adapter and verify it with fictional inputs.
-- [ ] Verify installed Codex in interactive Otty sessions using isolated configuration.
-- [ ] Add the Claude Code event adapter using verified hook coverage.
+- [ ] Add the Claude Code event adapter using verified hook coverage. (blocked: helper process verification fails at the maximum raw-input boundary)
 - [ ] Add reversible hook setup that preserves existing Otty and agent configuration.
 - [ ] Add the Otty navigation adapter with checks for correct-pane and closed-pane behavior.
 - [ ] Add the notch view with session selection and unresolved-input priority.
@@ -87,6 +89,7 @@ The user approved splitting Codex implementation from interactive Otty verificat
 - [ ] Add the limits view with distinct windows, reset times, account grouping, and stale/unavailable states.
 - [ ] Add window recovery for sleep, wake, fullscreen, Spaces, and display changes.
 - [ ] Profile idle and animated operation on the M2 Air; address measured issues and Reduce Motion behavior.
+- [ ] Verify installed Codex in interactive Otty sessions using isolated configuration.
 - [ ] Verify the first-use workflow and document local packaging, supported versions, setup, removal, and known limits.
 
 ## Coverage check
@@ -164,19 +167,42 @@ Task 8 implementation: `Sources/EventBridge/CodexEventAdapter.swift` owns Codex 
 The adapter accepts only the seven investigated version-1 hook shapes and preserves supplied source identities.
 It does not copy conversation content, read transcripts, infer missing identities, or install hooks.
 `SessionObservationV1`, `SessionEventInbox`, and `SessionStore` retain shared meanings, ordering, and freshness rules.
-The existing Claude projection remains in place for its separate adapter task.
+At that checkpoint, the existing Claude projection remained in place for its separate adapter task.
 
 `Tests/EventBridgeTests/CodexEventAdapterTests.swift` checks all seven fictional Codex examples,
 ten unsupported hook names, metadata and content omission, missing identities, input bounds, and parser deadlines.
 `Tests/SessionStateTests/SessionStoreTests.swift` checks projected Codex session meanings and uncorrelated requests.
 Its real socket check now projects through `CodexEventAdapter` before delivery to the inbox and store.
-The full Swift suite passes 41 tests across four suites, including eight adapter tests and 18 store tests.
-The app bundle build, helper process checks, and contract checker also pass.
+At that checkpoint, the full Swift suite passed 41 tests across four suites, including eight adapter tests and 18 store tests.
+The app bundle build, helper process checks, and contract checker also passed at that checkpoint.
 These checks establish implementation behavior with fictional inputs.
-Task 9 must verify installed Codex in interactive Otty sessions using isolated configuration.
+Task 21 must verify installed Codex in interactive Otty sessions using isolated configuration.
 The planning version check found `0.164.0`; the earlier controlled runtime evidence covers `0.163.0`.
 
-Task 9 partial evidence, 2026-10-23: Codex `0.164.0` ran interactively in two isolated Otty panes with a loopback mock provider.
+Task 9 implementation, 2026-10-24: `Sources/EventBridge/ClaudeEventAdapter.swift` owns Claude raw payload projection.
+`HookEnvelopeV1.project` routes Claude input through this adapter with the existing parser bounds and helper deadline.
+The adapter accepts the seven investigated hook shapes and maps `prompt_id` to the common `turn_id`.
+Missing source identities remain missing. The shared store still owns question classification, ordering, and freshness.
+The adapter omits conversation content and does not install hooks or read transcripts.
+
+`Tests/EventBridgeTests/ClaudeEventAdapterTests.swift` checks all eight fictional Claude examples,
+ten unsupported hook names, field omission, missing identities, invalid input, byte bounds, and parser deadlines.
+The shared-store tests now cover both providers' approval, structured-question, resolution, response-ready,
+end, and uncorrelated-request behavior. Real socket checks deliver both providers through the inbox to the store.
+The full Swift suite passed 48 tests across five suites. Both the app and helper built with Command Line Tools and Xcode.
+The contract checker passed its existing cases. No live Claude or Otty verification was performed this session.
+
+The task remains unchecked because `python3 scripts/check-event-bridge.py` failed its existing 262144-byte raw-input boundary check.
+All 15 fictional payloads passed through the actual helper before that failure, including eight Claude examples.
+The check failed twice with the Command Line Tools build and once with the Xcode build.
+A temporary diagnostic measured about 3 ms to read that input and about 315 ms total after projection with Command Line Tools.
+The existing parser consumed the 250 ms helper budget before delivery. This diagnostic did not measure the Xcode parser separately.
+The process check also timed out launching the Xcode helper during a separate comparison attempt.
+No parser or deadline change was made. The later invalid-input, open-stdin, and busy-socket process assertions were not reached.
+The user-invoked next-task workflow requires stopping after the same failure three times.
+See the [implementation findings](../notes/agent-event-compatibility.md#claude-adapter-implementation-2026-10-24).
+
+Task 21 partial evidence, 2026-10-23 (originally task 9): Codex `0.164.0` ran interactively in two isolated Otty panes with a loopback mock provider.
 Actual helper events reached the production bridge, inbox, and store through a temporary receiver.
 Observed paths include text turns, command approval and cancellation, an accepted marker write, structured-question selection,
 concurrent same-folder sessions, freshness expiry, and an unsupported `Interrupt` event.
@@ -186,16 +212,18 @@ The user questioned further probing, so cleanup restored configuration and close
 The task remains unchecked because controlled trust, default-mode question dispatch, explicit denial,
 graceful end, controlled abrupt loss, prose questions, and interactive unavailable-receiver checks remain incomplete.
 See the [partial interactive findings](../notes/agent-event-compatibility.md#partial-interactive-codex-verification-2026-10-23).
+The user approved deferring these remaining checks to task 21 on 2026-10-24, under decision 0009.
+Deferral does not complete the task or remove any acceptance requirement.
 
 | Acceptance area | Tasks |
 |---|---|
 | Source feasibility and architecture | 1–3 |
 | Local launch and event delivery | 4–6 |
-| Honest session state and both agents | 7–10 |
-| Reversible setup and terminal behavior | 11–12 |
-| Session alerts and notch presentation | 13 |
-| Pet interaction, imports, and preferences | 14–16 |
-| Both providers' usage limits | 2, 17–19 |
-| Desktop recovery and resource use | 20–21 |
+| Honest session state and both agents | 7–9, 21–22 |
+| Reversible setup and terminal behavior | 10–11 |
+| Session alerts and notch presentation | 12 |
+| Pet interaction, imports, and preferences | 13–15 |
+| Both providers' usage limits | 2, 16–18 |
+| Desktop recovery and resource use | 19–20 |
 | End-to-end acceptance and handoff | 22 |
 

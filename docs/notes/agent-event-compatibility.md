@@ -164,10 +164,44 @@ The existing helper process checks exercise the adapter route and unavailable-ap
 
 `codex --version` reported `codex-cli 0.164.0` during planning on 2026-10-23.
 The earlier runtime investigation used `0.163.0`. These fictional checks do not extend that runtime evidence to `0.164.0`.
-The next task must verify installed Codex in interactive Otty sessions using isolated configuration.
+The Codex interactive task must verify installed Codex in Otty sessions using isolated configuration.
 It must include hook trust, approval handling, structured-question availability, concurrent sessions, and lifecycle limits.
 `Interrupt` remains outside version 1. Abrupt loss must not imply an observed graceful end.
 No live hooks, agent settings, credentials, or captured sessions were read or changed during this implementation.
+
+## Claude adapter implementation, 2026-10-24
+
+`ClaudeEventAdapter` now projects the seven recorded version-1 hook shapes through the shared envelope validator.
+The helper's `--agent claude` route uses this adapter. It maps only `prompt_id` into the shared turn identity.
+It retains optional tool-call identity without inventing missing IDs and omits conversation content and transcript paths.
+`StopFailure`, `Notification`, `Elicitation`, and other unverified hooks remain unsupported.
+The common observation mapper classifies `AskUserQuestion` separately from command approval.
+
+The Swift suite passed 48 tests across five suites. The new adapter tests cover eight reconstructed Claude payloads,
+unsupported events, missing and invalid fields, content omission, byte bounds, and parser deadlines.
+The store tests cover both providers, including actual socket delivery to the inbox and store.
+These checks use fictional inputs. They do not extend the recorded Claude runtime or interactive coverage.
+No agent settings, user hooks, credentials, or transcripts were read or changed this session.
+
+The app and helper built with both Command Line Tools and Xcode.
+`python3 scripts/check-event-bridge.py` delivered all 15 fictional payloads, including all eight Claude examples.
+Unavailable-app checks also passed five silent zero-exit invocations per provider.
+The complete process suite did not pass. Its existing maximum raw-input check failed twice with the Command Line Tools build
+and once with the Xcode build. The listener received no frame for the 262144-byte input.
+
+A temporary diagnostic compiled the unchanged bridge sources with the Command Line Tools debug compiler.
+Reading the maximum-size input took about 3 ms. Projection completed at about 315 ms from entry.
+The existing 250 ms helper deadline had expired before delivery. A small payload completed in about 3 ms.
+This establishes a parser/deadline limit for that build. The Xcode parser was not separately timed.
+A separate comparison attempt also exceeded the existing one-second process-launch timeout for the Xcode helper.
+The temporary diagnostic needed an `@MainActor` annotation before it compiled.
+It lives outside Git in `/private/tmp/notch-pet-claude-diagnostic/`.
+
+The adapter task remains open and blocked on complete helper process verification.
+Later process assertions for invalid input, open stdin, and busy sockets were not reached in those runs.
+The repeated failure was checkpointed under next-task's stop rule. No parser, deadline, or test expectation was changed.
+Resolve the helper verification blocker separately, then rerun the full process suite before ticking the adapter task.
+Claude interactive Otty behavior remains required during final workflow verification.
 
 ## Commands and retained local evidence
 
@@ -219,6 +253,11 @@ The task remains open. Controlled hook trust, default-mode question dispatch, ex
 controlled abrupt loss, prose-question behavior, and interactive unavailable-receiver behavior remain unverified.
 The planned all-in-one `verify.py` check was not completed or run.
 Do not infer complete interactive compatibility from these partial results.
+
+On 2026-10-24, the user approved moving the remaining checks immediately before final workflow verification.
+[Decision 0009](../decisions/0009-defer-remaining-codex-interactive-checks.md) records this scheduling change.
+All seven checks remain required, and the Codex interactive task stays unchecked.
+The Claude adapter can proceed without claiming complete Codex compatibility.
 
 Temporary evidence: `/private/tmp/notch-pet-codex-interactive/`.
 It contains disposable probes, isolated state, selected hook metadata, CLI captures, and store snapshots.

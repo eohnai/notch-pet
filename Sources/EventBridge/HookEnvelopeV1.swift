@@ -116,16 +116,10 @@ public struct HookEnvelopeV1: Encodable, Sendable {
         if agent == "codex" {
             return try CodexEventAdapter.project(rawHook: rawHook, paneSelector: paneSelector, deadline: deadline)
         }
-        guard agent == "claude" else { throw BridgeError.invalidMessage }
-        // Preserve the existing Claude projection until its separate adapter task.
-        let observed = wallMilliseconds()
-        let source = try rawFields(rawHook, deadline: deadline)
-        var fields: [String: JSONValue] = [:]
-        for name in ["session_id", "hook_event_name", "tool_use_id", "tool_name", "cwd"] {
-            fields[name] = source[name]
+        if agent == "claude" {
+            return try ClaudeEventAdapter.project(rawHook: rawHook, paneSelector: paneSelector, deadline: deadline)
         }
-        fields["turn_id"] = source["prompt_id"]
-        return try projected(fields, agent: agent, observedAtMs: observed, paneSelector: paneSelector)
+        throw BridgeError.invalidMessage
     }
 
     static func rawFields(_ rawHook: Data, deadline: UInt64?) throws -> [String: JSONValue] {
