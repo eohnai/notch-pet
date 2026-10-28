@@ -215,6 +215,7 @@ The revised remaining tasks below are proposed for review; the earlier approval 
 The user activated the bounded G1/G2 goal on 2026-10-28, approving those two tasks and their parser/verification plan only; other revised tasks remain subject to review.
 The user approved I1's three-file implementation plan on 2026-10-28, initially deferred testing, subsequently authorized verification, then requested skipping the remaining checks. A later renewed verification passed the isolated build and 48-test Swift suite; the user then stopped further checks and explicitly requested committing and pushing the current work. Do not run further builds, tests, or UI checks without a renewed request. I1 remains unchecked because running-menu verification is incomplete. I2 is the agreed next goal candidate after I1; its goal is prepared but inactive, and its implementation has not started. The user authorized separate task commits and pushing the current work; incomplete verification must remain documented.
 Each task includes its relevant configuration, documentation, and verification. Limit each implementation task to at most three files, with at most three added functions or five added test cases; split it before starting if that cannot fit.
+The user subsequently approved starting I2, deferring I1 verification, and keeping all checks paused. This authorizes the prepared I2a/I2b/I2c implementation split and separate implementation commits under the earlier per-task commit instruction. Write tests but do not run tests, builds, probes, helper injections, or UI checks. Implementation commits do not complete the unchecked verification requirements.
 Completed tasks and their evidence remain intact. Historical task numbers in the coverage record refer to the pre-2026-10-28 list.
 New tasks use stable IDs, so later refinements do not renumber that evidence.
 
@@ -239,7 +240,9 @@ New tasks use stable IDs, so later refinements do not renumber that evidence.
 Start after G1–G2. Establish a visible integration before building the notch and pet.
 
 - [ ] I1: Display real shared-store snapshots in the menu-bar interface, including same-folder sessions, unknown state, unconfirmed requests, and response-ready labels.
-- [ ] I2: Add read-only integration health checks that distinguish version/configuration support, helper availability, receiver state, and last observed delivery without treating inactivity as failure.
+- [ ] I2a: Define independent integration-health evidence and classification for both providers; verify five model tests. Implementation written; verification deferred at the user's request.
+- [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration.
+- [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion.
 - [ ] I3: Add reversible Codex hook setup with app-owned entries, idempotent installation, supported-version checks, and preserved hook trust review.
 - [ ] I4: Add reversible Claude lifecycle hook setup that preserves unrelated hooks and leaves the existing status line intact.
 - [ ] I5: Remove only app-owned setup entries, preserving subsequent user edits and leaving conflicting or malformed configuration untouched with a useful error.
@@ -530,6 +533,24 @@ Check both providers, concurrent same-folder sessions, idle/working/question/app
 unknown state with retained unconfirmed notices, the recorded evidence time, and empty state after restart.
 Include long project paths and source session identities in the native-menu inspection.
 Keep temporary fixtures and any captures outside the repository. I6 retains installed-agent/Otty acceptance.
+
+### I2 implementation with verification deferred, 2026-10-28
+
+The user explicitly selected starting I2 with I1 verification deferred and all checks paused. The earlier I1 entry gate
+in the prepared goal is superseded by that instruction. I2 is split into I2a/I2b/I2c without removing its original
+version/configuration, helper, receiver, delivery, and inactivity requirements. Separate implementation commits are authorized;
+they are not evidence of passing checks, and all three task checkboxes remain open until their verification is resumed and passes.
+
+I2a adds `Sources/SessionState/IntegrationHealth.swift` with independent typed evidence and snapshots.
+`IntegrationHealth.evaluate(_:)` classifies recorded version compatibility without combining configuration, helper,
+receiver or delivery observations into a connected/disconnected flag. Recorded compatibility retains the existing
+per-version/event limitations; unfamiliar versions stay unverified. Hook counts do not establish app ownership or trust.
+App-owned receiver and receipt values can be replaced in a value snapshot without rereading configuration or consulting sessions.
+
+Five model tests were written in `Tests/SessionStateTests/IntegrationHealthTests.swift` before the model implementation.
+They cover evidence independence, no receipt without false disconnection, retained receipt after session expiry/store replacement,
+and no promotion of version support by configuration or delivery. No failing baseline, Swift test, build, provider/configuration probe,
+helper injection or UI check was run for I2. This source is not yet compiler- or runtime-verified.
 
 ### Revised acceptance coverage
 
