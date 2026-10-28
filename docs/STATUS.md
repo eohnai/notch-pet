@@ -2,6 +2,8 @@
 
 ## Now
 
+Pull/stash conflicts are resolved using the pulled parser, specification, and status record. The parser already includes the local whitespace optimization and adds deadline checks. The local whitespace regression test, two-agent process boundary check, and historical investigation notes are retained. They have not been rerun against the combined checkout; runtime verification remains paused.
+
 I3a's approved documentation task is complete on `feat/notch-companion`: the [Codex setup proposal](contracts/codex-hook-setup.md) and I3a/I3b/I3c split preserve the original installation, ownership, idempotency, version, trust, and removal requirements. Ownership and interruption recovery remain open choices; I3b/I3c implementation is not approved. No production code or agent configuration changed.
 I2a/I2b/I2c implementation is committed as `cab2c9d`, `5b0aa5e`, and `751cbce`; see the [source and verification record](specs/notch-companion.md#i2-implementation-with-verification-deferred-2026-10-28). No I2 tests, builds, installed-agent/configuration probes, helper injections, or UI checks have run. I1 and all three I2 checkboxes remain open, with verification still paused.
 The recorded [I2 goal](goals/integration-health.md) and [log](goals/integration-health-log.md) remain incomplete; the goal tool reports no active goal in this chat. No new goal was created. The earlier snapshot `69b7c11` is pushed to the private [GitHub repository](https://github.com/eohnai/notch-pet); I3a authorizes no commit, push, or pull request. SwiftUI/AppKit, the single-spec layout, and accepted local approval/reply scope remain.

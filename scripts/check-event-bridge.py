@@ -125,9 +125,10 @@ def main() -> None:
             assert abs(time.time() * 1000 - frame["observed_at_ms"]) < 2000
         print(f"PASS {len(examples)} fictional hook projections through the actual helper")
 
-        boundary = receive_one(helper, minimal + b" " * (262144 - len(minimal)), "codex")
-        assert boundary["session_id"] == "fictional"
-        print("PASS raw stdin accepted at exactly 262144 bytes")
+        for agent in ("codex", "claude"):
+            boundary = receive_one(helper, minimal + b" " * (262144 - len(minimal)), agent)
+            assert boundary["session_id"] == "fictional" and boundary["agent"] == agent
+        print("PASS raw stdin accepted at exactly 262144 bytes for both agents")
 
         with socket.socket(socket.AF_UNIX) as listener:
             listener.bind(str(ENDPOINT))

@@ -81,6 +81,31 @@ struct ContractAndSocketTests {
         }
     }
 
+    @Test func rawHookBoundaryPreservesJSONWhitespaceRules() throws {
+        let minimal = Data("{\"session_id\":\"fictional\",\"hook_event_name\":\"SessionStart\"}".utf8)
+        for agent in ["codex", "claude"] {
+            for byte in [UInt8(9), 10, 13, 32] {
+                let padding = Data(repeating: byte, count: HookEnvelopeV1.rawHookLimit - minimal.count)
+                for raw in [minimal + padding, padding + minimal] {
+                    #expect(try HookEnvelopeV1.project(rawHook: raw, agent: agent).sessionID == "fictional")
+                    #expect(throws: BridgeError.invalidMessage) {
+                        try HookEnvelopeV1.project(rawHook: raw + Data([32]), agent: agent)
+                    }
+                }
+            }
+            for text in ["\u{0b}", "\u{0c}", "\u{a0}"] {
+                for raw in [minimal + Data(text.utf8), Data(text.utf8) + minimal] {
+                    #expect(throws: BridgeError.invalidMessage) {
+                        try HookEnvelopeV1.project(rawHook: raw, agent: agent)
+                    }
+                }
+            }
+            #expect(throws: BridgeError.invalidMessage) {
+                try HookEnvelopeV1.project(rawHook: minimal + Data(" {}".utf8), agent: agent)
+            }
+        }
+    }
+
     @Test func fragmentedFrameAndPeerIdentity() throws {
         let endpoint = endpoint(), observations = Observations()
         defer { try? FileManager.default.removeItem(atPath: endpoint.directory) }
