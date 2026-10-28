@@ -175,26 +175,35 @@ struct StrictJSON {
     mutating func parse() throws -> JSONValue {
         guard String(bytes: bytes, encoding: .utf8) != nil else { throw BridgeError.invalidMessage }
         let result = try value(depth: 0)
-        whitespace()
+        try whitespace()
+        try checkDeadline(deadline)
         guard offset == bytes.count else { throw BridgeError.invalidMessage }
         return result
     }
 
-    private mutating func whitespace() {
-        while offset < bytes.count && [9, 10, 13, 32].contains(bytes[offset]) { offset += 1 }
+    private mutating func whitespace() throws {
+        while offset < bytes.count {
+            switch bytes[offset] {
+            case 9, 10, 13, 32:
+                // Avoid rebuilding and searching an array for every padding byte.
+                if offset % 1024 == 0 { try checkDeadline(deadline) }
+                offset += 1
+            default: return
+            }
+        }
     }
 
-    private mutating func consume(_ byte: UInt8) -> Bool {
-        whitespace()
+    private mutating func consume(_ byte: UInt8) throws -> Bool {
+        try whitespace()
         guard offset < bytes.count && bytes[offset] == byte else { return false }
         offset += 1
         return true
     }
 
     private mutating func text() throws -> String {
-        whitespace()
+        try whitespace()
         let start = offset
-        guard consume(34) else { throw BridgeError.invalidMessage }
+        guard try consume(34) else { throw BridgeError.invalidMessage }
         while offset < bytes.count {
             if offset % 1024 == 0 { try checkDeadline(deadline) }
             let byte = bytes[offset]
@@ -207,29 +216,29 @@ struct StrictJSON {
 
     private mutating func value(depth: Int) throws -> JSONValue {
         try checkDeadline(deadline)
-        whitespace()
+        try whitespace()
         guard offset < bytes.count else { throw BridgeError.invalidMessage }
         if bytes[offset] == 34 { return .string(try text()) }
-        if consume(123) {
+        if try consume(123) {
             guard depth < maxDepth else { throw BridgeError.invalidMessage }
             var fields: [String: JSONValue] = [:]
-            if consume(125) { return .object(fields) }
+            if try consume(125) { return .object(fields) }
             repeat {
                 let key = try text()
-                guard fields[key] == nil, consume(58) else { throw BridgeError.invalidMessage }
+                guard fields[key] == nil, try consume(58) else { throw BridgeError.invalidMessage }
                 fields[key] = try value(depth: depth + 1)
-                if consume(125) { return .object(fields) }
-            } while consume(44)
+                if try consume(125) { return .object(fields) }
+            } while try consume(44)
             throw BridgeError.invalidMessage
         }
-        if consume(91) {
+        if try consume(91) {
             guard depth < maxDepth else { throw BridgeError.invalidMessage }
             var values: [JSONValue] = []
-            if consume(93) { return .array(values) }
+            if try consume(93) { return .array(values) }
             repeat {
                 values.append(try value(depth: depth + 1))
-                if consume(93) { return .array(values) }
-            } while consume(44)
+                if try consume(93) { return .array(values) }
+            } while try consume(44)
             throw BridgeError.invalidMessage
         }
         let start = offset

@@ -2,23 +2,23 @@
 
 ## Now
 
-The first-release specification remains at [notch-companion](specs/notch-companion.md), on `feat/notch-companion`.
-The user chose to undo the area-folder migration. Keep the existing single-spec layout.
-The Claude adapter is committed in `69e75f4`, but its task remains unchecked because maximum-input helper verification is blocked.
-The private [GitHub repository](https://github.com/eohnai/notch-pet) is connected as `origin`.
+G1/G2 are complete on `feat/notch-companion`: the parser scans padding directly and checks its existing deadline during padding and before returning. The [specification evidence](specs/notch-companion.md#g1g2-verification-2026-10-28) records the diagnostics and verification; the [goal log](goals/finish-bridge-verification-log.md) records the completed run.
+The user approved G1/G2 by activating the bounded goal. Remaining revised implementation tasks, local action-channel structure, and optional sprite-sheet conversion await review; see [decision 0010](decisions/0010-add-local-agent-actions.md) and the [reference findings](notes/flux-island-adoption.md).
+SwiftUI/AppKit, the existing single-spec layout, and accepted local approval/reply scope remain. SSH/cloud support is optional future work. No agent/Otty configuration changed, and live-provider acceptance remains open.
+The private [GitHub repository](https://github.com/eohnai/notch-pet) remains connected as `origin`.
 
 ## Next
 
-1. Read the [Claude implementation findings](notes/agent-event-compatibility.md#claude-adapter-implementation-2026-10-24). Propose a bounded task list for the helper parser/deadline blocker and get approval before implementation.
-2. After the approved fix, run `python3 scripts/check-event-bridge.py`. Tick the Claude adapter task only after complete verification passes.
-3. Continue with reversible hook setup in [notch-companion](specs/notch-companion.md) after resolving the helper blocker.
-4. Keep the remaining Codex interactive checks immediately before final workflow verification, under accepted decision 0009.
-5. Review the proposed reference-model and socket-test follow-ups separately from the approved task list.
+1. Review and approve I1's task plan in [notch-companion](specs/notch-companion.md#tasks): display real shared-store sessions in the existing menu-bar shell.
+2. Review I2–I6's integration health and reversible setup/removal tasks before implementation. The completed G1/G2 goal does not approve these tasks.
+3. After I/N, verify local action support and settle its response contract in A1–A2 before A3–A8; keep observation bounds intact.
+4. Resolve optional sprite input in P5 before P6; SSH/cloud work is not a release dependency.
+5. Keep all seven deferred Codex checks in R6–R7 immediately before R8 under decision 0009; review the earlier reference-model/socket-test follow-ups separately.
 
 ## Blockers
 
-- The Claude adapter is implemented but its task remains unchecked. `python3 scripts/check-event-bridge.py` failed three times at the existing 262144-byte raw-input boundary, twice with Command Line Tools and once with Xcode. A temporary Command Line Tools diagnostic read the input in about 3 ms and completed projection at about 315 ms, beyond the 250 ms helper deadline. The Xcode parser was not separately timed. No parser, deadline, or expectation changed. The later invalid-input, open-stdin, and busy-socket process assertions were not reached. See `docs/notes/agent-event-compatibility.md` for evidence.
-- A temporary Python comparison attempt also exceeded the existing one-second launch timeout for the Xcode helper. Process launch remains outside the helper's internal deadline.
+- Revised remaining implementation tasks await review. Optional sprite-sheet input remains proposed; conversion at import versus a second runtime loader must be settled in P5 before P6.
+- Local approvals/replies are accepted scope, not verified capabilities. A1–A2 must establish exact-session response mechanisms and a separate action contract; any missing release-required path remains explicitly blocked rather than silently reducing the feature to terminal navigation.
 - Remaining Codex interactive checks are deferred to immediately before final workflow verification under accepted decision 0009. Controlled hook trust, default-mode question dispatch, explicit denial, graceful end, controlled abrupt loss, prose questions, and interactive unavailable-receiver behavior remain required.
 - Installed Codex `0.164.0` now has partial interactive Otty evidence with a mock provider. Real-provider behavior remains unverified.
 - Stale: `scripts/check-event-contract.py` allows a previously conflicting turn ID to restore working state. The accepted contract requires an unseen turn ID. The production store enforces that rule through `recoveryRequiresAnUnseenTurnIdentity`. A reference-model correction is proposed follow-up work.

@@ -4,6 +4,8 @@ A macOS companion for Codex CLI and Claude Code in Otty, under development.
 The current app provides a menu-bar control and Quit action.
 It also runs a local event receiver and bundles a silent hook helper.
 Agent notifications, the notch interface, the detachable pet, and usage limits are planned next.
+Local approval/deny controls, question answers, and follow-up replies are also planned, subject to verified agent/version support.
+SSH and cloud-agent integrations are optional future work.
 
 The working name is `notch-pet`; the user has not chosen a product name.
 
@@ -79,7 +81,9 @@ An inherited pane selector remains an unverified hint until the terminal adapter
 The fictional checks cover projection, session meanings, and actual socket delivery through the bounded inbox.
 They do not establish installed Codex compatibility in interactive Otty sessions.
 The earlier controlled hook investigation covered Codex `0.163.0`. The CLI now reports `0.164.0`.
-Interactive checks with isolated configuration are the next task. No hooks are installed by this implementation.
+Partial interactive checks used isolated configuration and a mock provider.
+The remaining Codex interactive checks are deferred to immediately before final workflow verification under decision 0009.
+No hooks are installed by this implementation.
 See the [compatibility record](docs/notes/agent-event-compatibility.md) for evidence boundaries and known limits.
 
 ## Verify the bridge
@@ -133,8 +137,14 @@ Process timings include launch time. They are observations on this Mac, not a re
 - Let the user detach, customize, and return a desktop pet.
 - Include reported usage limits where supported.
 - Allow later integrations with other apps and terminals.
-- Do not depend on Flux Island. The user withdrew that reference.
+- Retain SwiftUI/AppKit and independently adapt selected Flux Island setup, session-navigation, window/pet, and quota-refresh behaviors.
+- Keep conservative session evidence, bounded one-way observation delivery, Otty-first navigation, and supported provider usage sources.
+- Include local approvals, structured-question answers, and explicit follow-up replies through verified agent-specific response channels, with Otty fallback for unavailable actions.
+- Keep SSH and cloud-agent support as optional future work outside first-release acceptance.
+- Do not depend on Flux Island or reuse its code or internal assets. Sprite-sheet input compatibility remains a proposal.
 
-The user approved the task list and architecture decisions 0001–0007.
-See the specification for remaining implementation tasks and the compatibility records for verified integration limits.
+The original task list and architecture decisions 0001–0009 have recorded approvals; decision 0010 records the subsequently accepted local-interaction scope.
+The user requested the 2026-10-28 Flux-informed plan update; its revised remaining tasks are proposed for review.
+See the specification and [reference findings](docs/notes/flux-island-adoption.md) for selected behaviors,
+open choices, and the distinction between planned features and implemented code.
 
