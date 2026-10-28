@@ -187,6 +187,7 @@ Do not add transcript fallbacks, private endpoints, token-based allowance estima
 - **Retain SwiftUI/AppKit after considering Electron/React.** The user accepted the native recommendation on 2026-10-28 for this macOS companion; decision 0001 remains in force. Flux's implementation progress is not evidence of measured runtime superiority.
 - **Open: normalize compatible sprite sheets at import or add a second runtime loader?** Import conversion is recommended to retain decision 0006's runtime format. Resolve in P5 before implementing P6; the options and consequences are above.
 - **Open: which supported response channel can target each existing local agent session?** Compare a dedicated interactive hook path with an app-owned provider control channel in A1–A2; do not alter the version-1 observer protocol to assume the answer.
+- **Open:** Should Codex setup use an external ownership record with exact managed-entry descriptions (recommended, proposed), or verified entry markers with independently sufficient edit detection? The [I3a proposal](../contracts/codex-hook-setup.md#ownership-alternatives-requiring-a-decision) explains the preservation and recovery tradeoffs. Settle the representation and interruption recovery in I3b before implementation; neither alternative is accepted yet.
 
 ## My calls
 
@@ -216,6 +217,7 @@ The user activated the bounded G1/G2 goal on 2026-10-28, approving those two tas
 The user approved I1's three-file implementation plan on 2026-10-28, initially deferred testing, subsequently authorized verification, then requested skipping the remaining checks. A later renewed verification passed the isolated build and 48-test Swift suite; the user then stopped further checks and explicitly requested committing and pushing the current work. Do not run further builds, tests, or UI checks without a renewed request. I1 remains unchecked because running-menu verification is incomplete. I2 is the agreed next goal candidate after I1; its goal is prepared but inactive, and its implementation has not started. The user authorized separate task commits and pushing the current work; incomplete verification must remain documented.
 Each task includes its relevant configuration, documentation, and verification. Limit each implementation task to at most three files, with at most three added functions or five added test cases; split it before starting if that cannot fit.
 The user subsequently approved starting I2, deferring I1 verification, and keeping all checks paused. This authorizes the prepared I2a/I2b/I2c implementation split and separate implementation commits under the earlier per-task commit instruction. Write tests but do not run tests, builds, probes, helper injections, or UI checks. Implementation commits do not complete the unchecked verification requirements.
+The user approved splitting I3 into documentation, configuration planning, and installation tasks, and starting only I3a's three-file documentation plan on 2026-10-28. The setup contract remains proposed; this approval selects neither an ownership mechanism nor an interruption-recovery algorithm. I3b/I3c implementation, runtime verification, commits, and pushes are not authorized by this documentation approval. The recorded I2 goal remains incomplete; no new goal is active in this chat.
 Completed tasks and their evidence remain intact. Historical task numbers in the coverage record refer to the pre-2026-10-28 list.
 New tasks use stable IDs, so later refinements do not renumber that evidence.
 
@@ -243,7 +245,9 @@ Start after G1–G2. Establish a visible integration before building the notch a
 - [ ] I2a: Define independent integration-health evidence and classification for both providers; verify five model tests. Implementation written; verification deferred at the user's request.
 - [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration. Implementation written; verification deferred at the user's request.
 - [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion. Implementation written; verification deferred at the user's request.
-- [ ] I3: Add reversible Codex hook setup with app-owned entries, idempotent installation, supported-version checks, and preserved hook trust review.
+- [x] I3a: Document the proposed Codex hook ownership and reversible installation contract, retaining open design choices; review fictional install/reinstall/user-edit/malformed-input cases and verify documentation.
+- [ ] I3b: Settle Codex hook ownership and interruption recovery, then add a pure configuration planner with idempotent app-owned entries, version/shape gates, preservation checks, and at most five isolated tests; review its implementation plan before coding.
+- [ ] I3c: Add the bounded Codex hook installer using the accepted planner and recovery design, guarded file updates, helper and supported-version checks, and preserved hook trust review; review and split the file-operation checks as needed before implementation.
 - [ ] I4: Add reversible Claude lifecycle hook setup that preserves unrelated hooks and leaves the existing status line intact.
 - [ ] I5: Remove only app-owned setup entries, preserving subsequent user edits and leaving conflicting or malformed configuration untouched with a useful error.
 - [ ] I6: Expose setup, check, and removal actions with actionable health messages; verify both agents reach the visible menu in disposable Otty sessions and cleanup restores isolated configuration.
@@ -573,6 +577,24 @@ overwrite receiver or delivery evidence received while awaiting the probe. Dupli
 entries and the supported agent configuration-directory variables, locates the bundled helper, and delegates I/O to the
 background probe service. No Check UI is introduced before I6, and no refresh was called during this task.
 The ten new tests, app build, receiver wiring and all I2 behavior remain unverified. All I2 checkboxes remain open.
+
+### I3a documentation, 2026-10-28
+
+The user approved the three-file documentation plan and the I3a/I3b/I3c split.
+The [Codex setup proposal](../contracts/codex-hook-setup.md) records required preservation,
+version/helper gates, separate planning/application boundaries, unchanged observer behavior,
+normal trust review, idempotency, and the ownership guarantees needed by I5 removal.
+Its fictional review cases cover first installation, repetition, Otty/unrelated hooks, user edits,
+malformed input, interrupted updates, and absent trust/delivery evidence. They were reviewed as
+documentation requirements, not executed as configuration or runtime tests.
+
+An inline local-document check using Python's standard library exited 0: all relative Markdown
+links and heading anchors in the three changed files resolve, the ten previously completed tasks
+are preserved, and I1/I2a/I2b/I2c remain unchecked. `git diff --check` exited 0.
+I3a is complete as documentation only; the contract remains proposed. Ownership representation,
+interruption recovery, external-writer guarantees, and exact timeout/enablement details require
+review before the corresponding I3b/I3c implementation. No new goal, production code, agent
+configuration access, runtime check, commit, push, or pull request was performed in this task.
 
 ### Revised acceptance coverage
 
