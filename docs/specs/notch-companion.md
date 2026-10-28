@@ -241,7 +241,7 @@ Start after G1–G2. Establish a visible integration before building the notch a
 
 - [ ] I1: Display real shared-store snapshots in the menu-bar interface, including same-folder sessions, unknown state, unconfirmed requests, and response-ready labels.
 - [ ] I2a: Define independent integration-health evidence and classification for both providers; verify five model tests. Implementation written; verification deferred at the user's request.
-- [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration.
+- [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration. Implementation written; verification deferred at the user's request.
 - [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion.
 - [ ] I3: Add reversible Codex hook setup with app-owned entries, idempotent installation, supported-version checks, and preserved hook trust review.
 - [ ] I4: Add reversible Claude lifecycle hook setup that preserves unrelated hooks and leaves the existing status line intact.
@@ -551,6 +551,16 @@ Five model tests were written in `Tests/SessionStateTests/IntegrationHealthTests
 They cover evidence independence, no receipt without false disconnection, retained receipt after session expiry/store replacement,
 and no promotion of version support by configuration or delivery. No failing baseline, Swift test, build, provider/configuration probe,
 helper injection or UI check was run for I2. This source is not yet compiler- or runtime-verified.
+
+I2b adds `IntegrationHealthProbe.inspect(agent:executableURL:configurationURL:helperURL:)` in the same service file.
+Version execution runs off the main actor with a two-second process deadline and 65536-byte combined-output cap;
+only the expected version shape is retained. Launch time and OS scheduling are not a hard wall-clock guarantee.
+The probe kills only its own process on timeout/overflow and does not wait indefinitely on exit or inherited pipe writers.
+Hook JSON reads require a regular non-symlink file, are capped at 262144 bytes including growth during the read,
+and inspect only hook structure/counts. Other fields, command contents and decoder errors are not exposed as diagnostics.
+Unsupported handler shapes are reported explicitly. Helper availability checks metadata and executability without invoking it.
+The five additional probe tests use disposable fake executables/configuration outside the repository; they have not run.
+No installed CLI, user configuration, helper or receiver was probed during this implementation.
 
 ### Revised acceptance coverage
 
