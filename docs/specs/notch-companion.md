@@ -213,6 +213,7 @@ The user requested the Flux-informed planning update on 2026-10-28 and retained 
 The user accepted adding local approvals and replies, with SSH/cloud support recorded as optional future work, on 2026-10-28.
 The revised remaining tasks below are proposed for review; the earlier approval is not approval of every added task or open design choice.
 The user activated the bounded G1/G2 goal on 2026-10-28, approving those two tasks and their parser/verification plan only; other revised tasks remain subject to review.
+The user approved I1's three-file implementation plan on 2026-10-28, initially deferred testing, subsequently authorized verification, then requested skipping the remaining checks. A later renewed verification passed the isolated build and 48-test Swift suite; the user then stopped further checks and explicitly requested committing and pushing the current work. Do not run further builds, tests, or UI checks without a renewed request. I1 remains unchecked because running-menu verification is incomplete. I2 is the agreed next goal candidate after I1; its goal is prepared but inactive, and its implementation has not started. The user authorized separate task commits and pushing the current work; incomplete verification must remain documented.
 Each task includes its relevant configuration, documentation, and verification. Limit each implementation task to at most three files, with at most three added functions or five added test cases; split it before starting if that cannot fit.
 Completed tasks and their evidence remain intact. Historical task numbers in the coverage record refer to the pre-2026-10-28 list.
 New tasks use stable IDs, so later refinements do not renumber that evidence.
@@ -483,6 +484,52 @@ Verification performed after the parser correction:
 G1 and G2 are complete on this implementation evidence. Live Claude/Otty verification remains later release work;
 the seven deferred Codex checks remain R6/R7 under decision 0009. The previously documented reference-model discrepancy
 and socket-test timing assumption remain separate proposed follow-ups. No later task or action-channel choice is approved by this goal.
+
+### I1 implementation awaiting verification, 2026-10-28
+
+`Sources/NotchPet/NotchPetApp.swift` now reads the existing observable `SessionStore` in `CompanionMenu`
+and renders each snapshot through `SessionMenuEntry(snapshot:)` in the existing native menu.
+Entries include agent, project, source session identity, and the shared-store status.
+Each submenu exposes the full project path and session identity, the recorded state-refresh time when available,
+plain-language unknown reasons, and unresolved requests marked according to `isConfirmed`.
+Same-folder sessions remain separate through `SessionKey`; response stops use the label "Response ready".
+The empty state says "No sessions observed yet" without claiming configuration or connection failure.
+
+Runtime behavior remained unverified at the initial checkpoint. The existing 48-test Swift suite had passed before this source change;
+that baseline result did not verify I1. After the user first authorized verification,
+`bash scripts/run.sh --build-only` failed because the default scratch directory contained Swift 6.3.2 modules
+that the selected Swift 6.2 compiler could not import. No source change was needed for that cache mismatch.
+The isolated build command
+`env TMPDIR=/private/tmp/notch-pet-i1-20261028 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only`
+completed with exit 0, both executables, and a valid Info.plist before the pending build could be stopped.
+Its artifacts are outside the repository in `/private/tmp/notch-pet-i1-20261028/notch-pet-dev/`.
+
+The accessibility probe
+`osascript -e 'tell application "System Events" to tell process "NotchPet" to get {name, count of menu bars}'`
+was denied with `osascript is not allowed assistive access. (-25211)`.
+No changed-source Swift test run, fictional helper injection, or visible-menu inspection was completed at that initial checkpoint.
+The user then requested skipping checks. The task checkbox remained open.
+
+The user subsequently authorized resuming I1 verification and committing it when verified. The same isolated build command above
+completed with exit 0 and a valid Info.plist. The changed-source check
+`env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-i1-20261028/notch-pet-dev/build`
+completed with exit 0: 48 tests in five suites, zero failures. Both commands required running outside the filesystem sandbox;
+the initial sandboxed build could not write the compiler module cache (`Operation not permitted`). No source correction was needed.
+
+The same accessibility probe now returned `NotchPet, 2`. Inspection of the already-running older app showed
+the previous "Agent connections are not set up." placeholder, not I1's rebuilt session menu.
+A temporary harness was prepared at `/private/tmp/notch-pet-i1-verify/verify_menu.py` to restart the rebuilt app and check fictional
+observations through its bundled helper. Its execution was interrupted; no completed helper-to-visible-menu evidence was obtained.
+The user then instructed "don't run the tests now", "just commit", and "and push". Further checks are paused;
+the explicit commit/push instruction permits saving the implementation and records without claiming I1 is verified.
+I1 remains unchecked, and I2's prepared goal remains inactive behind its I1 verification gate.
+
+When the user authorizes verification, use the existing build and Swift commands in **Verify**, then launch
+with `bash scripts/run.sh` and exercise fictional observations through the bundled helper.
+Check both providers, concurrent same-folder sessions, idle/working/question/approval/response-ready/ended labels,
+unknown state with retained unconfirmed notices, the recorded evidence time, and empty state after restart.
+Include long project paths and source session identities in the native-menu inspection.
+Keep temporary fixtures and any captures outside the repository. I6 retains installed-agent/Otty acceptance.
 
 ### Revised acceptance coverage
 
