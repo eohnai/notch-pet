@@ -13,7 +13,7 @@ I2b: the same three files.
 I2c: Sources/NotchPet/NotchPetApp.swift, docs/specs/notch-companion.md, docs/STATUS.md. No I3+ implementation or new health UI (I6).
 
 DONE WHEN all hold, with output/exit codes printed:
-1. `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-i2/build --filter IntegrationHealth` exits 0: at least 10 new passing tests, zero failures. Freeze five model and five probe tests before their implementations; demonstrate the initial failing baseline. Cover both providers; independent version/config/helper/receiver/delivery evidence; missing, malformed, oversized, unreadable config; unknown version; missing/nonexecutable helper; receiver start failure/stop; no receipt versus actual receipt; receipt retained independently of session expiry/removal; timeout/oversized process output; unchanged isolated configs. Inactivity never means disconnected, and helper success never proves receipt.
+1. `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-i2/build --filter IntegrationHealth` exits 0: at least 10 new tests, zero failures. Five model and five probe tests were prewritten; the initial failing baseline was deferred by user instruction. Cover both providers; independent version/config/helper/receiver/delivery; missing/malformed/oversized/unreadable config; unknown version; missing/nonexecutable helper; receiver failure/stop; absent/actual receipt retained independently of session expiry/removal; process timeout/output bounds; unchanged isolated configs. Inactivity is not disconnection; helper success is not receipt.
 2. `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-i2/build` exits 0 with at least 58 tests passing, zero failures; existing tests stay enabled.
 3. `env TMPDIR=/private/tmp/notch-pet-i2 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only` exits 0: app/helper built, valid Info.plist.
 4. Print app wiring evidence: actual bridge start/error/stop and validated receipt times feed health independently of SessionStore. No sessions is not failure; configuration is not trust/delivery. Preserve observation payloads, deadlines and state rules.
@@ -42,7 +42,7 @@ I2a/I2b checkpoint their completion in the specification and goal log within the
 
 ## Interface sketch
 
-These are proposed signatures, not implemented APIs. Keep integration services outside SwiftUI view bodies even though the existing SessionState target hosts the new file. No new package target or dependency is needed.
+The implemented service uses typed `IntegrationAgent` values and optional paths. Keep integration services outside SwiftUI view bodies even though the existing SessionState target hosts the new file. No new package target or dependency is needed. The outline below omits enum cases, initializers and function bodies; the source is authoritative.
 
 ```swift
 // I2a: independent typed evidence, with explicit unavailable/unverified reasons.
@@ -60,8 +60,8 @@ public enum IntegrationHealth {
 
 // I2b: production I/O is bounded; tests use disposable fake executables/configs.
 public enum IntegrationHealthProbe {
-    public static func inspect(agent: String, executableURL: URL?,
-                               configurationURL: URL?, helperURL: URL) async
+    public static func inspect(agent: IntegrationAgent, executableURL: URL?,
+                               configurationURL: URL?, helperURL: URL?) async
         -> IntegrationHealthEvidence { }
 }
 ```
@@ -70,7 +70,7 @@ Caller sketch:
 
 ```swift
 let evidence = await IntegrationHealthProbe.inspect(
-    agent: "codex", executableURL: codexURL,
+    agent: .codex, executableURL: codexURL,
     configurationURL: isolatedHooksURL, helperURL: bundledHelperURL)
 // App-owned receiver and receipt evidence is merged without inferring it
 // from configuration, successful helper writes, or current session snapshots.
@@ -94,7 +94,7 @@ Use five parameterized model tests and five parameterized probe tests, named so 
 9. Probe: both recorded provider shapes retain unrelated configuration byte-for-byte, using only isolated fixtures and selected field extraction.
 10. Probe: sentinel unrelated secret-like values in fictional configuration/output never appear in health results or diagnostics; error categories are bounded and sanitized.
 
-Freeze the test assertions before each corresponding implementation. Missing production symbols are an acceptable initial compiler failure; print that baseline and do not confuse a compile failure with an executed failing assertion. Add tests for the new behavior; never weaken existing tests or these checks. The full baseline is historically 48 tests; ten new tests require at least 58 passing tests, with no skipped existing cases. Do not rerun the unrelated bridge process script or contract model as an excuse to expand this goal into known follow-ups.
+The assertions were written before the corresponding implementations, but the user paused all checks, including the initial failing baseline. Do not claim a retroactive baseline. When checks resume, run against the current implementation. Never weaken existing tests or these checks. The full baseline is historically 48 tests; ten new tests require at least 58 passing tests, with no skipped existing cases. Do not expand this goal into unrelated bridge/reference-model follow-ups.
 
 Recorded versions are evidence, not a claim that every installed version is supported. Read the compatibility record before deciding which version/shape pairs can be reported as supported. For other combinations report unverified with a reason. Routine results may contain only version, bounded health categories, receiver state and receipt time; never raw process output, hook commands, prompts or credentials.
 

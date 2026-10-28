@@ -242,7 +242,7 @@ Start after G1–G2. Establish a visible integration before building the notch a
 - [ ] I1: Display real shared-store snapshots in the menu-bar interface, including same-folder sessions, unknown state, unconfirmed requests, and response-ready labels.
 - [ ] I2a: Define independent integration-health evidence and classification for both providers; verify five model tests. Implementation written; verification deferred at the user's request.
 - [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration. Implementation written; verification deferred at the user's request.
-- [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion.
+- [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion. Implementation written; verification deferred at the user's request.
 - [ ] I3: Add reversible Codex hook setup with app-owned entries, idempotent installation, supported-version checks, and preserved hook trust review.
 - [ ] I4: Add reversible Claude lifecycle hook setup that preserves unrelated hooks and leaves the existing status line intact.
 - [ ] I5: Remove only app-owned setup entries, preserving subsequent user edits and leaving conflicting or malformed configuration untouched with a useful error.
@@ -561,6 +561,18 @@ and inspect only hook structure/counts. Other fields, command contents and decod
 Unsupported handler shapes are reported explicitly. Helper availability checks metadata and executability without invoking it.
 The five additional probe tests use disposable fake executables/configuration outside the repository; they have not run.
 No installed CLI, user configuration, helper or receiver was probed during this implementation.
+
+I2c adds the app-owned observable `IntegrationHealthController` in `NotchPetApp.swift` and supplies it through the
+existing menu's environment for later I6 controls. The bridge's actual start success, categorized failure, and stop
+update receiver evidence. Validated inbox observations update per-agent receipt times before the session clock cutoff;
+delivery is not inferred from current sessions and does not expire when session state becomes unknown or ended.
+Publication is batched, and asynchronous probe results replace only version/configuration/helper fields so they cannot
+overwrite receiver or delivery evidence received while awaiting the probe. Duplicate per-agent refreshes are coalesced.
+
+`refresh(agent:)` is an explicit action boundary, not a startup/background probe. It resolves only bounded absolute PATH
+entries and the supported agent configuration-directory variables, locates the bundled helper, and delegates I/O to the
+background probe service. No Check UI is introduced before I6, and no refresh was called during this task.
+The ten new tests, app build, receiver wiring and all I2 behavior remain unverified. All I2 checkboxes remain open.
 
 ### Revised acceptance coverage
 
