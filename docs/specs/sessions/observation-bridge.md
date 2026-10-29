@@ -1,5 +1,7 @@
 # Observe local agent events
 
+Status: done
+
 ## Goal
 
 When Codex CLI or Claude Code emits a supported hook, deliver its allowed identity and event fields into the running native app.
@@ -72,6 +74,45 @@ The historical results below support the migrated completed tasks. They were not
 These are reproduction commands, not authorization to restart paused runtime checks.
 This planning session runs documentation checks only.
 
+## Results
+
+Reviewed 2026-10-30 on `docs/observation-bridge` at `2816716`, before committing this documentation update.
+The user approved the retrospective review task list. This review closes the migrated bridge scope on its recorded evidence.
+It does not establish current app or release acceptance.
+
+| Done-when requirement | Code and check coverage reviewed | Recorded evidence |
+|---|---|---|
+| Native launch, Quit, and receiver cleanup | `NotchPetApp` starts the bridge through its delegate and stops it on termination. The menu calls `NSApplication.shared.terminate`. | Tasks 4 and 6 record launch, Quit, and owned-socket cleanup. |
+| Provider projection and receipt | Both adapters allow seven hook names. Claude maps `prompt_id` to `turn_id`. Helper process checks use 15 fictional payloads. `actualBridgeCallbackReachesSharedStore` covers both providers through the production receiver and inbox. | G1/G2 record helper-process success and 48 passing Swift tests, including both adapters and socket-to-store delivery. |
+| Invalid input and fragmented reads | `HookEnvelopeV1.decode` validates frames. `readBounded` rejects buffered extra bytes and uses one read deadline. The server rejects stale and future-dated envelopes before its callback. | Task 6 and G1/G2 record production decoder and socket checks. The known extra-byte test timing limitation remains below. |
+| Bounded, silent helper failure | `HookHelper.run` applies the total deadline, catches handled failures, and makes one delivery attempt. Socket I/O retains phase deadlines. The executable emits no response. | G1/G2 record unavailable-app, exact-capacity, invalid-input, open-stdin, and busy-socket process checks. Launch time is separate from the internal deadline. |
+| Endpoint ownership and preservation | `SocketSupport` checks directory/socket identity and peer user IDs. `EventBridgeServer` checks listener ownership and preserves replacement paths during cleanup. | Task 6 and G1/G2 record lifecycle and permission checks. Existing tests cover active listeners, unsafe paths, replacement files, and stop/restart. |
+
+Documentation checks performed for this review:
+
+- Seven completed task lines match `76c33ad:docs/specs/notch-companion.md` exactly, including G1/G2 IDs and checkbox states.
+  None remain duplicated as tasks in the current source spec.
+- All 19 copied historical evidence paragraphs match that source after adjusting relative link paths.
+  The historical evidence and task list are unchanged by this review.
+- Local Markdown links and heading targets in this spec and `docs/STATUS.md` resolve.
+- `git diff --check` exits 0 with no output.
+
+Limits and remaining work:
+
+- No build, Swift test, contract checker, helper process check, agent invocation, or app lifecycle check ran in this review.
+  Runtime checks remain paused. The results above distinguish static inspection from historical execution evidence.
+- The existing `invalidFramesNeverReachCallback` maximum-frame case assumes an extra byte is already buffered.
+  Its correction remains proposed. The contract requires rejection of buffered extra bytes, not bytes sent after closure.
+- `scripts/check-event-contract.py` still differs from the store's unseen-turn recovery rule.
+  Review this during `session-state` migration. Reference-model success is not production-state acceptance.
+- Existing usage receiver wiring in `NotchPetApp.swift` and `NotchPanelController.swift` remains unverified.
+  The interrupted build and current app lifecycle checks belong to the usage work before it resumes.
+- N6–N8 and R6–R8 remain open in the source spec for their owning feature migrations.
+  They retain live-provider, terminal-independence, navigation, and first-use acceptance requirements.
+
+Judgment: the accepted bridge boundary is supported by the implementation and historical evidence.
+No new bridge scope gap or architecture decision was found. Later acceptance checks remain open in their existing owners.
+
 ## Decisions
 
 - [0001: Use SwiftUI and AppKit](../../decisions/0001-use-swiftui-and-appkit.md).
@@ -94,8 +135,8 @@ This planning session runs documentation checks only.
   Do not move later notch or usage behavior here merely because it shares the app entry point.
 - Leave shared architecture investigation, usage investigation, and session-store tasks in the source spec for their later migration.
   Link their accepted decisions here without duplicating completed task counts.
-- Leave out `Status: done` pending review of this retrospective spec.
-  Migrated completed tasks do not establish final release acceptance.
+- Close this retrospective spec after the approved review recorded in Results.
+  The completed bridge foundation does not establish final release acceptance.
 
 ## Implementation review, 2026-10-29
 
