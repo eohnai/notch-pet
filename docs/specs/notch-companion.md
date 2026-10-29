@@ -357,7 +357,10 @@ U2 is split into independently verified implementation tasks; forwarding accepta
 - [x] U2a: Parse bounded Claude 5-hour/weekly status-line fields into anonymous usage observations; verify five parser tests, independent missing windows, reset units and bounded errors.
 - [ ] U2b: Add a bounded Claude status-line forwarding wrapper that preserves original stdin/stdout, cancellation and exit behavior without changing installed configuration.
 - [ ] U2c: Deliver forwarded quota through a separate bounded usage transport into the app store; verify app-unavailable behavior and reversible setup under an explicitly approved configuration plan.
-- [ ] U3: Read full Codex allowance snapshots and supported update notifications through the verified read-only App Server connection without starting threads or turns.
+U3 is split into full-snapshot parsing and the read-only connection; live acceptance remains incomplete.
+- [x] U3a: Normalize bounded full Codex quota snapshots, preserving buckets, account identity and actual durations; verify five parser tests without compatibility double-counting.
+- [ ] U3b: Add bounded read-only Codex App Server initialization/account/quota requests without starting threads or turns; verify isolated protocol/process cases.
+- [ ] U3c: Handle rate-limit notifications by rereading full snapshots, account changes and source failures; verify cancellation and reconnect without stale-account leakage.
 - [ ] U4: Add bounded refresh, cancellation, reconnect, and retry backoff; provider failures and passed reset times must retain honest stale/unavailable status.
 - [ ] U5: Show agent-aware 5-hour and weekly allowance sections in the notch for Claude Code and Codex in use, with used percentages, reset times, freshness and account confidence; preserve other returned Codex durations and avoid double-counting.
 - [ ] U6: Verify live Claude forwarding/output preservation and Codex coexistence, reconnect, sparse updates, and account changes; document unavailable account modes without private-endpoint fallbacks.
@@ -751,3 +754,25 @@ and provider measurement identity remain absent. No raw status-line content is r
 Five ClaudeUsageProviderTests first failed the missing-type baseline, then passed with the
 implementation using the isolated Swift test command and --filter ClaudeUsageProviderTests.
 This verifies parsing only, not forwarding, terminal output preservation or live quota.
+
+### U3a quota parser verification, 2026-10-29
+
+CodexUsageProvider.parse(_:sourceID:receivedAtMs:) accepts a full account/rateLimits/read result.
+Five frozen tests first failed the missing-type baseline, then passed. Full bucket maps take
+precedence over the compatibility view, identities remain separate, and missing/nonstandard
+window durations remain unchanged. Reset seconds convert safely to milliseconds.
+This is parsing evidence only. No App Server process was launched and no live quota was read.
+
+### U3b next-task interface sketch
+
+Proposed implementation detail within accepted read-only quota scope:
+`CodexUsageConnection.read(executableURL:sourceID:) async -> UsageObservation`.
+The connection launches only the explicit Codex executable, initializes App Server over stdio,
+then issues account/rateLimits/read with reset-credit details excluded. It must wait for the
+initialization response before quota requests and match response IDs rather than the next line.
+Ignore unrelated notifications. Never issue thread/turn, login/logout, credit-consumption or email requests.
+Bound process lifetime, stdout bytes and each frame; stderr is not a user diagnostic.
+Stop the owned process on cancellation/timeout and return a bounded failure category.
+Verify five isolated process cases: valid handshake/quota; interleaved notifications and wrong IDs;
+server error/malformed frame; timeout/cancellation; oversized output. Fake servers must assert
+that no thread or turn methods were sent. Actual managed-provider reads follow only after those checks.

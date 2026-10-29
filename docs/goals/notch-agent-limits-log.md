@@ -3,7 +3,7 @@
 - Goal file: docs/goals/notch-agent-limits.md
 - Created: 2026-10-29 20:56 +08
 - Turn limit: 30
-- Status: running
+- Status: blocked; Codex parser commit approval pending
 
 ## Turns
 
@@ -34,9 +34,15 @@
 
 | 12 | 2026-10-29T21:31+08:00 | 1 previous build pass; 2 Claude focused five pass; 3 UI acceptance pending; 4 parser only, live sources pending; 5 whitespace pass | Usage store committed d6d211b. Split U2 into parser, forwarding wrapper and app delivery. Frozen five parser tests failed missing-type baseline then passed. U2a checked only on parser evidence. Official Claude status-line docs consulted. No installed config reads/writes or live provider calls. |
 
+| 13 | 2026-10-29T21:37+08:00 | 1 previous build pass; 2 Codex focused five pass; 3 UI acceptance pending; 4 both parsers, no live sources; 5 whitespace pass | Claude parser committed 738e0ee. Added Codex full-snapshot parser and five frozen tests after missing-type baseline; all pass. Split U3 parsing/connection/update steps; U3a checked on parser evidence only. Bounded actual durations, account and bucket identity, compatibility fallback, malformed inputs and overflow covered. No real account/config access. |
+
+| 14 | 2026-10-29T21:38+08:00 | 1 previous build pass; 2 previous full 84 pass; 3 UI pending; 4 connection plan only; 5 whitespace pass | Parser commit approval pending. Defined next read-only App Server handshake, response-ID matching, process/output bounds and five isolated test groups in spec. No next-task source edits, staging or provider calls. |
+
+| 15 | 2026-10-29T21:39+08:00 | 1 previous build pass; 2 previous 84 pass; 3 actual-app acceptance pending; 4 live sources pending; 5 whitespace pass | Commit approval still unanswered across turns 13–15. User requires a commit after each task; no unauthorized staging or next implementation. Checkpoint and mark goal blocked at this task boundary. |
+
 ## Final result
 
-Incomplete, running; presentation committed and usage-store task awaits commit approval. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
+Incomplete, blocked pending Codex parser commit approval. Both parsers are implemented; 84 tests previously passed. Live provider transport and actual-notch usage acceptance remain pending. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
 
 Planning clarification: provider visibility depends on active observed sessions, not cached quota. Codex-only hides Claude, Claude-only hides Codex, both active shows both. The goal was subsequently activated.
 
