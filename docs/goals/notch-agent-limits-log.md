@@ -3,7 +3,7 @@
 - Goal file: docs/goals/notch-agent-limits.md
 - Created: 2026-10-29 20:56 +08
 - Turn limit: 30
-- Status: blocked; pending exact-command commit approval
+- Status: running
 
 ## Turns
 
@@ -30,9 +30,11 @@
 
 | 10 | 2026-10-29T21:25+08:00 | 1 previous build pass; 2 previous focused five pass; 3 runtime pending; 4 sources pending; 5 whitespace pass | Same commit approval remains unanswered for goal turns 8–10. User requested commit after each task; no next implementation task started and no unauthorized staging occurred. Checkpoint and mark blocked until approval. |
 
+| 11 | 2026-10-29T21:28+08:00 | 1 previous build pass; 2 focused five pass; full suite 74 tests in ten suites pass; 3 actual-app acceptance pending; 4 store implemented, live sources pending; 5 whitespace pass | Resumed after approved aa552d6 commit. Added three-function bounded usage store and five frozen tests after missing-type baseline. Active-only filtering, independent anonymous sources, replacement, malformed/old rejection, missing/nonstandard windows and stale/no-reset-zero covered. STATUS checkpoint included in this three-file task. No provider/config access. |
+
 ## Final result
 
-Incomplete, blocked pending the presentation-task commit approval. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
+Incomplete, running; presentation committed and usage-store task awaits commit approval. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
 
 Planning clarification: provider visibility depends on active observed sessions, not cached quota. Codex-only hides Claude, Claude-only hides Codex, both active shows both. The goal was subsequently activated.
 

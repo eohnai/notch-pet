@@ -4,11 +4,11 @@
 
 The user cleared the menu/setup goal and requested updated planning, checkpointing and a replacement goal on 2026-10-29. Sessions belong in the notch, not the menu bar. The notch will show provider-specific 5-hour and weekly limits, initially for Claude Code and Codex. Only active providers appear: Codex-only hides Claude, Claude-only hides Codex, and both active shows both. Other agents are deferred.
 
-The specification and architecture reflect that direction. The prepared [notch/allowance goal](goals/notch-agent-limits.md) is not activated. Planning changed records only. Existing event handling, partial guided-menu evidence and completed tasks remain intact. Changes are uncommitted on `fix/reconcile-local-bridge-checks`.
+The [notch/allowance goal](goals/notch-agent-limits.md) is active again. Placement, panel, width, session details and presentation rules are committed through aa552d6. U1's bounded in-memory usage store and five tests are implemented; provider sources and actual-notch quota display remain pending. No installed configuration changed. Branch: `fix/reconcile-local-bridge-checks`.
 
 ## Next
 
-1. Review and activate the notch/allowance goal. Build N3–N5 next; remove menu session rows when notch access is usable.
+1. Review the U1 usage-store commit, then implement the Claude/Codex source adapters. Keep actual-app acceptance open; latest animation/width and detailed session behavior are not fully verified.
 2. Implement U1–U6 alongside the notch: real Claude forwarding, read-only Codex quota and truthful provider-aware windows.
 3. Keep I3 installation/recovery separate. Review a reversible plan before changing installed configuration.
 4. Continue local actions and pet work after the notch/usage milestone. Settle sprite-sheet input before P6.
@@ -16,7 +16,7 @@ The specification and architecture reflect that direction. The prepared [notch/a
 
 ## Blockers
 
-- No goal is active. The replacement goal is prepared only; the old menu/setup goal was cleared incomplete, not completed.
+- Goal active; U1 usage-store work is not committed yet. The old menu/setup goal remains cleared incomplete. No N3–N5 acceptance checkbox is ticked from build/unit checks alone.
 - Real Claude quota forwarding, output preservation and cancellation remain unverified. Live data may require user-approved reversible status-line setup. Fixtures/unavailable labels cannot complete live-source acceptance.
 - Codex long-running coexistence, sparse/cross-process updates and account switching remain unverified. Historical 300/10080-minute windows are not universal guarantees.
 - Computer Use exact-bundle access returned `Computer Use server error -10005: timeoutReached`. Guided screenshots verify five I1 groups. Remaining menu checks are retired in favor of notch acceptance, not counted as passed. Do not request repeated screenshots.
@@ -25,3 +25,5 @@ The specification and architecture reflect that direction. The prepared [notch/a
 - Stale: scripts/check-event-contract.py permits a previously conflicting turn ID to restore working state; SessionStore enforces the accepted unseen-turn rule. Correction remains separate work.
 - invalidFramesNeverReachCallback retains its documented frame-boundary timing assumption. The test and bridge are unchanged.
 - Physical desktop behavior, profiling, action channels, final live-agent checks and optional sprite-sheet choice remain later requirements.
+
+Usage-store implementation choice: five-minute receipt-age stale threshold, plus stale status after a supplied reset passes, source failure, or backward clock. Missing provider measurement time stays missing. This threshold is local display policy, not proof of provider measurement freshness.
