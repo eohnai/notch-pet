@@ -60,6 +60,8 @@
 
 | 25 | 2026-10-29T22:29+08:00 | 1 prior app build pass; 2 sender focused five pass; 3 prior UI filtering verified, full acceptance open; 4 Claude sender only, live source pending; 5 whitespace pass | Quota UI committed 80b9351. Added one-function typed Unix datagram sender and five frozen tests after missing-type baseline. Separate private endpoint, 8KiB payload, same-user 0700/0600 path gates, nonblocking no-spool behavior. Split receiver and helper/live setup tasks; U2c1 checked only on socket-test evidence. No config edits. |
 
+| 26 | 2026-10-29T22:37+08:00 | 1 prior build pass; 2 focused receiver five pass, full regression captured; 3 prior quota visibility verified, remaining UI open; 4 receiver callback tested, app wiring/helper/Claude live pending; 5 whitespace pass | Sender committed ed07904. Added three-method UsageReceiver and five frozen isolated tests after missing-type baseline. Private owned path, atomic datagrams, bounded drain/payload, validated observations, actual receipt stamp, stop/restart and replacement preservation verified. U2c2 callback scope checked; no installed config edits. |
+
 ## Final result
 
 Incomplete, running after approved protocol commit; bounded Codex connection and sanitized live read now verified. Both parsers are implemented; the current full suite passes 94 tests. Live provider transport and actual-notch usage acceptance remain pending. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
