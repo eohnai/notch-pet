@@ -4,11 +4,11 @@
 
 The user cleared the menu/setup goal and requested updated planning, checkpointing and a replacement goal on 2026-10-29. Sessions belong in the notch, not the menu bar. The notch will show provider-specific 5-hour and weekly limits, initially for Claude Code and Codex. Only active providers appear: Codex-only hides Claude, Claude-only hides Codex, and both active shows both. Other agents are deferred.
 
-The [notch/allowance goal](goals/notch-agent-limits.md) is active again. Placement, panel, width, session details and presentation rules are committed through aa552d6. U1's bounded in-memory usage store and five tests are implemented; provider sources and actual-notch quota display remain pending. No installed configuration changed. Branch: `fix/reconcile-local-bridge-checks`.
+The [notch/allowance goal](goals/notch-agent-limits.md) is active. Protocol sequencing is committed as a72ec9e. Bounded Codex process I/O is implemented and its five fake-process tests passed. A sanitized managed-provider check succeeded with two windows (300 and 10080 minutes) and account identity present. No thread/turn started; no raw account or quota values were retained. Claude forwarding and actual-notch quota display remain incomplete. Branch: `fix/reconcile-local-bridge-checks`.
 
 ## Next
 
-1. Review the U1 usage-store commit, then implement the Claude/Codex source adapters. Keep actual-app acceptance open; latest animation/width and detailed session behavior are not fully verified.
+1. Review the bounded Codex connection commit, then connect quota snapshots to the notch and implement Claude forwarding. Keep actual-app acceptance open; latest animation/width and detailed session behavior are not fully verified.
 2. Implement U1–U6 alongside the notch: real Claude forwarding, read-only Codex quota and truthful provider-aware windows.
 3. Keep I3 installation/recovery separate. Review a reversible plan before changing installed configuration.
 4. Continue local actions and pet work after the notch/usage milestone. Settle sprite-sheet input before P6.
@@ -16,7 +16,7 @@ The [notch/allowance goal](goals/notch-agent-limits.md) is active again. Placeme
 
 ## Blockers
 
-- Goal active; U1 usage-store work is not committed yet. The old menu/setup goal remains cleared incomplete. No N3–N5 acceptance checkbox is ticked from build/unit checks alone.
+- Goal active; Codex process I/O work awaits commit review. The old menu/setup goal remains cleared incomplete. No N3–N5 acceptance checkbox is ticked from build/unit checks alone.
 - Real Claude quota forwarding, output preservation and cancellation remain unverified. Live data may require user-approved reversible status-line setup. Fixtures/unavailable labels cannot complete live-source acceptance.
 - Codex long-running coexistence, sparse/cross-process updates and account switching remain unverified. Historical 300/10080-minute windows are not universal guarantees.
 - Computer Use exact-bundle access returned `Computer Use server error -10005: timeoutReached`. Guided screenshots verify five I1 groups. Remaining menu checks are retired in favor of notch acceptance, not counted as passed. Do not request repeated screenshots.
@@ -27,3 +27,5 @@ The [notch/allowance goal](goals/notch-agent-limits.md) is active again. Placeme
 - Physical desktop behavior, profiling, action channels, final live-agent checks and optional sprite-sheet choice remain later requirements.
 
 Usage-store implementation choice: five-minute receipt-age stale threshold, plus stale status after a supplied reset passes, source failure, or backward clock. Missing provider measurement time stays missing. This threshold is local display policy, not proof of provider measurement freshness.
+
+- Earlier full-suite runs timed out in health-probe tests while new fake servers launched concurrently. An executor experiment did not resolve it and was reverted. Sequencing only the new fake-process cases produced a full 94-test pass. Synthetic process contention is established; no specific OS scheduling cause is claimed. Temporary diagnostics were removed.

@@ -68,3 +68,5 @@ Do not silently modify settings to avoid that gate. If live evidence cannot be o
 an explicit unmet criterion; a polished fixture-only display is not completion.
 
 The user subsequently requested one commit per completed task. Show exact staging/commit commands and await approval as required by the user Git instructions; no pushes. This supersedes this goal's no-commit constraint only after that approval.
+
+On 2026-10-29 the user explicitly preapproved committing each completed verified task without further confirmation. Show scoped commands in progress and commit on the current non-default branch. No pushes. This supersedes earlier per-task confirmation wording for this conversation.

@@ -3,7 +3,7 @@
 - Goal file: docs/goals/notch-agent-limits.md
 - Created: 2026-10-29 20:56 +08
 - Turn limit: 30
-- Status: blocked; protocol-task commit approval pending
+- Status: running
 
 ## Turns
 
@@ -46,9 +46,15 @@
 
 | 18 | 2026-10-29T21:45+08:00 | 1 previous build pass; 2 previous 89 pass; 3 actual-app pending; 4 live sources pending; 5 whitespace pass | Same protocol commit approval unanswered for turns 16–18. No staging or next implementation under per-task commit instruction. Checkpoint and block goal pending approval. |
 
+| 19 | 2026-10-29T21:53+08:00 | 1 earlier build pass; 2 focused process five pass, full regression run captured; 3 UI pending; 4 Codex live read succeeds, app display/Claude pending; 5 whitespace pass | Protocol committed a72ec9e. Added cancellable two-function CodexUsageConnection, nonblocking pipes, descriptor SIGPIPE protection, bounded frames/output/deadline and owned-process cleanup. Five real fake-process tests passed; cancellation cleanup assertions strengthened. Temporary sanitized harness live read: failure=none, windows=2, durations=[300,10080], accountKnown=true. No thread/turn or config edits. U3b2 final checkbox deferred to spec evidence checkpoint. |
+
+| 20 | 2026-10-29T21:58+08:00 | 1 earlier build pass; 2 full 94 run fails existing health version probe, isolated health and new five tests pass; 3 UI pending; 4 live Codex read verified, Claude/app pending; 5 whitespace pass | Two unchanged full runs and an executor experiment failed IntegrationHealthTests:103 for both agents (timedOut vs unverified). Isolated version test passed. Executor hypothesis disproved; reverted experiment. No assertions weakened. User preapproved scoped commits for completed verified tasks without repeated confirmation; no pushes. Root cause remains open; no full-suite pass claimed. |
+
+| 21 | 2026-10-29T22:02+08:00 | 1 earlier build pass; 2 full 94 tests in 14 suites pass; 3 actual-notch acceptance pending; 4 Codex managed read verified, Claude/display pending; 5 whitespace pass | Temporary fictional health diagnostic observed both exited/output and running/no-output deadline states; removed probe. Sequenced new fake-process scenarios with Suite.serialized, keeping all assertions/deadlines and production health code unchanged. Full suite exits 0. Confirms synthetic process contention interaction, not a specific OS root cause. User standing approval permits scoped verified-task commits. |
+
 ## Final result
 
-Incomplete, blocked pending approval of the read-only protocol commit. Both parsers are implemented; 84 tests previously passed. Live provider transport and actual-notch usage acceptance remain pending. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
+Incomplete, running after approved protocol commit; bounded Codex connection and sanitized live read now verified. Both parsers are implemented; the current full suite passes 94 tests. Live provider transport and actual-notch usage acceptance remain pending. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
 
 Planning clarification: provider visibility depends on active observed sessions, not cached quota. Codex-only hides Claude, Claude-only hides Codex, both active shows both. The goal was subsequently activated.
 
