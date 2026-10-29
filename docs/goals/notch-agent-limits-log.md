@@ -32,6 +32,8 @@
 
 | 11 | 2026-10-29T21:28+08:00 | 1 previous build pass; 2 focused five pass; full suite 74 tests in ten suites pass; 3 actual-app acceptance pending; 4 store implemented, live sources pending; 5 whitespace pass | Resumed after approved aa552d6 commit. Added three-function bounded usage store and five frozen tests after missing-type baseline. Active-only filtering, independent anonymous sources, replacement, malformed/old rejection, missing/nonstandard windows and stale/no-reset-zero covered. STATUS checkpoint included in this three-file task. No provider/config access. |
 
+| 12 | 2026-10-29T21:31+08:00 | 1 previous build pass; 2 Claude focused five pass; 3 UI acceptance pending; 4 parser only, live sources pending; 5 whitespace pass | Usage store committed d6d211b. Split U2 into parser, forwarding wrapper and app delivery. Frozen five parser tests failed missing-type baseline then passed. U2a checked only on parser evidence. Official Claude status-line docs consulted. No installed config reads/writes or live provider calls. |
+
 ## Final result
 
 Incomplete, running; presentation committed and usage-store task awaits commit approval. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.

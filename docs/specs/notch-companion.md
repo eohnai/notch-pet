@@ -353,7 +353,10 @@ Use the shared presentation and navigation from N. P5–P6 are the open compatib
 Build alongside the notch; do not wait for the pet, action channels or hook installer. First support Claude Code and Codex. Preserve account-mode limits from the usage compatibility record.
 
 - [ ] U1: Add a shared usage store that preserves provider/window identity, account confidence, full bucket maps, receipt/source/reset timestamps, and sparse-update behavior without creating session events.
-- [ ] U2: Forward Claude status-line quota through a reversible wrapper that preserves original output, cancellation, exit behavior, and separate unverified-account observations.
+U2 is split into independently verified implementation tasks; forwarding acceptance remains incomplete.
+- [x] U2a: Parse bounded Claude 5-hour/weekly status-line fields into anonymous usage observations; verify five parser tests, independent missing windows, reset units and bounded errors.
+- [ ] U2b: Add a bounded Claude status-line forwarding wrapper that preserves original stdin/stdout, cancellation and exit behavior without changing installed configuration.
+- [ ] U2c: Deliver forwarded quota through a separate bounded usage transport into the app store; verify app-unavailable behavior and reversible setup under an explicitly approved configuration plan.
 - [ ] U3: Read full Codex allowance snapshots and supported update notifications through the verified read-only App Server connection without starting threads or turns.
 - [ ] U4: Add bounded refresh, cancellation, reconnect, and retry backoff; provider failures and passed reset times must retain honest stale/unavailable status.
 - [ ] U5: Show agent-aware 5-hour and weekly allowance sections in the notch for Claude Code and Codex in use, with used percentages, reset times, freshness and account confidence; preserve other returned Codex durations and avoid double-counting.
@@ -739,3 +742,12 @@ The initial test baseline failed because the type was missing. The first impleme
 an explicit CoreGraphics import; assertions were unchanged. The isolated Swift command with
 `--filter NotchPresentationTests` exited 0: five tests, zero failures.
 This is N3's placement foundation only; no panel is rendered yet, and N3 remains unchecked.
+
+### U2a quota parser verification, 2026-10-29
+
+ClaudeUsageProvider.parse(_:sourceID:receivedAtMs:) extracts five_hour/seven_day only, converting
+Unix seconds to milliseconds and preserving independently missing windows/reset times. Account
+and provider measurement identity remain absent. No raw status-line content is retained.
+Five ClaudeUsageProviderTests first failed the missing-type baseline, then passed with the
+implementation using the isolated Swift test command and --filter ClaudeUsageProviderTests.
+This verifies parsing only, not forwarding, terminal output preservation or live quota.
