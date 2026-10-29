@@ -2,9 +2,9 @@
 
 ## Now
 
-The user approved five areas and their feature lists, including implemented features. See `docs/specs/*/area.md` and decision 0011.
+The approved area indexes and decision 0011 are committed in `165e397`, including implemented and planned features. See `docs/specs/*/area.md`.
 Area indexes are written. Feature specs and task/evidence migration remain unfinished; `docs/specs/notch-companion.md` remains their source.
-Branch: `fix/reconcile-local-bridge-checks`. Existing receiver wiring remains unverified in two uncommitted source files. No app code changed or builds/tests ran during this planning work.
+Branch: `fix/reconcile-local-bridge-checks`. Existing receiver wiring in two source files and `docs/goals/notch-agent-limits-log.md` remain uncommitted. No app code changed or builds/tests ran during this planning work.
 The notch/allowance goal remains paused after 26 logged turns of its 30-turn limit. Planning does not resume it.
 
 ## Next
@@ -23,4 +23,5 @@ The notch/allowance goal remains paused after 26 logged turns of its 30-turn lim
 - Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Existing usage sockets have no crash-stale endpoint recovery.
 - Stale: `docs/specs/notch-companion.md`: U3b2 remains unchecked although bounded Codex process I/O and a sanitized live read were verified earlier. Leave unchanged until an evidence review.
 - Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state. SessionStore enforces the accepted unseen-turn rule.
+- Stale: `docs/ARCHITECTURE.md` describes visible session/usage surfaces and integration-health services as planned. Notch session/usage surfaces and integration-health code now exist, with incomplete verification recorded in the source spec and area indexes.
 - Sprite-sheet input choice P5 remains proposed and blocks P6. No deadlines are recorded.
