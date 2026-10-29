@@ -729,3 +729,13 @@ This plan does not silently approve those changes or modify the version-1 contra
 - Final interactive Codex checks: R6–R7 immediately before R8, preserving all requirements of decision 0009.
 - Documentation checks: local links resolve, completed checkboxes are preserved, and `git diff --check` is clean.
 
+
+### N3 placement foundation, 2026-10-29
+
+NotchPlacement.frame(screen:safeTop:notchWidth:expanded:) now computes compact/expanded panel
+frames without AppKit. Five frozen NotchPresentationTests cover physical cutout room, negative
+screen origins, narrow/short screens, displays without a cutout and invalid dimensions.
+The initial test baseline failed because the type was missing. The first implementation needed
+an explicit CoreGraphics import; assertions were unchanged. The isolated Swift command with
+`--filter NotchPresentationTests` exited 0: five tests, zero failures.
+This is N3's placement foundation only; no panel is rendered yet, and N3 remains unchecked.

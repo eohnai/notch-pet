@@ -1,6 +1,6 @@
 # Notch sessions and provider allowance
 
-Prepared 2026-10-29, not activated. The user cleared the previous menu/setup goal.
+Activated by the user on 2026-10-29. The user cleared the previous menu/setup goal.
 This goal follows the accepted notch-first direction and requested Claude Code/Codex limits.
 It does not resume I3 setup or claim that its design choices are settled.
 
@@ -66,3 +66,5 @@ be reviewed at their stage, using verified source capabilities.
 Live Claude forwarding may require user-approved configuration setup or an existing source invocation.
 Do not silently modify settings to avoid that gate. If live evidence cannot be obtained, stop with
 an explicit unmet criterion; a polished fixture-only display is not completion.
+
+The user subsequently requested one commit per completed task. Show exact staging/commit commands and await approval as required by the user Git instructions; no pushes. This supersedes this goal's no-commit constraint only after that approval.
