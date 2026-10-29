@@ -1,6 +1,6 @@
 # Notch Pet
 
-A macOS companion for Codex CLI and Claude Code in Otty, under development.
+A macOS companion for Codex CLI and Claude Code, under development, with terminal-independent operation as an accepted requirement.
 The current app provides a menu-bar control and Quit action.
 It also runs a local event receiver and bundles a silent hook helper.
 Agent notifications, the notch interface, the detachable pet, and usage limits are planned next.
@@ -132,18 +132,20 @@ Process timings include launch time. They are observations on this Mac, not a re
 ## Confirmed requirements
 
 - Use SwiftUI and AppKit on the user's M2 MacBook Air.
-- Support Codex CLI and Claude Code in Otty first.
+- Support Codex CLI and Claude Code without requiring Otty. Verify terminal combinations before claiming compatibility.
 - Show input requests and response completion through the notch interface.
 - Let the user detach, customize, and return a desktop pet.
 - Include reported usage limits where supported.
-- Allow later integrations with other apps and terminals.
+- Keep terminal navigation optional and allow later integrations with other coding apps.
 - Retain SwiftUI/AppKit and independently adapt selected Flux Island setup, session-navigation, window/pet, and quota-refresh behaviors.
-- Keep conservative session evidence, bounded one-way observation delivery, Otty-first navigation, and supported provider usage sources.
-- Include local approvals, structured-question answers, and explicit follow-up replies through verified agent-specific response channels, with Otty fallback for unavailable actions.
+- Keep conservative session evidence, bounded one-way observation delivery, optional terminal navigation adapters, and supported provider usage sources.
+- Include local approvals, structured-question answers, and explicit follow-up replies through verified agent-specific response channels, with available terminal navigation or manual-return guidance for unavailable actions.
 - Keep SSH and cloud-agent support as optional future work outside first-release acceptance.
 - Do not depend on Flux Island or reuse its code or internal assets. Sprite-sheet input compatibility remains a proposal.
 
 The original task list and architecture decisions 0001–0009 have recorded approvals; decision 0010 records the subsequently accepted local-interaction scope.
+[Decision 0012](docs/decisions/0012-support-terminal-independent-operation.md) accepts terminal-independent operation; live verification beyond Otty remains open.
+[Standalone pet use and packaging](docs/decisions/0013-separate-standalone-pet-scope.md) remain proposed, including whether to use one app, separate apps, or a service.
 The user requested the 2026-10-28 Flux-informed plan update; its revised remaining tasks are proposed for review.
 See the specification and [reference findings](docs/notes/flux-island-adoption.md) for selected behaviors,
 open choices, and the distinction between planned features and implemented code.

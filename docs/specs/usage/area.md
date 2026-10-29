@@ -5,8 +5,8 @@ Code: usage services in `Sources/SessionState/`, `Sources/NotchPet/NotchUsageVie
 
 ## Specs
 
-- `codex-allowance`: Read real Codex allowance and show it for active Codex sessions, including the shared usage store. Needs: notch/session-island.
-- `claude-allowance`: Forward real Claude allowance while preserving terminal output and cancellation. Needs: codex-allowance.
+- [`codex-allowance`](codex-allowance.md): Read real Codex allowance and show it for active Codex sessions, including the shared usage store. Needs: notch/session-island.
+- [`claude-allowance`](claude-allowance.md): Forward real Claude allowance while preserving terminal output and cancellation. Needs: codex-allowance.
 - `refresh-recovery`: Handle stale data, sparse updates, account changes, disconnects, and bounded retries. Needs: codex-allowance, claude-allowance.
 
 ## Shared context
@@ -14,6 +14,8 @@ Code: usage services in `Sources/SessionState/`, `Sources/NotchPet/NotchUsageVie
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
 - [Source specification](../notch-companion.md): preserve the completed usage-source investigation and U1–U6 tasks and evidence.
 - [Accepted provider sources](../../decisions/0007-read-supported-usage-data.md).
+- [Terminal independence](../../decisions/0012-support-terminal-independent-operation.md) requires supported allowance reads and forwarding without Otty or navigation metadata.
+- Preserve provider-source limits and terminal output. Terminal independence does not establish support for every shell, IDE, or remote environment.
 - Implemented: shared usage store, Claude and Codex parsers, bounded read-only Codex protocol/process connection, private usage sender/receiver, and active-provider notch sections.
 - Completed parser/transport tasks: U2a, U2c1, U2c2, U3a, U3b1. Preserve their checked states.
 - U1, U3b2, and U5 have implementation or earlier evidence but remain unchecked in the source spec. Review evidence before changing their states.

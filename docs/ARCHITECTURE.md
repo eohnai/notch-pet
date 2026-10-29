@@ -16,6 +16,8 @@ On 2026-10-28 the user retained SwiftUI/AppKit after considering Electron/React 
 The [reference findings](notes/flux-island-adoption.md) support the planned behavior below.
 The [specification](specs/notch-companion.md) owns acceptance checks and proposed tasks; the native stack and decisions 0001–0009 remain in force for their existing responsibilities.
 [Decision 0010](decisions/0010-add-local-agent-actions.md) adds accepted local-interaction scope without changing the existing observation protocol.
+[Decision 0012](decisions/0012-support-terminal-independent-operation.md) removes Otty as a product prerequisite.
+Agent monitoring and pet reactions use agent identity independently of optional terminal navigation.
 
 ## Boundaries
 
@@ -24,9 +26,9 @@ The [specification](specs/notch-companion.md) owns acceptance checks and propose
 | SwiftUI views | Notch content, pet, settings, usage display | Hook parsing and account access |
 | View models | Presentation state and user actions | Independent copies of session truth |
 | Session store | Authoritative session state and alert selection | Window placement |
-| Agent adapters | Translate Codex and Claude Code events | Otty navigation |
+| Agent adapters | Translate Codex and Claude Code events | Terminal navigation |
 | Local-action service and provider adapters | Verified capabilities, explicit user decisions/replies, request targeting, acknowledgements and cancellation | Inferring lifecycle progress or quota refresh |
-| Terminal adapters | Return to a known pane or application | Agent lifecycle detection |
+| Terminal adapters | Report verified exact-pane, application-only, or unavailable navigation | Agent lifecycle detection and provider action availability |
 | Usage providers | Read supported quota sources and report freshness | Estimating limits from token counts |
 | AppKit controllers | Window placement, focus, screen changes, dragging | Agent business rules |
 | Preferences and pet services | Save preferences and validate local assets | Session history queries |
@@ -43,7 +45,8 @@ The helper sends one bounded message to the app through the Unix-domain socket.
 The receiver validates the envelope, and the inbox maps its observation into shared event meaning.
 The session store applies the event once and publishes updated presentation state.
 The notch and pet reflect that state.
-A click asks the terminal adapter to focus the recorded pane.
+A navigation click uses the terminal adapter's verified capability.
+Missing terminal identity or navigation support does not block event receipt or session presentation.
 
 Usage providers send account snapshots to a separate usage store.
 They do not create agent lifecycle events or start agent turns.
@@ -55,7 +58,7 @@ Health observations do not start sessions, grant hook trust, or make a successfu
 ## Planned local-action flow
 
 The user accepted local approvals, structured answers, and follow-up replies. These are planned features, not implemented capabilities.
-A1 first verifies each installed agent/version's supported response mechanisms and ability to target an existing Otty session.
+A1 first verifies each installed agent/version's supported response mechanisms and ability to target an existing local agent session.
 A2 chooses a dedicated interactive helper/endpoint or a provider control channel for each supported capability and records its contract.
 The one-way version-1 observation helper keeps its existing 250 ms internal deadline and does not become a long-wait approval process.
 
@@ -63,7 +66,8 @@ Views submit explicit user actions to a shared local-action service rather than 
 The service checks current session/request identity, action capability, expiry/cancellation, and duplicate action identity before dispatch.
 Provider adapters encode decisions, structured answers, or follow-up text and report supported acknowledgements.
 Submission, provider acknowledgement, and subsequent lifecycle evidence are distinct states; a click cannot itself mark the agent working or a request resolved.
-Unknown outcomes are shown without blind replay. Unconfirmed or resolved requests have disabled controls and an Otty fallback.
+Unknown outcomes are shown without blind replay. Unconfirmed or resolved requests have disabled action controls.
+Offer verified terminal navigation or explain manual return. Missing navigation alone does not disable a verified provider action channel.
 Timeout, app loss, or cancellation cannot imply approval; each supported provider path needs a documented bounded fallback.
 
 Keep only bounded request details and draft/reply content necessary for the interaction in memory, outside routine diagnostics.
@@ -84,12 +88,26 @@ The temporary menu-bar session interface established partial event-delivery evid
 One shared presentation model derives selection and attention priority from session snapshots.
 The notch and later pet retain the same selected session and expose every concurrent session. The menu bar does not duplicate session content.
 Views do not maintain independent copies of lifecycle truth, and hiding or dismissing a visual notice cannot resolve a pending request.
-Terminal navigation validates live Otty pane identity before jumping; activating Otty is an explicit fallback for unavailable navigation.
+Terminal navigation validates live target identity before an exact-pane jump.
+Otty is one optional adapter. Application activation requires an identified application; otherwise explain manual return.
+Do not require Otty's executable or pane metadata for monitoring, pet reactions, or supported allowance reads.
+The version-1 wire contract retains its optional Otty-only navigation object. Additional terminal metadata needs a separate contract review.
 
 AppKit controllers own window geometry, focus, hit testing, dragging, fullscreen/Spaces, and display changes.
 Use supported native APIs to reproduce desired behavior rather than transplanting Electron helpers.
 The planned pet returns through notch overlap or a menu-bar action without losing shared attention state.
 Animation is presentation only: unknown state must not appear as confirmed working or response ready.
+
+## Standalone pet boundary
+
+[Decision 0013](decisions/0013-separate-standalone-pet-scope.md) accepts one app with an independent pet module and optional agent services.
+The pet module will own animation, assets, interaction, placement, and preferences without importing agent session types.
+The app will own optional service lifecycle. An adapter will translate shared session snapshots into pet presentation.
+Pet-first setup requires no coding agent or hook configuration. Pet-only startup will start no agent or usage services.
+After approved agent setup, received sessions will trigger agent presentation without a manual mode switch for each session.
+Missing events will not prove that a session ended. Unknown state and unresolved notices will retain their existing meanings.
+The user approved separate standalone pet and agent-reaction features. Their implementation task lists still need approval.
+This is accepted architecture awaiting implementation. No second app, background service, or repository split is planned.
 
 ## Proposed compatible pet input
 
@@ -146,7 +164,7 @@ This is a local development launch path; distribution packaging remains a later 
 
 - Identify sessions by agent and source session identifier, rather than project folder alone.
 - Keep pane identity separate from session identity.
-- Validate inherited Otty pane selectors against live state. Ambiguous matches make pane navigation unavailable.
+- Validate terminal targets against live state. For Otty, validate inherited pane selectors. Ambiguous matches make pane navigation unavailable.
 - Include event identity, source ordering where available, and observation time in the event contract.
 - Define rules for duplicate events, delayed events, and restarted sessions before integrating the UI.
 - Distinguish working, approval needed, response ready, failed, interrupted, ended, and unknown states.
@@ -156,7 +174,7 @@ This is a local development launch path; distribution packaging remains a later 
 - Give unresolved input requests priority over response-ready notices.
 - Keep every session accessible when several need attention.
 - Mark stale sessions unknown when their state cannot be confirmed.
-- A stale Otty pane link may only activate Otty; never create a replacement session automatically.
+- A stale terminal target permits only verified application activation or manual return. Never create a replacement session automatically.
 
 The version-1 contract specifies these requirements as provisional observations with a two-minute freshness limit.
 Unknown state retains unresolved requests as unconfirmed notices.
