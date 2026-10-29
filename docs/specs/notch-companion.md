@@ -1,5 +1,10 @@
 # Notch companion for terminal coding agents
 
+Record migration approved on 2026-10-29: [decision 0011](../decisions/0011-organize-records-by-feature.md) replaces the single-spec layout.
+The area indexes are [sessions](sessions/area.md), [notch](notch/area.md), [usage](usage/area.md), [actions](actions/area.md), and [pets](pets/area.md).
+This file remains the task and evidence source until `plan-feature` migrates each feature.
+Its earlier single-spec instructions are historical and superseded. Do not drop tasks or treat implementation as verified completion during migration.
+
 ## Goal
 
 Show when Codex CLI or Claude Code in Otty needs attention on the user's M2 MacBook Air.

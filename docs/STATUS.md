@@ -2,30 +2,25 @@
 
 ## Now
 
-The user cleared the menu/setup goal and requested updated planning, checkpointing and a replacement goal on 2026-10-29. Sessions belong in the notch, not the menu bar. The notch will show provider-specific 5-hour and weekly limits, initially for Claude Code and Codex. Only active providers appear: Codex-only hides Claude, Claude-only hides Codex, and both active shows both. Other agents are deferred.
-
-The [notch/allowance goal](goals/notch-agent-limits.md) is active. Protocol sequencing is committed as a72ec9e. Bounded Codex process I/O is implemented and its five fake-process tests passed. A sanitized managed-provider check succeeded with two windows (300 and 10080 minutes) and account identity present. No thread/turn started; no raw account or quota values were retained. Claude forwarding and actual-notch quota display remain incomplete. Branch: `fix/reconcile-local-bridge-checks`.
+The user approved five areas and their feature lists, including implemented features. See `docs/specs/*/area.md` and decision 0011.
+Area indexes are written. Feature specs and task/evidence migration remain unfinished; `docs/specs/notch-companion.md` remains their source.
+Branch: `fix/reconcile-local-bridge-checks`. Existing receiver wiring remains unverified in two uncommitted source files. No app code changed or builds/tests ran during this planning work.
+The notch/allowance goal remains paused after 26 logged turns of its 30-turn limit. Planning does not resume it.
 
 ## Next
 
-1. Review the bounded Codex connection commit, then connect quota snapshots to the notch and implement Claude forwarding. Keep actual-app acceptance open; latest animation/width and detailed session behavior are not fully verified.
-2. Implement U1–U6 alongside the notch: real Claude forwarding, read-only Codex quota and truthful provider-aware windows.
-3. Keep I3 installation/recovery separate. Review a reversible plan before changing installed configuration.
-4. Continue local actions and pet work after the notch/usage milestone. Settle sprite-sheet input before P6.
-5. Retain all seven deferred Codex checks in R6–R7 before R8 under decision 0009.
+1. Run `plan-feature` for `sessions/observation-bridge`, preserving completed foundation tasks and bridge evidence rather than implementing them again.
+2. Continue feature migration in area build order. Preserve all task IDs, checkbox states, requirements, and verification evidence, including implemented but unverified work.
+3. Confirm the original spec's final move or removal only after every task and acceptance check has a destination. Update links and reconcile the progress board.
+4. Before implementation resumes, plan the unfinished usage receiver wiring within `usage/claude-allowance`; review the interrupted build and app lifecycle checks.
+5. Resume the paused goal only on explicit request. Reconcile its records and remaining budget first.
 
 ## Blockers
 
-- Goal active; Codex process I/O work awaits commit review. The old menu/setup goal remains cleared incomplete. No N3–N5 acceptance checkbox is ticked from build/unit checks alone.
-- Real Claude quota forwarding, output preservation and cancellation remain unverified. Live data may require user-approved reversible status-line setup. Fixtures/unavailable labels cannot complete live-source acceptance.
-- Codex long-running coexistence, sparse/cross-process updates and account switching remain unverified. Historical 300/10080-minute windows are not universal guarantees.
-- Computer Use exact-bundle access returned `Computer Use server error -10005: timeoutReached`. Guided screenshots verify five I1 groups. Remaining menu checks are retired in favor of notch acceptance, not counted as passed. Do not request repeated screenshots.
-- Earlier `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-codex-setup/notch-pet-dev/build` initially failed at IntegrationHealthTests.swift:206: `timedOut` instead of `invalidOutput` for both agents. Unchanged reruns passed; cause unresolved. No runtime checks ran during this planning update.
-- I2 app-wiring acceptance remains incomplete. I3's ownership file is accepted, but recovery/concurrency, version gates and timeout design remain proposed.
-- Stale: scripts/check-event-contract.py permits a previously conflicting turn ID to restore working state; SessionStore enforces the accepted unseen-turn rule. Correction remains separate work.
-- invalidFramesNeverReachCallback retains its documented frame-boundary timing assumption. The test and bridge are unchanged.
-- Physical desktop behavior, profiling, action channels, final live-agent checks and optional sprite-sheet choice remain later requirements.
-
-Usage-store implementation choice: five-minute receipt-age stale threshold, plus stale status after a supplied reset passes, source failure, or backward clock. Missing provider measurement time stays missing. This threshold is local display policy, not proof of provider measurement freshness.
-
-- Earlier full-suite runs timed out in health-probe tests while new fake servers launched concurrently. An executor experiment did not resolve it and was reverted. Sequencing only the new fake-process cases produced a full 94-test pass. Synthetic process contention is established; no specific OS scheduling cause is claimed. Temporary diagnostics were removed.
+- Migration pending: the progress board shows planned area specs as `no spec yet`. Counts still come from the original specification and do not imply missing implementations.
+- Interrupted check: `env TMPDIR=/private/tmp/notch-pet-notch-limits DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only`. Its result was not captured before pause. The saved tool handle now reports `exec cell 190 not found`. The current source wiring is unverified.
+- Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Fixtures cannot establish live-source acceptance.
+- Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Existing usage sockets have no crash-stale endpoint recovery.
+- Stale: `docs/specs/notch-companion.md`: U3b2 remains unchecked although bounded Codex process I/O and a sanitized live read were verified earlier. Leave unchanged until an evidence review.
+- Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state. SessionStore enforces the accepted unseen-turn rule.
+- Sprite-sheet input choice P5 remains proposed and blocks P6. No deadlines are recorded.
