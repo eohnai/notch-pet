@@ -203,6 +203,44 @@ The repeated failure was checkpointed under next-task's stop rule. No parser, de
 Resolve the helper verification blocker separately, then rerun the full process suite before ticking the adapter task.
 Claude interactive Otty behavior remains required during final workflow verification.
 
+## Helper parser blocker resolved, 2026-10-27
+
+This section preserves the earlier local investigation restored after the pull.
+Its measurements and test results describe that earlier source, not the current checkout.
+The later [G1/G2 record](../specs/notch-companion.md#g1g2-verification-2026-10-28)
+documents the pulled parser's additional deadline checks and supersedes this implementation summary.
+The local whitespace regression and two-agent boundary checks remain additional coverage.
+They have not been rerun against the combined checkout because runtime checks remain paused.
+
+The user approved a bounded parser investigation, fix, and verification task.
+The unchanged helper passed `python3 scripts/check-event-bridge.py` this session.
+Its process times were 6–189 ms, including launch. The previous boundary failure did not reproduce.
+
+A temporary probe used copied production bridge sources and the Command Line Tools debug compiler.
+Five maximum-size projections spent 175–190 ms scanning trailing spaces, nearly all projection time.
+Changing only the whitespace scan from array membership to a byte switch reduced that scan to 9–10 ms.
+This isolates a substantial parser cost without claiming that the earlier timing reproduced.
+The production fix applies that comparison change. Input bounds, JSON rules, and deadlines remain unchanged.
+The probe remains outside Git in `/private/tmp/notch-pet-parser-probe/`.
+
+The Swift regression checks leading and trailing padding with all four JSON whitespace bytes for both agents.
+It also checks oversized inputs, invalid whitespace, and a second trailing JSON value.
+The existing process suite remains the timing check, with maximum-size delivery extended to both agents.
+No stricter timing threshold was added because the previous failure did not reproduce reliably this session.
+
+Verification after the fix:
+
+- `bash scripts/run.sh --build-only`: built both executables with Command Line Tools.
+- `python3 scripts/check-event-bridge.py`: all checks passed; process times 6–465 ms including launch.
+- `env TMPDIR=/private/tmp python3 scripts/check-event-bridge.py`: all checks passed with the Xcode-built helper; process times 6–471 ms.
+- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`: 49 tests passed across five suites.
+- `python3 scripts/check-event-contract.py`: 68 messages, 37 sequences with 122 steps, four capacity checks, and document checks passed.
+
+Both process runs reached invalid-input, open-stdin, and busy-socket assertions and passed them.
+The Xcode process run also completed within the existing launch allowances.
+The earlier boundary and launch failures no longer block the Claude adapter task.
+These checks use fictional inputs. Live Claude interactive coverage remains for final workflow verification.
+
 ## Commands and retained local evidence
 
 ### Partial interactive Codex verification, 2026-10-23

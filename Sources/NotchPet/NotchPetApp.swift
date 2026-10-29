@@ -10,7 +10,7 @@ struct NotchPetApp: App {
 
     var body: some Scene {
         MenuBarExtra("Notch Pet", systemImage: "pawprint.fill") {
-            CompanionMenu()
+            CompanionMenu(onShowNotch: { delegate.showNotch() })
                 .environmentObject(delegate.sessionStore)
                 .environmentObject(delegate.integrationHealth)
         }
@@ -101,8 +101,12 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
     private var inbox: SessionEventInbox?
     private var expiryTimer: DispatchSourceTimer?
     private var receiptCutoffNs: UInt64 = 0
+    private var notchPanel: NotchPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let notchPanel = NotchPanelController(sessionStore: sessionStore)
+        self.notchPanel = notchPanel
+        notchPanel.show()
         let inbox = SessionEventInbox { [weak self] batch, lost in
             guard let self else { return }
             // Delivery happened even when a clock cutoff prevents it from restoring session freshness.
@@ -130,6 +134,8 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(invalidateObservations),
                                                name: .NSSystemClockDidChange, object: nil)
     }
+
+    func showNotch() { notchPanel?.show() }
 
     func applicationWillTerminate(_ notification: Notification) {
         bridge.stop()
@@ -172,105 +178,14 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
 }
 
 private struct CompanionMenu: View {
-    @EnvironmentObject private var sessionStore: SessionStore
+    let onShowNotch: () -> Void
 
     var body: some View {
-        Text("Notch Pet")
-
-        if sessionStore.sessions.isEmpty {
-            Text("No sessions observed yet.")
-        } else {
-            ForEach(sessionStore.sessions) { snapshot in
-                SessionMenuEntry(snapshot: snapshot)
-            }
-        }
-
+        Button("Show Notch", action: onShowNotch)
         Divider()
-
         Button("Quit Notch Pet") {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
-    }
-}
-
-private struct SessionMenuEntry: View {
-    let snapshot: SessionSnapshot
-
-    private var statusLabel: String {
-        switch snapshot.status {
-        case .idle: "Observed idle"
-        case .working: "Working"
-        case .questionNeeded: "Answer needed"
-        case .approvalNeeded: "Approval needed"
-        case .responseReady: "Response ready"
-        case .unknown: "Unknown"
-        case .ended: "Ended"
-        }
-    }
-
-    private var unknownExplanation: String {
-        switch snapshot.reason {
-        case .expired:
-            "State observations expired after two minutes."
-        case .clockOrWake:
-            "Fresh evidence is needed after a clock change or sleep/wake."
-        case .reusedSessionID:
-            "This session identity was already observed ending."
-        case .identityCapacity, .requestCapacity:
-            "Observation capacity was reached. Current activity is unconfirmed."
-        case .deliveryOverflow:
-            "Some observations were lost. Current activity is unconfirmed."
-        case .noBaseline, .missingTurnIdentity, .uncorrelatedStop,
-             .uncorrelatedActivity, .uncorrelatedResolution:
-            "Observations could not be matched to a confirmed current turn."
-        case .eventIDConflict, .ambiguousCaptureOrder, .overlappingTurns,
-             .activityAfterStop, .requestConflict:
-            "Conflicting observations leave current activity unconfirmed."
-        case nil:
-            "Current activity is unconfirmed."
-        }
-    }
-
-    var body: some View {
-        let agent = snapshot.key.agent == "codex" ? "Codex" : "Claude Code"
-        let project = snapshot.projectPath.map { URL(fileURLWithPath: $0).lastPathComponent }
-        let projectLabel = project.flatMap { $0.isEmpty ? nil : $0 } ?? "Project not observed"
-
-        Menu {
-            Text("Agent: \(agent)")
-            Text("Session: \(snapshot.key.sessionID)")
-            Text("Project: \(snapshot.projectPath ?? "Not observed")")
-            Text("Status: \(statusLabel)")
-
-            if snapshot.status == .unknown {
-                Text(unknownExplanation)
-            }
-
-            if let receipt = snapshot.receiptWallMs {
-                let date = Date(timeIntervalSince1970: Double(receipt) / 1000)
-                Text("State last refreshed: \(date.formatted(date: .abbreviated, time: .standard))")
-            } else {
-                Text("No confirmed state refresh recorded.")
-            }
-
-            if !snapshot.pendingRequests.isEmpty {
-                Divider()
-
-                ForEach(snapshot.pendingRequests, id: \.eventID) { request in
-                    let kind = request.kind == .questionNeeded ? "Question" : "Approval"
-                    if request.isConfirmed {
-                        Text("\(kind) needed: \(request.toolName)")
-                    } else {
-                        Text("Unconfirmed \(kind.lowercased()) notice: \(request.toolName)")
-                    }
-                    if let toolUseID = request.toolUseID {
-                        Text("Tool call: \(toolUseID)")
-                    }
-                }
-            }
-        } label: {
-            Text("\(agent) · \(projectLabel) · \(snapshot.key.sessionID) — \(statusLabel)")
-        }
     }
 }

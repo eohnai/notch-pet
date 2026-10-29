@@ -1,7 +1,7 @@
 # Codex lifecycle hook setup proposal
 
-Status: proposed, 2026-10-28. I3a authorizes this documentation and the task split only.
-The ownership mechanism and file-update recovery design require review before I3b implementation.
+Status: proposed implementation contract, 2026-10-28. The user accepted a separate ownership file.
+The recovery design and implementation plan still require review before I3b implementation.
 No hook installation, configuration access, or runtime verification is established by this document.
 
 ## Existing requirements
@@ -84,10 +84,11 @@ Do not restore a whole-file backup over subsequent user edits.
 
 ## Ownership alternatives requiring a decision
 
-The user approved documenting alternatives, not selecting one. The recommendation below is
-engineering judgment inferred from the specification's preservation requirements ^[inferred].
+I3a originally approved documenting alternatives only. The user subsequently selected a separate
+ownership file. Its preservation rationale below comes from the reviewed recommendation.
 
-**External ownership record with exact managed-entry descriptions — recommended, proposed.**
+**External ownership record with exact managed-entry descriptions — accepted representation, 2026-10-28.**
+The user selected a separate ownership file. The detailed schema and recovery protocol remain proposed.
 Keep a versioned record under the app's Application Support directory, outside the repository.
 Bind it to the target configuration, installation identity, and exact app-created groups/handlers,
 including command, matcher, and timeout fields. Store only app-created data, not unrelated
@@ -107,8 +108,9 @@ edit cannot be treated as proof that the entire entry is still app-owned. The de
 how it detects such edits without deleting user work; marker presence or helper-name matching
 alone is insufficient.
 
-**Decision: open.** I3b must settle the ownership representation, collision rules, and recovery
-protocol before writing code. Neither alternative authorizes trust bypasses or whole-file replacement.
+**Decision: separate ownership file accepted.** Entry markers were considered and rejected as the
+sole ownership mechanism. I3b must settle the record schema, collision rules, and recovery protocol
+before writing code. This choice authorizes neither trust bypasses nor whole-file replacement.
 
 ## Application, interruption, and removal requirements
 
@@ -164,6 +166,109 @@ cases above and the chosen ownership mechanism. I3c will review file-operation c
 further if required by the specification's file/function/test limits. Fixtures, records, and captures
 remain outside the repository; tests must never load the user's agent configuration.
 
-Runtime verification remains paused. When explicitly resumed, use the spec's isolated Xcode
-Swift checks and build, followed by I6's disposable setup/delivery/cleanup checks. No I3a prose
+Runtime verification was paused during I3a. The combined goal subsequently renewed its specified checks.
+Use the spec's isolated Xcode Swift checks and build; I6's setup/delivery/cleanup remains later work. No I3a prose
 review counts as passing those checks, completing I3b/I3c/I5/I6, or completing the existing I2 goal.
+
+## I3 design review for the activated goal
+
+Status: proposed, 2026-10-28. Activating the combined goal authorizes I1 checks and planning.
+Only the separate ownership file is accepted. This section needs approval before production code.
+
+### Record schema and matching
+
+Propose schema version 1 with installation UUID, absolute configuration path, parent directory
+device/inode identity, helper path, and seven event/group descriptions. Each group description
+contains only its event name and exact app-created group/handler values, including command and timeout.
+Do not record array indices as identity. Do not retain unrelated configuration or commands.
+Bound each record and journal to 262144 bytes. Reject unknown schema versions and duplicate keys.
+Store records in an app-private directory with mode 0700; record/journal files use mode 0600.
+
+The planner must find exactly one unchanged owned group for each recorded event. Reordering unrelated
+groups is allowed. Missing, edited or duplicated owned groups are conflicts. Without an ownership
+record, any lookalike managed invocation is a collision, never proof of ownership.
+Helper-path changes require a later reviewed migration; do not silently treat them as first installation.
+
+### Preservation and interfaces
+
+Use bounded, lossless JSON scanning. Reject duplicate keys at every object depth.
+Preserve unrelated token bytes, including numeric lexemes, and array order by inserting groups
+at validated byte ranges. Do not round-trip arbitrary user values through floating-point JSON objects.
+Validate the complete candidate before returning it. Unchanged installation returns original bytes.
+The planner reads no files and launches no processes.
+
+Proposed concrete entry points:
+
+```swift
+CodexHookSetupPlanner.plan(_ input: CodexHookPlanInput) -> CodexHookPlan
+CodexHookInstaller.install(_ request: CodexHookInstallRequest) -> CodexHookInstallResult
+```
+
+`CodexHookPlanInput` carries optional current bytes and ownership, installation UUID, helper path,
+target identity, and explicit verified version/enablement evidence. The result carries a candidate
+and new ownership, unchanged, or a bounded unavailable/conflict category. It never carries raw errors.
+`CodexHookInstallRequest` supplies explicit configuration, ownership-directory and helper URLs plus
+version/enablement evidence. Tests supply disposable URLs only. The installer rereads current state
+and replans; a caller cannot apply an unchecked saved candidate.
+
+### File updates and recovery
+
+Propose a process-shared exclusive advisory lock in the app-owned record directory, acquired without
+unbounded waiting. Validate directory components and open files without following symlinks.
+Require same-user ownership, regular files, no unexpected hard links, and safe directory permissions.
+Preserve existing configuration mode; new configuration uses mode 0600. Validate the helper without executing it.
+Use descriptor-based reads and target/parent identity checks, with bounded data and operation loops.
+
+Write and synchronize a pending journal before configuration replacement. It contains installation
+identity, previous and candidate configuration SHA-256 digests, previous ownership digest or absence,
+and the new app-only ownership record. It contains no whole-configuration backup or candidate copy.
+Prepare the candidate in a private same-filesystem temporary file, synchronize it, recheck the inspected
+target identity and digest, then replace configuration atomically. Synchronize the parent directory.
+Persist and synchronize ownership next, then remove the journal and synchronize its directory.
+Keep file descriptors and the lock until completion. Bound filesystem errors into useful categories.
+
+| Interruption/restart state | Proposed action |
+|---|---|
+| Before durable journal | No installation claim; configuration remains unchanged. |
+| Valid pending journal; configuration matches previous digest and previous ownership still matches | Clear pending intent only; leave configuration unchanged and allow a fresh retry. |
+| Valid pending journal; configuration matches candidate digest and ownership is still previous/absent | Verify all recorded groups and identities, then finalize ownership from journal. Do not rewrite configuration. |
+| Valid pending journal; candidate configuration and new ownership both match | Clear pending intent; report installed without adding groups. |
+| Journal malformed, identities differ, ownership changed, or configuration matches neither digest | Conflict; leave configuration and ownership untouched, retain recovery evidence. |
+| No pending journal; valid ownership and unique unchanged entries | Unchanged even if unrelated groups moved. |
+| No pending journal; missing ownership but lookalike entries exist | Conflict; never adopt the entries. |
+
+Recovery never restores a whole-file backup, removes a user edit, or guesses which duplicate is ours.
+Recovery checks must exercise every table row and every durable write boundary.
+
+### Concurrent-writer limit requiring explicit approval
+
+The advisory lock coordinates this app's installers only. It cannot force an editor or Codex to lock.
+Rechecking inode/metadata/digest detects observed stale state, but comparison followed by rename has
+a race window. Atomic rename alone does not provide compare-and-swap against a noncooperating writer.
+Therefore this proposal cannot promise preservation of an external write made in that final window.
+Approve this documented limitation or choose a different write strategy before implementation.
+Do not describe a cooperative lock as a transaction across independent configuration writers.
+
+### Provider settings and evidence boundary
+
+Current [official hook documentation](https://learn.chatgpt.com/docs/hooks) specifies `timeout` in seconds,
+with a three-second maximum for `SessionEnd`. It documents `[features].hooks` and the deprecated
+`codex_hooks` alias. The [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+also identifies `features.hooks`. These are current documentation findings, not proof for every recorded CLI version.
+Propose `timeout: 3` for all seven managed command hooks, using the quoted absolute helper path
+and exactly `--agent codex`. Preserve synchronous behavior and hook trust review.
+Verify timeout parsing and hook enablement against the selected CLI version before implementing gates.
+If hooks are disabled or evidence is unavailable, return unavailable with instructions; never edit config.toml.
+
+Read-only package-path inspection found `standalone/current` points to release
+`0.164.0-aarch64-apple-darwin`. No hook/version schema ships as a separately discoverable
+schema file in that package. This metadata does not prove timeout parsing or effective feature
+enablement. No agent process, configuration probe, or schema-generation command was run.
+
+### Size review
+
+Lossless parsing, ownership comparison, durable file updates and recovery need separate steps.
+Propose retaining I3b/I3c as parent tasks, with reviewed implementation steps for JSON scanning,
+planning/matching, guarded file operations, and recovery. Each step must meet the existing
+three-file, three-function and five-test limits. Keep the five frozen planner tests and five frozen
+installer tests parameterized across the required cases. No task-list split is accepted yet.
