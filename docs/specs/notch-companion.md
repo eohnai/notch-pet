@@ -359,7 +359,8 @@ U2 is split into independently verified implementation tasks; forwarding accepta
 - [ ] U2c: Deliver forwarded quota through a separate bounded usage transport into the app store; verify app-unavailable behavior and reversible setup under an explicitly approved configuration plan.
 U3 is split into full-snapshot parsing and the read-only connection; live acceptance remains incomplete.
 - [x] U3a: Normalize bounded full Codex quota snapshots, preserving buckets, account identity and actual durations; verify five parser tests without compatibility double-counting.
-- [ ] U3b: Add bounded read-only Codex App Server initialization/account/quota requests without starting threads or turns; verify isolated protocol/process cases.
+- [x] U3b1: Sequence read-only Codex quota protocol initialization and response-ID matching; verify five isolated protocol tests without thread/turn methods.
+- [ ] U3b2: Run the quota protocol over bounded Codex App Server process I/O; verify timeout, cancellation, framing, oversized output and cleanup with isolated fake executables, then perform a sanitized managed-provider read.
 - [ ] U3c: Handle rate-limit notifications by rereading full snapshots, account changes and source failures; verify cancellation and reconnect without stale-account leakage.
 - [ ] U4: Add bounded refresh, cancellation, reconnect, and retry backoff; provider failures and passed reset times must retain honest stale/unavailable status.
 - [ ] U5: Show agent-aware 5-hour and weekly allowance sections in the notch for Claude Code and Codex in use, with used percentages, reset times, freshness and account confidence; preserve other returned Codex durations and avoid double-counting.
@@ -776,3 +777,22 @@ Stop the owned process on cancellation/timeout and return a bounded failure cate
 Verify five isolated process cases: valid handshake/quota; interleaved notifications and wrong IDs;
 server error/malformed frame; timeout/cancellation; oversized output. Fake servers must assert
 that no thread or turn methods were sent. Actual managed-provider reads follow only after those checks.
+
+### U3b1 protocol verification, 2026-10-29
+
+CodexUsageProtocol has three methods (init/start/receive). Five frozen tests first failed the
+missing-type baseline then passed: initialization ordering, quota-only outbound methods, unrelated
+notifications/wrong IDs, bounded server errors, malformed/oversized input and terminal completion.
+Frames are bounded to 256 KiB and cumulative received bytes to 1 MiB per one-shot connection.
+No process or real provider was contacted. U3b2 owns deadlines, OS cancellation and cleanup.
+
+U3b2 process plan: expose `CodexUsageConnection.read(executableURL:sourceID:) async -> UsageObservation`.
+Run the explicit executable on a cancellable worker. Maintain a small nonblocking stdin request
+queue and newline-framed stdout buffer. Enforce the protocol frame/total-byte limits and a shared
+post-launch deadline; process-launch time must be reported separately if the OS launch cannot be
+interrupted. Polling must recheck cancellation frequently and never block on a full input pipe.
+Suppress SIGPIPE on the pipe descriptor without changing the host process's global signal policy.
+On completion/error/cancellation, close owned pipe ends and terminate only the owned process.
+Do not print raw stdout/stderr or retain unrelated notification content. Five isolated process
+tests must prove real handshake order, wrong-ID interleaving, error/EOF, timeout/cancellation and
+output bounds, including child cleanup. No live read precedes these checks.

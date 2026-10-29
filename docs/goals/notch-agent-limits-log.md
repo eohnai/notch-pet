@@ -3,7 +3,7 @@
 - Goal file: docs/goals/notch-agent-limits.md
 - Created: 2026-10-29 20:56 +08
 - Turn limit: 30
-- Status: blocked; Codex parser commit approval pending
+- Status: blocked; protocol-task commit approval pending
 
 ## Turns
 
@@ -40,9 +40,15 @@
 
 | 15 | 2026-10-29T21:39+08:00 | 1 previous build pass; 2 previous 84 pass; 3 actual-app acceptance pending; 4 live sources pending; 5 whitespace pass | Commit approval still unanswered across turns 13–15. User requires a commit after each task; no unauthorized staging or next implementation. Checkpoint and mark goal blocked at this task boundary. |
 
+| 16 | 2026-10-29T21:44+08:00 | 1 previous build pass; 2 focused protocol five pass; 3 UI pending; 4 protocol only, no live process; 5 whitespace pass | Resumed after 455abed parser commit. Split U3b protocol/OS process tasks. Added three-method CodexUsageProtocol and five frozen tests after missing-type baseline. Init-before-quota, response ID matching, bounded frames/errors and no work-start methods verified. U3b1 checked; U3b2 remains open. No account/config access. |
+
+| 17 | 2026-10-29T21:45+08:00 | 1 previous build pass; 2 previous full 89 pass; 3 UI pending; 4 OS process plan only; 5 whitespace pass | Protocol commit approval pending. Documented cancellable worker, nonblocking pipes, descriptor-level SIGPIPE handling, deadlines and cleanup checks for U3b2. No source changes, staging or live calls. |
+
+| 18 | 2026-10-29T21:45+08:00 | 1 previous build pass; 2 previous 89 pass; 3 actual-app pending; 4 live sources pending; 5 whitespace pass | Same protocol commit approval unanswered for turns 16–18. No staging or next implementation under per-task commit instruction. Checkpoint and block goal pending approval. |
+
 ## Final result
 
-Incomplete, blocked pending Codex parser commit approval. Both parsers are implemented; 84 tests previously passed. Live provider transport and actual-notch usage acceptance remain pending. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
+Incomplete, blocked pending approval of the read-only protocol commit. Both parsers are implemented; 84 tests previously passed. Live provider transport and actual-notch usage acceptance remain pending. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
 
 Planning clarification: provider visibility depends on active observed sessions, not cached quota. Codex-only hides Claude, Claude-only hides Codex, both active shows both. The goal was subsequently activated.
 
