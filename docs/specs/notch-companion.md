@@ -33,7 +33,7 @@ The [reference findings](../notes/flux-island-adoption.md) separate observed Flu
 - App unavailability cannot auto-approve a tool or leave the terminal waiting indefinitely for this app.
 - Documented checks cover sleep, wake, fullscreen, Space changes, external-display removal, and Reduce Motion.
 - A five-minute idle profile and an animated-pet profile record CPU and memory measurements on the target Mac.
-- Before the notch is built, the menu-bar interface can display actual session snapshots from both agents in isolated Otty sessions.
+- The notch is the primary session interface. The menu bar contains basic app controls and no session list.
 - Setup reports agent-version support, managed-hook configuration, helper availability, receiver state, and last observed delivery separately.
 - Repeating setup does not duplicate managed hooks; removal preserves unrelated configuration and reports conflicting user edits.
 - A stale or ambiguous Otty pane selector never focuses another pane or creates a replacement session; the interface explains the unavailable action.
@@ -72,6 +72,62 @@ The sprite-sheet compatibility proposal below has its own acceptance checks. It 
 - Preserve all completed work and the existing single-spec layout requested by the user. Do not migrate specs or decision records into new folders.
 - Reimplement selected reference behavior through supported native APIs. Reference inspection is evidence of packaged code, not runtime verification or a performance benchmark.
 
+## Notch and allowance plan update, 2026-10-29
+
+The user approved the prior notch direction and requested adding 5-hour and weekly limits.
+This update changes records only. No goal is active after the user cleared the old goal.
+Keep the existing single specification as previously requested; N and U are separate feature slices.
+Completed tasks and historical evidence remain intact. Open task wording reflects the new direction.
+
+### Feature 1: access sessions in the notch
+
+Goal: inspect sessions through a compact, expandable island around the physical notch.
+Collapsed content shows activity and session count. Explicit expansion reveals all sessions and details.
+The old menu session list is removed only when the notch can replace it. Quit remains available.
+Settings and Return Pet appear when their implementations exist, without dead controls.
+
+Done when N3–N5 and the I1 retirement check pass: correct notch placement; expand/collapse without
+unsolicited focus; both providers and same-folder sessions remain distinct; all observed state and
+retained-notice meanings survive; selection survives updates; menu contains no session list.
+The real-app check uses fictional helper events, not a second mock interface. Limit visual QA to
+one batched pass and one correction pass. Do not require repeated user screenshots.
+N1–N2 exact-pane navigation and N6 live-agent acceptance remain separate follow-ups.
+
+### Feature 2: see the limits of agents in use
+
+Goal: see Claude Code and Codex 5-hour and weekly allowance next to their sessions in the notch.
+Show only providers with active observed sessions: Codex alone shows only Codex; Claude alone shows only Claude; both active shows both. Cached allowance alone must not make an inactive provider appear. Percentages are labelled used;
+show a reset time/countdown when supplied, plus freshness and source/account confidence.
+Do not multiply allowance by session count or combine providers into a total.
+
+Accepted provider visibility: only agents in use appear. Implementation assumption for review:
+a provider is in use when it has a non-ended observed session. Unknown sessions remain visible with uncertainty. With no observed sessions, show an
+empty state rather than claiming that no agent process exists. Multiple anonymous Claude sources
+remain separate, labelled account unverified; provider grouping does not establish shared account identity.
+
+Done when U1–U6 pass: Claude-only, Codex-only, both-provider and empty cases render correctly;
+real supported sources supply values to the actual notch; either window can independently be absent;
+stale/disconnected/signed-out states explain missing values; a reset never fabricates zero usage;
+reconnect and multiple sessions do not duplicate allowance or start agent work.
+Fictional values are test fixtures only. Unavailable states do not substitute for required live-source verification.
+
+Claude uses the accepted status-line forwarding source. Codex uses read-only App Server quota reads.
+The provider contracts must preserve Claude terminal output and bound cancellation/waits.
+Quota has its own store/transport; do not widen the existing lifecycle envelope to carry account data.
+Codex window labels follow reported duration: 300 minutes maps to 5-hour, 10080 to weekly.
+Other or unknown durations keep honest labels; never relabel every primary/secondary pair as 5h/week.
+Missing windows show unavailable with a bounded reason rather than a made-up percentage.
+
+Out of scope for these slices: additional agents, animated/custom pets, approval/reply dispatch,
+SSH/cloud, private endpoints, credentials, token-based estimates and automatic paid prompts.
+The existing I3 setup design remains separate and is not an entry gate for notch/usage development.
+Installed configuration changes require an explicit reversible plan and user approval; isolated fixtures do not.
+
+Execution order: N3, N4, N5, U1, U2, U3, U4, U5, U6. Each implementation task still needs a
+concrete size check: at most three files, three added production functions and five new tests.
+Split a task before coding when it cannot fit. Do not hide extra files/functions in giant methods.
+The initial goal groups these into eight reviewable stages; their source-of-truth checkboxes stay here.
+
 ## Behavior to adapt
 
 All behavior in this section is planned unless the coverage record below identifies implemented code.
@@ -93,7 +149,7 @@ Install or remove any additional action integration with the same ownership, con
 
 ### Session selection and Otty navigation
 
-First expose real session snapshots through the existing menu-bar shell, then reuse that presentation state in the notch.
+Present real session snapshots directly in the notch. Retain the existing menu implementation only until the notch replaces it; remove session rows when that replacement ships.
 Show agent, project, session identity sufficient to distinguish same-folder sessions, attention state, and evidence freshness.
 Derive priority once for both surfaces: confirmed unresolved input first, then response-ready notices, with every session still reachable.
 Retain unconfirmed requests visibly when the store becomes unknown; dismissing a presentation notice must not resolve the underlying request.
@@ -136,7 +192,7 @@ Both structures keep action state in a service/store shared by the notch and pet
 ### Native notch and detachable pet
 
 Use supported AppKit panel/window behavior for display geometry, focus, Spaces, fullscreen, and transparent-area hit testing.
-Keep a menu-bar route to sessions, settings, and Return Pet even when an overlay is inaccessible.
+Keep basic menu-bar controls for Quit, implemented settings, and Return Pet when available. Do not duplicate the session list there. Provide a basic Show Notch recovery action when the overlay is inaccessible.
 The notch and detached pet observe the same session/presentation state; switching surfaces cannot lose or resolve an alert.
 Drag-out creates the desktop presentation; overlap with the notch and the explicit return action restore the notch presentation.
 
@@ -174,6 +230,8 @@ Do not add transcript fallbacks, private endpoints, token-based allowance estima
 
 ## Decisions
 
+- **Show provider-specific 5-hour and weekly limits in the notch, 2026-10-29.** The user requested limits for the agents being used and chose Claude Code and Codex for the first version. Other agents are deferred. This brings usage alongside the notch instead of waiting for the pet; accepted provider sources in decision 0007 remain unchanged.
+- **Use the notch as the session interface, 2026-10-29.** The user explicitly chose session access in the notch and rejected a menu-bar session list as unnecessary. This replaces the earlier duplicate-session presentation recommendation. Keep basic app controls in the menu bar. Prioritize the notch plan next; removal of existing menu session rows and notch implementation require a concrete task-list review. Preserve existing event handling and partial verification evidence.
 - [0001: Use SwiftUI and AppKit](../decisions/0001-use-swiftui-and-appkit.md) — accepted.
 - [0002: Use MVVM with services and shared stores](../decisions/0002-use-mvvm-with-services.md) — accepted.
 - [0003: Store local state without a database](../decisions/0003-store-state-without-a-database.md) — accepted.
@@ -187,7 +245,7 @@ Do not add transcript fallbacks, private endpoints, token-based allowance estima
 - **Retain SwiftUI/AppKit after considering Electron/React.** The user accepted the native recommendation on 2026-10-28 for this macOS companion; decision 0001 remains in force. Flux's implementation progress is not evidence of measured runtime superiority.
 - **Open: normalize compatible sprite sheets at import or add a second runtime loader?** Import conversion is recommended to retain decision 0006's runtime format. Resolve in P5 before implementing P6; the options and consequences are above.
 - **Open: which supported response channel can target each existing local agent session?** Compare a dedicated interactive hook path with an app-owned provider control channel in A1–A2; do not alter the version-1 observer protocol to assume the answer.
-- **Open:** Should Codex setup use an external ownership record with exact managed-entry descriptions (recommended, proposed), or verified entry markers with independently sufficient edit detection? The [I3a proposal](../contracts/codex-hook-setup.md#ownership-alternatives-requiring-a-decision) explains the preservation and recovery tradeoffs. Settle the representation and interruption recovery in I3b before implementation; neither alternative is accepted yet.
+- **Use a separate ownership file for Codex hook setup.** The user accepted this option on 2026-10-28 after reviewing entry markers. Exact managed-entry records support safe removal and edit detection; markers alone lack verified compatibility and edit detection. The separate file requires recovery across configuration and ownership updates. The recovery design and implementation plan remain proposed. See the [setup contract](../contracts/codex-hook-setup.md#ownership-alternatives-requiring-a-decision).
 
 ## My calls
 
@@ -241,7 +299,7 @@ New tasks use stable IDs, so later refinements do not renumber that evidence.
 
 Start after G1–G2. Establish a visible integration before building the notch and pet.
 
-- [ ] I1: Display real shared-store snapshots in the menu-bar interface, including same-folder sessions, unknown state, unconfirmed requests, and response-ready labels.
+- [ ] I1: Retire the temporary menu session list when N3–N5 provide notch session access; retain partial menu verification as historical evidence, not a requirement to finish the retired menu walkthrough.
 - [ ] I2a: Define independent integration-health evidence and classification for both providers; verify five model tests. Implementation written; verification deferred at the user's request.
 - [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration. Implementation written; verification deferred at the user's request.
 - [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion. Implementation written; verification deferred at the user's request.
@@ -250,17 +308,17 @@ Start after G1–G2. Establish a visible integration before building the notch a
 - [ ] I3c: Add the bounded Codex hook installer using the accepted planner and recovery design, guarded file updates, helper and supported-version checks, and preserved hook trust review; review and split the file-operation checks as needed before implementation.
 - [ ] I4: Add reversible Claude lifecycle hook setup that preserves unrelated hooks and leaves the existing status line intact.
 - [ ] I5: Remove only app-owned setup entries, preserving subsequent user edits and leaving conflicting or malformed configuration untouched with a useful error.
-- [ ] I6: Expose setup, check, and removal actions with actionable health messages; verify both agents reach the visible menu in disposable Otty sessions and cleanup restores isolated configuration.
+- [ ] I6: Expose setup, check, and removal actions with actionable health messages; verify both agents reach the visible notch in disposable Otty sessions and cleanup restores isolated configuration.
 
 ### N: Reach the correct session from the notch
 
-Use the visible integration from I. Full remaining Codex interactive acceptance stays in R6–R7 under decision 0009.
+Build N3–N5 next using the implemented receiver/store; hook installation is not a prerequisite for fictional-event UI checks. Add N1–N2 navigation afterward. Full remaining Codex interactive acceptance stays in R6–R7 under decision 0009.
 
 - [ ] N1: Validate Otty pane selectors against current live identity and report closed, reused, stale, and ambiguous matches without creating panes.
 - [ ] N2: Connect session selection to exact-pane navigation, with an explicit activate-Otty fallback and checks that another same-folder pane is never selected.
-- [ ] N3: Add a native notch panel on the built-in display with supported geometry, no unsolicited keyboard focus, and click-through inactive areas.
-- [ ] N4: Present all sessions in an accessible notch picker, preserving selection identity when snapshots change and distinguishing concurrent same-folder sessions.
-- [ ] N5: Share attention selection across the menu and notch, prioritizing confirmed requests while retaining visibly unconfirmed notices and honest response-ready labels.
+- [ ] N3: Add a compact/expandable native notch panel on the built-in display with supported geometry, no unsolicited focus, keyboard expansion/collapse and click-through inactive areas; verify launch and placement.
+- [ ] N4: Present all sessions and request details in the expanded notch, preserving selection and distinguishing same-folder sessions; remove menu session rows and retain basic controls when the notch is usable.
+- [ ] N5: Derive notch attention selection once from shared snapshots, prioritizing confirmed requests and retaining unknown/unconfirmed, response-ready and ended meanings; reuse this state for the later pet.
 - [ ] N6: Verify live approval, structured-question, response-ready, and unknown presentations through the notch and correct Otty pane jumps using isolated agent sessions.
 
 ### A: Act on local requests and send replies
@@ -292,13 +350,13 @@ Use the shared presentation and navigation from N. P5–P6 are the open compatib
 
 ### U: Show provider-reported allowance
 
-Follow the notification and pet foundation. Preserve the verified account-mode limits from the usage compatibility record.
+Build alongside the notch; do not wait for the pet, action channels or hook installer. First support Claude Code and Codex. Preserve account-mode limits from the usage compatibility record.
 
 - [ ] U1: Add a shared usage store that preserves provider/window identity, account confidence, full bucket maps, receipt/source/reset timestamps, and sparse-update behavior without creating session events.
 - [ ] U2: Forward Claude status-line quota through a reversible wrapper that preserves original output, cancellation, exit behavior, and separate unverified-account observations.
 - [ ] U3: Read full Codex allowance snapshots and supported update notifications through the verified read-only App Server connection without starting threads or turns.
 - [ ] U4: Add bounded refresh, cancellation, reconnect, and retry backoff; provider failures and passed reset times must retain honest stale/unavailable status.
-- [ ] U5: Display actual returned allowance windows, explicit used/remaining labels, reset times, freshness, and account confidence without double-counting sessions or compatibility buckets.
+- [ ] U5: Show agent-aware 5-hour and weekly allowance sections in the notch for Claude Code and Codex in use, with used percentages, reset times, freshness and account confidence; preserve other returned Codex durations and avoid double-counting.
 - [ ] U6: Verify live Claude forwarding/output preservation and Codex coexistence, reconnect, sparse updates, and account changes; document unavailable account modes without private-endpoint fallbacks.
 
 ### R: Verify desktop behavior and the release workflow
@@ -538,6 +596,51 @@ unknown state with retained unconfirmed notices, the recorded evidence time, and
 Include long project paths and source session identities in the native-menu inspection.
 Keep temporary fixtures and any captures outside the repository. I6 retains installed-agent/Otty acceptance.
 
+### I1 verification resumed by combined goal, 2026-10-28
+
+The user activated `docs/goals/codex-setup.md`, authorizing the combined task list and its checks.
+I3's separate design approval gate remains. No commit, push, or production configuration update is authorized.
+
+`env TMPDIR=/private/tmp/notch-pet-codex-setup DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only`
+exited 0 with app/helper executables and a valid Info.plist after creating the temporary root and allowing compiler-cache access.
+The same environment with `bash scripts/run.sh` exited 0 and launched the rebuilt app.
+A read-only process check confirmed PID 56750 running the executable from that exact app bundle.
+
+`env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-codex-setup/notch-pet-dev/build`
+initially exited 1: 59 tests, with two issues in the provider cases of
+`IntegrationHealthProbeTests.diagnosticsDiscardUnrelatedFictionalValues` at line 206.
+The probe returned `timedOut` instead of expected `invalidOutput`.
+The unchanged command with `--filter diagnosticsDiscardUnrelatedFictionalValues` then exited 0
+with one parameterized test passing for both agents. The unchanged full suite then exited 0:
+59 tests across seven suites, zero failures. No source or tests changed; the initial timeout's cause is not established.
+These executions do not complete I2's separate app-wiring acceptance.
+
+Computer Use could not obtain the app UI: bundle-ID and exact-bundle-path connections each returned
+`Computer Use server error -10005: timeoutReached`; display-name connection returned `Invalid app: Notch Pet`.
+The earlier temporary verification harness no longer exists. No fictional observations were injected,
+and none of I1's ten visible-menu cases has fresh evidence. I1 remains unchecked.
+The [I3 design review](../contracts/codex-hook-setup.md#i3-design-review-for-the-activated-goal)
+records proposed schema, recovery states, concurrency limitation, interfaces and required size review.
+These proposals are not implementation approval.
+
+### Guided I1 evidence, 2026-10-29
+
+The user resumed the goal. Computer Use still timed out, but user-supplied screenshots verified
+actual bundled-helper-to-menu delivery. The running rebuilt bundle was confirmed as PID 15730.
+The temporary sender `/private/tmp/notch-pet-codex-setup/verify-menu-events.py` sent three basic
+and three request observations; each invocation exited 0 silently. Visible delivery is established
+by the screenshots, not those exit codes.
+
+Verified: initial empty menu; Codex observed idle and Claude working; distinct sessions in the
+same shared-project folder; Codex approval and Claude question labels; Codex submenu agent,
+session, full project path, approval status, refresh timestamp, Bash request and i1-approval tool ID.
+Screenshots supplied in this conversation end in 7668801, 7714634, 7780684 and 7831284.
+Captures and sender remain outside the repository.
+
+Response-ready, ended, unknown with retained unconfirmed notice, long identity/path handling,
+and empty state after restart remain unverified. I1 stays unchecked. The user questioned the
+manual screenshot burden; no further screenshots are requested. I3 design approval remains pending.
+
 ### I2 implementation with verification deferred, 2026-10-28
 
 The user explicitly selected starting I2 with I1 verification deferred and all checks paused. The earlier I1 entry gate
@@ -614,7 +717,7 @@ This plan does not silently approve those changes or modify the version-1 contra
 
 ## Verify
 
-- Seam: actual bundled helper to app receiver, shared store, visible menu/notch/pet, and a validated Otty pane jump; supported action channels return explicit user decisions/replies to that exact local target.
+- Seam: actual bundled helper to app receiver, shared store, visible notch/pet, and a validated Otty pane jump; supported action channels return explicit user decisions/replies to that exact local target.
 - Build: `bash scripts/run.sh --build-only`.
 - Swift checks: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`.
 - Helper process checks: `python3 scripts/check-event-bridge.py`, with the app stopped; keep launch time separate from the helper's internal deadline.

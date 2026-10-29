@@ -79,10 +79,10 @@ Later plans must define remote identity, connection/authentication ownership, an
 Adapt Flux's reversible setup and visible session workflow through native services and views.
 Setup owns only this app's entries, records ownership for removal, preserves unrelated settings and user edits,
 and reports conflicts instead of overwriting unsupported configuration.
-The first visible integration uses the existing menu-bar shell before the notch or pet is implemented.
+The temporary menu-bar session interface established partial event-delivery evidence. The user chose the notch as the primary session surface on 2026-10-29; remove the menu session list when that replacement is usable. Keep basic menu-bar controls and a Show Notch recovery action.
 
 One shared presentation model derives selection and attention priority from session snapshots.
-The menu, notch, and pet retain the same selected session and expose every concurrent session.
+The notch and later pet retain the same selected session and expose every concurrent session. The menu bar does not duplicate session content.
 Views do not maintain independent copies of lifecycle truth, and hiding or dismissing a visual notice cannot resolve a pending request.
 Terminal navigation validates live Otty pane identity before jumping; activating Otty is an explicit fallback for unavailable navigation.
 
@@ -213,6 +213,8 @@ Runtime files remain under `/private/tmp/notch-pet-<uid>/`.
 
 ## Limits display
 
+First support Claude Code and Codex in the notch, alongside session access rather than after the pet. Show only active providers: Codex-only hides Claude, Claude-only hides Codex, and both active shows both. Cached usage alone never makes an inactive provider visible. Display reported 5-hour and weekly windows with used percentages, reset times and freshness. Other agents are deferred. Provider visibility follows observed sessions; account grouping still requires supported identity.
+
 - Keep context usage, token usage, subscription allowances, and API rate limits separate.
 - Show only windows returned by the provider. Do not assume Codex always uses five-hour and weekly windows.
 - Label percentages explicitly as used or remaining.
@@ -242,7 +244,7 @@ Runtime files remain under `/private/tmp/notch-pet-<uid>/`.
 - Treat pet packs as data. Reject invalid paths and oversized image sets.
 - Keep routine logs bounded and exclude prompts, command contents, and credentials by default.
 - Preserve unrelated hooks and status-line settings during setup and removal.
-- Make overlay alerts nonactivating, and keep a menu-bar route to sessions and Return Pet.
+- Make overlay alerts nonactivating, and keep basic menu-bar recovery controls and Return Pet.
 - Keep unknown and ended presentation distinguishable from working or response ready; animation does not change session state.
 - Validate display recovery and resource use in the actual app; native implementation alone is not a performance measurement.
 
