@@ -9,6 +9,10 @@ The native shell and bundled helper are shared foundations for later notch, pet,
 This spec documents existing work against approved requirements and decisions.
 The implementation review below checks those requirements rather than treating existing code as the product definition.
 
+The 2026-10-30 [terminal-independence decision](../../decisions/0012-support-terminal-independent-operation.md) adds no required terminal identity.
+Version-1 observations already permit missing terminal metadata. Their optional terminal object still supports only Otty.
+Historical evidence below remains unchanged; live operation without Otty is a new N8 acceptance check in the source spec.
+
 ## Done when
 
 - The local SwiftUI/AppKit app launches with a menu-bar Quit action and starts its observation receiver.
@@ -32,8 +36,8 @@ The historical results below support the migrated completed tasks. They were not
 - Session ordering, request classification, concurrency, freshness, and unknown-state presentation: `session-state` and `notch/session-island`.
   The existing inbox and store are consumers used to verify delivery here.
 - Hook installation, removal, trust handling, and integration-health controls: the setup and health specs in this area.
-- Exact Otty pane navigation, remaining installed-agent checks, and final first-use acceptance.
-  Preserve N6 and R6–R8 in the source spec until their destinations are written.
+- Optional terminal navigation, remaining installed-agent checks, and final first-use acceptance.
+  Preserve N6–N8 and R6–R8 in the source spec until their destinations are written.
 - Permission decisions, structured answers, and follow-up replies: the `actions` area and its separate contracts.
 - Provider allowance, pet behavior, persistent session history, retries, acknowledgements, and disk spooling.
 - Guarantees for arbitrary prose questions, unsupported lifecycle events, or events emitted while the app is closed.
@@ -78,6 +82,7 @@ This planning session runs documentation checks only.
 - [0008: Preserve conservative observations without persistent sequencing or replay](../../decisions/0008-define-event-ordering.md).
 - [0009: Retain deferred Codex interactive checks](../../decisions/0009-defer-remaining-codex-interactive-checks.md).
 - [0011: Preserve implemented features and evidence during record migration](../../decisions/0011-organize-records-by-feature.md).
+- [0012: Support terminal-independent operation](../../decisions/0012-support-terminal-independent-operation.md).
 
 ## My calls
 

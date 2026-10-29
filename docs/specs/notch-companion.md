@@ -9,7 +9,7 @@ Its earlier single-spec instructions are historical and superseded. Do not drop 
 
 ## Goal
 
-Show when Codex CLI or Claude Code in Otty needs attention on the user's M2 MacBook Air.
+Show when Codex CLI or Claude Code needs attention on the user's M2 MacBook Air, without requiring Otty.
 Let a customizable pet move between the notch and desktop while sharing the same session state.
 Show reported usage limits and reset times so the user can monitor available allowance.
 Let the user approve or deny local agent requests, answer structured questions, and send follow-up replies from the app through verified agent-specific channels.
@@ -27,7 +27,10 @@ The [reference findings](../notes/flux-island-adoption.md) separate observed Flu
 - Each agent's finished response produces a response-ready notice without claiming the task succeeded.
 - Dedicated input events are shown where verified; uncovered question types have documented limitations.
 - Alerts from two concurrent sessions remain distinct, including sessions in the same project.
-- Clicking each live-session alert focuses its recorded Otty pane.
+- Terminal navigation reports exact-pane, application-only, or unavailable capability separately from agent monitoring.
+- A verified adapter focuses the exact recorded pane. Otherwise offer verified application activation or explain manual return.
+- Both supported agents deliver live events and visible alerts in at least one local terminal other than Otty.
+- Missing terminal metadata or navigation support does not block monitoring, pet reactions, or supported allowance reads.
 - Closing a pane or restarting the app cannot present an unverified session as still working.
 - The user can drag the pet onto the desktop and return it to the notch.
 - A valid custom pet imports and responds to working, attention, response-ready, and idle states.
@@ -43,7 +46,7 @@ The [reference findings](../notes/flux-island-adoption.md) separate observed Flu
 - The notch is the primary session interface. The menu bar contains basic app controls and no session list.
 - Setup reports agent-version support, managed-hook configuration, helper availability, receiver state, and last observed delivery separately.
 - Repeating setup does not duplicate managed hooks; removal preserves unrelated configuration and reports conflicting user edits.
-- A stale or ambiguous Otty pane selector never focuses another pane or creates a replacement session; the interface explains the unavailable action.
+- A stale or ambiguous terminal target never focuses another pane or creates a replacement session; the interface explains the unavailable action.
 - Inactive transparent areas pass clicks through, and the notch and pet do not steal keyboard focus merely to show an alert.
 - Unknown or ended session state is distinguishable from working and response ready in both surfaces; retained requests remain visibly unconfirmed.
 - Dragging the pet over the notch returns it; a menu-bar Return Pet action remains available when dragging is impractical.
@@ -53,14 +56,16 @@ The [reference findings](../notes/flux-island-adoption.md) separate observed Flu
 - Switching sessions, duplicate clicks, expired/cancelled requests, disconnects, and app restart cannot send an action to a different request or silently replay a reply.
 - Controls show pending, confirmed, rejected, and unavailable outcomes; sending an action alone does not establish that the agent accepted it or resumed work.
 - At least one verified local provider path works in the actual app for each of approval/denial, structured answers, and follow-up replies. Any missing path remains a release blocker rather than marking all integrations unavailable and calling the feature complete.
-- Unsupported agent/version actions show a reason and an Otty navigation fallback. The release compatibility record explicitly identifies which Codex and Claude actions were actually verified.
+- Unsupported agent/version actions show a reason and the available terminal navigation or manual-return guidance.
+- The release compatibility record identifies verified agent, version, terminal, and action combinations without promising universal support.
 
 The sprite-sheet compatibility proposal below has its own acceptance checks. It is not an accepted change to decision 0006.
 
 ## Out of scope
 
 - Simulated terminal keystrokes or clipboard submission as an automatic approval/reply fallback, unattended approvals, or broad permission-policy changes.
-- Codex desktop, other coding apps, and other terminals in the first release.
+- Codex desktop and other coding apps in the first release.
+- Guaranteed exact-pane navigation in every terminal, IDE, multiplexer, or remote environment.
 - SSH hosts, remote computers, and cloud-agent integrations in the first release; these remain optional future work below.
 - A cloud backend, user accounts, synchronization, searchable session history, or a pet marketplace.
 - In-app artwork generation, a pet drawing editor, three-dimensional pets, and scripted pet plugins.
@@ -72,12 +77,33 @@ The sprite-sheet compatibility proposal below has its own acceptance checks. It 
 ## Constraints
 
 - Retain SwiftUI/AppKit, shared stores, and separate agent, terminal, usage, and window responsibilities.
+- Do not require Otty, its executable, or its pane metadata for agent monitoring or pet reactions.
+- Keep navigation capabilities separate from provider action capabilities and integration-health failures.
 - Retain the version-1 observation contract, bounded one-way observation delivery, silent observer-helper failures, and explicit unknown state. Define a separate action contract before introducing request/response behavior.
 - Do not change payload limits, the helper deadline, freshness, or recovery semantics merely to make a check pass.
 - Preserve agent hook trust review, existing Otty and agent configuration, and existing Claude status-line output.
 - Keep active sessions in memory; new evidence is required after restart. Preferences and imported assets remain outside the repository.
 - Preserve all completed work and the existing single-spec layout requested by the user. Do not migrate specs or decision records into new folders.
 - Reimplement selected reference behavior through supported native APIs. Reference inspection is evidence of packaged code, not runtime verification or a performance benchmark.
+
+## Terminal independence and standalone pet review, 2026-10-30
+
+[Decision 0012](../decisions/0012-support-terminal-independent-operation.md) accepts terminal-independent operation.
+Otty becomes one optional navigation adapter. Missing navigation must not disable otherwise supported agent features.
+This updates current release requirements, not historical evidence or completed task wording.
+N1–N2 and N6 retain their Otty adapter checks. N7–N8 add the general capability boundary and checks without Otty.
+Preserve all seven deferred Codex checks in R6–R7 under decision 0009.
+
+The version-1 observation contract still accepts only Otty in its optional terminal object.
+Observations without that object remain valid. This update does not widen the contract or verify another terminal.
+Any new navigation metadata needs a separately reviewed contract plan.
+
+The user also raised pet-only users and asked about a separate service or project.
+[Decision 0013](../decisions/0013-separate-standalone-pet-scope.md) records that choice as proposed.
+One app with a separate pet module and optional agent features is the assistant's recommendation, not accepted scope.
+P0 must settle standalone behavior, packaging, and dependency changes before pet implementation.
+The existing pet dependency remains pending that choice. No separate process, repository, or app target is authorized.
+This documentation update does not resume the paused goal or authorize runtime checks.
 
 ## Notch and allowance plan update, 2026-10-29
 
@@ -154,15 +180,19 @@ Routine diagnostics include versions, bounded error categories, and receipt time
 Action-channel setup is a separately reported capability; successful lifecycle hooks do not prove approval or reply support.
 Install or remove any additional action integration with the same ownership, conflict, and trust rules.
 
-### Session selection and Otty navigation
+### Session selection and terminal navigation
 
 Present real session snapshots directly in the notch. Retain the existing menu implementation only until the notch replaces it; remove session rows when that replacement ships.
 Show agent, project, session identity sufficient to distinguish same-folder sessions, attention state, and evidence freshness.
 Derive priority once for both surfaces: confirmed unresolved input first, then response-ready notices, with every session still reachable.
 Retain unconfirmed requests visibly when the store becomes unknown; dismissing a presentation notice must not resolve the underlying request.
 
-Validate an inherited Otty selector against current live pane identity before enabling an exact-pane jump.
-Closed, reused, stale, or ambiguous selectors must explain why navigation is unavailable; activating Otty is an explicit fallback.
+Treat navigation as optional. Monitoring uses agent and source session identity without requiring terminal identity.
+Each terminal adapter reports exact-pane navigation, application activation, or unavailable navigation.
+Validate a target against current live identity before enabling an exact-pane jump.
+For Otty, retain inherited-selector validation and closed, reused, stale, and ambiguous target checks.
+Offer application activation only when the application is identified. Otherwise explain how to return manually.
+Missing navigation support is not evidence that agent monitoring is broken.
 Never create a pane, launch a replacement agent session, approve a command, or send terminal input as a navigation fallback.
 
 ### Local approvals and replies
@@ -170,7 +200,8 @@ Never create a pane, launch a replacement agent session, approve a command, or s
 Local interaction is accepted release scope under [decision 0010](../decisions/0010-add-local-agent-actions.md).
 Expose three separate capabilities per agent/version: permission decisions, structured-question answers, and follow-up text submission.
 Verify actual response mechanisms first; lifecycle event coverage and Flux's adapter support do not establish that our installed agents expose the same channels.
-Record unsupported combinations explicitly and retain a clear Otty jump action.
+Record unsupported combinations explicitly and show available terminal navigation or manual-return guidance.
+Provider action channels must not require a terminal adapter merely because navigation is unavailable.
 
 An approval card identifies the agent, project, session, and exact live request and shows bounded request details needed to understand the action.
 Start with approve once and deny. Do not silently convert these into remembered or account-wide grants.
@@ -191,7 +222,7 @@ Quota refresh, setup checks, and reconnection never submit user messages or star
 The action-channel structure remains open until A1–A2 establish compatibility:
 
 - **Dedicated interactive helper/endpoint:** response-capable hooks can carry decisions to a pending request; needs its own bounded waiting and shutdown lifecycle.
-- **App-owned provider control channel:** supported provider APIs can carry actions directly; needs proven attachment to the existing Otty session and ownership of connection/reconnect state.
+- **App-owned provider control channel:** supported provider APIs can carry actions directly; needs proven attachment to the existing local agent session and ownership of connection/reconnect state.
 
 Choose per verified provider capability rather than forcing every action through one unverified interface.
 Both structures keep action state in a service/store shared by the notch and pet, with provider translation outside the views.
@@ -237,6 +268,8 @@ Do not add transcript fallbacks, private endpoints, token-based allowance estima
 
 ## Decisions
 
+- [0012: Support terminal-independent operation](../decisions/0012-support-terminal-independent-operation.md) — accepted. Replaces Otty as a release prerequisite while retaining its adapter checks.
+- **Open: should the pet support standalone use, and how should it be packaged?** Settle P0 using [proposal 0013](../decisions/0013-separate-standalone-pet-scope.md) before changing pet dependencies.
 - **Show provider-specific 5-hour and weekly limits in the notch, 2026-10-29.** The user requested limits for the agents being used and chose Claude Code and Codex for the first version. Other agents are deferred. This brings usage alongside the notch instead of waiting for the pet; accepted provider sources in decision 0007 remain unchanged.
 - **Use the notch as the session interface, 2026-10-29.** The user explicitly chose session access in the notch and rejected a menu-bar session list as unnecessary. This replaces the earlier duplicate-session presentation recommendation. Keep basic app controls in the menu bar. Prioritize the notch plan next; removal of existing menu session rows and notch implementation require a concrete task-list review. Preserve existing event handling and partial verification evidence.
 - [0001: Use SwiftUI and AppKit](../decisions/0001-use-swiftui-and-appkit.md) — accepted.
@@ -285,6 +318,7 @@ The user subsequently approved starting I2, deferring I1 verification, and keepi
 The user approved splitting I3 into documentation, configuration planning, and installation tasks, and starting only I3a's three-file documentation plan on 2026-10-28. The setup contract remains proposed; this approval selects neither an ownership mechanism nor an interruption-recovery algorithm. I3b/I3c implementation, runtime verification, commits, and pushes are not authorized by this documentation approval. The recorded I2 goal remains incomplete; no new goal is active in this chat.
 Completed tasks and their evidence remain intact. Historical task numbers in the coverage record refer to the pre-2026-10-28 list.
 New tasks use stable IDs, so later refinements do not renumber that evidence.
+The 2026-10-30 documentation request adds P0 and N7–N8 for planning. Their implementation still requires a concrete approved task list.
 
 ### Completed foundation
 
@@ -319,6 +353,8 @@ Start after G1–G2. Establish a visible integration before building the notch a
 ### N: Reach the correct session from the notch
 
 Build N3–N5 next using the implemented receiver/store; hook installation is not a prerequisite for fictional-event UI checks. Add N1–N2 navigation afterward. Full remaining Codex interactive acceptance stays in R6–R7 under decision 0009.
+N1–N2 and N6 retain their original Otty-specific wording as adapter acceptance, not a universal monitoring prerequisite.
+Plan N7 before implementing navigation adapters. N8 verifies operation without Otty before release.
 
 - [ ] N1: Validate Otty pane selectors against current live identity and report closed, reused, stale, and ambiguous matches without creating panes.
 - [ ] N2: Connect session selection to exact-pane navigation, with an explicit activate-Otty fallback and checks that another same-folder pane is never selected.
@@ -326,11 +362,15 @@ Build N3–N5 next using the implemented receiver/store; hook installation is no
 - [ ] N4: Present all sessions and request details in the expanded notch, preserving selection and distinguishing same-folder sessions; remove menu session rows and retain basic controls when the notch is usable.
 - [ ] N5: Derive notch attention selection once from shared snapshots, prioritizing confirmed requests and retaining unknown/unconfirmed, response-ready and ended meanings; reuse this state for the later pet.
 - [ ] N6: Verify live approval, structured-question, response-ready, and unknown presentations through the notch and correct Otty pane jumps using isolated agent sessions.
+- [ ] N7: Specify terminal navigation capabilities separately from monitoring and provider actions; review exact-pane, application-only, unavailable, and missing-metadata cases before implementation. Plan any new wire metadata separately.
+- [ ] N8: Verify both supported agents through the real helper, store, and visible app in at least one local terminal other than Otty, with no Otty executable or pane metadata required; check concurrent same-folder sessions and honest unavailable navigation, then record the tested matrix.
 
 ### A: Act on local requests and send replies
 
 Use the visible session selection and verified identity from I/N. Complete this local interaction slice before release; SSH/cloud work is not a prerequisite.
 The scope is accepted, while implementation tasks and the response-channel choice remain subject to review.
+A7's original Otty fallback is one adapter option. Apply decision 0012's capability-based fallback to current implementation plans.
+Verify A1/A8 provider channels independently of navigation support. Do not use terminal keystrokes as an action fallback.
 
 - [ ] A1: Verify installed Codex and Claude permission-decision, structured-answer, and follow-up submission capabilities in disposable local sessions; record supported targets, trust, cancellation, and terminal fallback behavior with sanitized evidence.
 - [ ] A2: Settle provider action-channel structure and specify its contract for target identity, bounded content/waits, acknowledgement, duplicates, cancellation, and uncertain delivery while preserving the version-1 observation path.
@@ -343,8 +383,12 @@ The scope is accepted, while implementation tasks and the response-channel choic
 
 ### P: Detach and customize the pet
 
-Use the shared presentation and navigation from N. P5–P6 are the open compatibility proposal; do not implement P6 before its format choice is accepted.
+Use shared presentation from N for the existing integrated-pet plan. P5–P6 remain the open sprite-sheet proposal.
+Do not implement P6 before its format choice is accepted.
+This is the existing integrated-pet plan. P0 must settle whether standalone use changes its dependencies.
+Terminal navigation is optional under decision 0012, including for the integrated pet.
 
+- [ ] P0: Settle standalone pet behavior and packaging for users without coding agents; compare one app with a separate module, shared-module apps, a separate project, and a background service, then update pet dependencies and acceptance only after approval.
 - [ ] P1: Render an independently supplied built-in pet from shared presentation state, including distinct unknown/ended behavior and fallbacks that preserve attention.
 - [ ] P2: Add the native detached pet panel with drag-out, overlap return to the notch, and an explicit Return Pet action that preserves session selection and notices.
 - [ ] P3: Specify and validate versioned manifest/frame packs with bounded image resources, safe paths, single-frame idle support, and optional-animation fallbacks.
@@ -377,6 +421,8 @@ U3 is split into full-snapshot parsing and the read-only connection; live accept
 ### R: Verify desktop behavior and the release workflow
 
 Use the implemented surfaces and usage providers. R6–R7 retain all seven deferred Codex checks and run immediately before R8.
+R8 also includes the terminal-independent acceptance in N8 and unavailable-navigation guidance.
+Retain Otty evidence without presenting it as verification of other terminals.
 
 - [ ] R1: Recover notch and pet placement after display changes and external-display removal, clamping saved positions to a connected display.
 - [ ] R2: Verify and correct fullscreen/Spaces visibility and transparent-area hit testing with a menu-bar recovery route and no unsolicited focus changes.
@@ -719,9 +765,11 @@ configuration access, runtime check, commit, push, or pull request was performed
 - Native launch and bounded delivery: [observation-bridge](sessions/observation-bridge.md), plus final release verification in R8.
 - Both agents, concurrent sessions, questions, honest completion and uncertainty: I1, N4–N6, P1, R3, R6–R8.
 - Reversible setup, trustworthy health messages, and correct-pane navigation: I2–I6, N1–N2, R8.
+- Terminal-independent monitoring and optional navigation capabilities: N7–N8, A1/A8, R8. Otty-specific checks remain I6, N1–N2, N6, and R6–R7.
 - Notch geometry, focus, click-through behavior, and recovery access: N3, R1–R4.
 - Local approvals, structured answers, follow-up replies, capability boundaries, and action delivery failures: A1–A8, R8.
 - Pet detach/return, validated imports, preference restoration, and animation fallbacks: P1–P4, P7–P8, R1–R4.
+- Standalone pet scope and packaging remain proposed: P0 must resolve them before changing P1–P8 dependencies or acceptance.
 - Optional compatible sprite-sheet input, if accepted: P5–P6, P8.
 - Provider windows, account confidence, freshness, reset times, and refresh failures: U1–U6.
 - Physical desktop recovery, Reduce Motion, accessibility, and measured resource use: R1–R5.
@@ -732,12 +780,12 @@ This plan does not silently approve those changes or modify the version-1 contra
 
 ## Verify
 
-- Seam: actual bundled helper to app receiver, shared store, visible notch/pet, and a validated Otty pane jump; supported action channels return explicit user decisions/replies to that exact local target.
+- Seam: actual bundled helper to app receiver, shared store, and visible notch/pet without required terminal metadata; navigation and provider actions are verified separately against their exact targets.
 - Build: `bash scripts/run.sh --build-only`.
 - Swift checks: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`.
 - Helper process checks: `python3 scripts/check-event-bridge.py`, with the app stopped; keep launch time separate from the helper's internal deadline.
 - Contract reference checks: `python3 scripts/check-event-contract.py`; retain the documented unseen-turn model discrepancy until its separate correction is approved.
-- Real app: `bash scripts/run.sh`, using disposable Otty sessions, isolated agent configuration, and independently supplied pet assets outside the repository.
+- Real app: `bash scripts/run.sh`, using disposable local agent sessions and isolated configuration. Include N8 without Otty and retain Otty adapter/deferred checks separately. Keep independently supplied pet assets outside the repository.
 - Real provider allowance checks: U6, restricted to verified supported interfaces, with no credentials or captured session content in records.
 - Real local actions: A1/A8 use disposable sessions and harmless requests; verify approve-once/deny, structured answers, explicit follow-up text, acknowledgement, duplicate clicks, stale targets, cancellation, and unavailable receivers. Record capability limits without capturing real prompts or credentials.
 - Physical desktop and resource checks: R1–R5; injected clock checks alone do not establish those behaviors.

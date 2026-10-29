@@ -15,6 +15,9 @@ Code: future shared action services, provider adapters, and notch/pet action con
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
 - [Source specification](../notch-companion.md): A1–A8 remain planned, not implemented capabilities.
 - [Accepted local-action scope](../../decisions/0010-add-local-agent-actions.md).
+- [Terminal independence](../../decisions/0012-support-terminal-independent-operation.md) keeps provider action channels separate from terminal navigation.
+- Verify attachment to the existing local agent session without requiring Otty. Missing navigation alone must not disable a supported action.
+- For unavailable actions, offer verified pane navigation, verified application activation, or manual-return guidance. Never substitute terminal keystrokes.
 - A1–A2 establish shared compatibility and contract prerequisites. They do not prove an end-to-end action works.
 - Migrate A3–A4 and permission-specific A7–A8 coverage into permission-decisions.
 - Migrate A5 and question-specific A7–A8 coverage into structured-answers.

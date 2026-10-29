@@ -13,6 +13,9 @@ Code: future pet services and AppKit panels, sharing existing session/presentati
 ## Shared context
 
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
+- [Terminal independence](../../decisions/0012-support-terminal-independent-operation.md) is accepted. Pet reactions must not require Otty or terminal navigation.
+- [Standalone pet scope and packaging](../../decisions/0013-separate-standalone-pet-scope.md) remains proposed. The user raised pet-only users but has not chosen a module, service, or separate project.
+- P0 in the source spec must settle standalone behavior and packaging before pet implementation. Keep the existing built-in-pet dependency until that choice is accepted.
 - [Source specification](../notch-companion.md): P1–P8 remain open. Shared presentation code exists, but does not establish implemented pet rendering.
 - [Accepted asset-only pack format](../../decisions/0006-import-asset-only-pet-packs.md).
 - P1 belongs to built-in-pet. P2 and pet-specific R1–R3 checks belong to detachable-pet.
@@ -24,4 +27,6 @@ Code: future pet services and AppKit panels, sharing existing session/presentati
 
 ## Open questions
 
+- Should pet-only users need any agent setup? What behavior should the pet provide without agent events?
+- Should one app contain a separate pet module, should two apps share it, or should the pet use a separate project or service? Resolve P0 before changing dependencies.
 - Sprite-sheet conversion versus a second runtime loader remains proposed. The optional importer is not a first-release dependency.
