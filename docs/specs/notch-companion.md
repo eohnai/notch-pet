@@ -5,6 +5,8 @@ The area indexes are [sessions](sessions/area.md), [notch](notch/area.md), [usag
 This file remains the source for unmigrated tasks and evidence.
 [Observation bridge](sessions/observation-bridge.md) now owns its seven completed tasks and copied historical evidence.
 Five retrospective specs now own the tasks of features that already have code: [session-state](sessions/session-state.md), [integration-health](sessions/integration-health.md), [session-island](notch/session-island.md), [codex-allowance](usage/codex-allowance.md), and [claude-allowance](usage/claude-allowance.md).
+[Built-in pet](pets/built-in-pet.md) plans standalone use under accepted [decision 0013](../decisions/0013-separate-standalone-pet-scope.md).
+Its new tasks are proposals. Original P0–P8 task lines and historical evidence stay here unchanged.
 Historical evidence below remains intact during migration. Do not count moved tasks twice.
 Its earlier single-spec instructions are historical and superseded. Do not drop tasks or treat implementation as verified completion during migration.
 
@@ -105,6 +107,15 @@ One app with a separate pet module and optional agent features is the assistant'
 P0 must settle standalone behavior, packaging, and dependency changes before pet implementation.
 The existing pet dependency remains pending that choice. No separate process, repository, or app target is authorized.
 This documentation update does not resume the paused goal or authorize runtime checks.
+
+### Accepted pet direction, 2026-10-30
+
+The user subsequently accepted one app with an independent pet module and optional agent services in decision 0013.
+This replaces the proposed status and retained integrated-pet dependency described above.
+Set up the pet first without agent services. Connect agents through optional approved setup, then react to received session events automatically.
+Silence does not prove an observed session ended. Preserve unknown state and unresolved notices.
+The user approved separate standalone built-in-pet and agent-reactions features. Only built-in-pet has a detailed plan so far.
+The [pets area](pets/area.md) defines the revised boundaries. Approval of the direction does not approve implementation tasks.
 
 ## Notch and allowance plan update, 2026-10-29
 
@@ -270,7 +281,7 @@ Do not add transcript fallbacks, private endpoints, token-based allowance estima
 ## Decisions
 
 - [0012: Support terminal-independent operation](../decisions/0012-support-terminal-independent-operation.md) — accepted. Replaces Otty as a release prerequisite while retaining its adapter checks.
-- **Open: should the pet support standalone use, and how should it be packaged?** Settle P0 using [proposal 0013](../decisions/0013-separate-standalone-pet-scope.md) before changing pet dependencies.
+- **Earlier open question: should the pet support standalone use, and how should it be packaged?** Replaced on 2026-10-30 by accepted [decision 0013](../decisions/0013-separate-standalone-pet-scope.md).
 - **Show provider-specific 5-hour and weekly limits in the notch, 2026-10-29.** The user requested limits for the agents being used and chose Claude Code and Codex for the first version. Other agents are deferred. This brings usage alongside the notch instead of waiting for the pet; accepted provider sources in decision 0007 remain unchanged.
 - **Use the notch as the session interface, 2026-10-29.** The user explicitly chose session access in the notch and rejected a menu-bar session list as unnecessary. This replaces the earlier duplicate-session presentation recommendation. Keep basic app controls in the menu bar. Prioritize the notch plan next; removal of existing menu session rows and notch implementation require a concrete task-list review. Preserve existing event handling and partial verification evidence.
 - [0001: Use SwiftUI and AppKit](../decisions/0001-use-swiftui-and-appkit.md) — accepted.
@@ -381,9 +392,11 @@ Verify A1/A8 provider channels independently of navigation support. Do not use t
 
 ### P: Detach and customize the pet
 
-Use shared presentation from N for the existing integrated-pet plan. P5–P6 remain the open sprite-sheet proposal.
+Use shared presentation from N for optional agent reactions. The standalone pet uses an independent pet module under decision 0013.
+P5–P6 remain the open sprite-sheet proposal.
 Do not implement P6 before its format choice is accepted.
-This is the existing integrated-pet plan. P0 must settle whether standalone use changes its dependencies.
+P0's scope and packaging direction is accepted. Its unchecked task remains pending final planning review.
+P1 maps to future agent-reactions. Standalone work is proposed in [built-in-pet](pets/built-in-pet.md).
 Terminal navigation is optional under decision 0012, including for the integrated pet.
 
 - [ ] P0: Settle standalone pet behavior and packaging for users without coding agents; compare one app with a separate module, shared-module apps, a separate project, and a background service, then update pet dependencies and acceptance only after approval.

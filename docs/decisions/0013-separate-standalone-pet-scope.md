@@ -1,37 +1,50 @@
-# 0013: Settle standalone pet scope and packaging
+# 0013: Use one app with an independent pet module
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-10-30
 
 ## Context
 
 The user identified people who want a pet without agentic coding.
 They asked whether the pet should be a separate service or project.
-The current pet plan depends on notch session presentation. Pet rendering is not implemented.
-The user has not selected a packaging approach or standalone behavior requirements.
+The earlier pet plan depends on notch session presentation. Pet rendering is not implemented.
+The user wants to set up the pet first and show agent features when sessions are observed.
 
 ## Options
 
-- **One app with a separate pet module and optional agent features:** share installation and releases, but keep coding setup optional.
-- **Two apps sharing a pet module:** give each audience a focused app, but maintain two release paths.
-- **Separate pet project or repository:** permit independent maintenance, but add coordination for shared integration changes.
-- **Separate background service:** let several apps control one pet, but add process communication and lifecycle handling.
+- **One app with an independent pet module:** use one installation and release path. Optional agent services need explicit ownership.
+- **Two apps sharing a pet module:** give each audience a focused app. Maintain two release paths and coordinate integration.
+- **Separate pet project or repository:** allow independent maintenance. Coordinate shared behavior across projects.
+- **Separate background service:** let several apps control one pet. Add process communication and lifecycle recovery.
 
 ## Decision
 
-Open.
+Use one SwiftUI/AppKit app with an independent pet module and optional agent services.
+The user approved this direction and separate standalone-pet and agent-reaction features on 2026-10-30.
+
+Start with pet setup. Agent setup is optional and skippable.
+Connect supported agents once through approved setup, then react automatically to received session events.
+Do not require a manual mode switch for each session.
+Settings offer Connect, Pause monitoring, and Disconnect through the owning integration features.
 
 ## Reasoning
 
-The user's stated concern is serving people who do not use coding agents.
-The assistant recommends one app with a separate pet module as a starting point. ^[inferred]
-That would permit standalone use without adding a second process or release path. ^[inferred]
-The recommendation is not an accepted architecture change.
+The user wants the pet to work for people without coding agents.
+They approved automatic session-driven features after optional setup, with one installation and release path.
+Separate apps, a repository split, and a background service add coordination that this behavior does not require.
 
 ## Consequences
 
-Settle standalone behavior and packaging in P0 before revising the pet dependency graph.
-If accepted, define normal pet behavior without agent events and optional mappings from agent state into pet presentation.
-A proposed pet module would own animation, assets, interaction, placement, and preferences without importing agent session types.
-Keep unknown agent state distinct from integrations being disabled.
-Do not remove existing pet/session acceptance, create a service, or split repositories under this proposal.
+The pet module owns animation, assets, interaction, placement, and preferences without importing agent session types.
+An optional adapter translates authoritative session snapshots into pet presentation.
+The app owns agent service lifecycle. Pet-only use starts no agent or usage services and requires no hook configuration.
+
+Show ordinary pet behavior when no observed sessions or unresolved notices require agent presentation.
+Silence and expiry do not prove a session ended. Preserve unknown state and retained unconfirmed requests.
+Pausing or disconnecting monitoring must not resolve requests or report a successful turn.
+Installing hooks still needs explicit approval and must preserve existing configuration.
+
+The standalone pet no longer depends on notch session presentation.
+Agent reactions depend on the standalone pet and shared session presentation.
+Keep existing pet/session requirements and historical task states during the feature split.
+This accepts scope and packaging, not an implementation task list or a second app, service, or repository.

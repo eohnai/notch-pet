@@ -98,14 +98,16 @@ Use supported native APIs to reproduce desired behavior rather than transplantin
 The planned pet returns through notch overlap or a menu-bar action without losing shared attention state.
 Animation is presentation only: unknown state must not appear as confirmed working or response ready.
 
-## Proposed standalone pet boundary
+## Standalone pet boundary
 
-[Proposal 0013](decisions/0013-separate-standalone-pet-scope.md) considers users who want a pet without coding agents.
-One app with a separate pet module is the assistant's recommendation, not an accepted architecture change.
-That module would own animation, assets, interaction, placement, and preferences without importing agent session types.
-An optional adapter would translate agent observations into pet presentation.
-P0 must settle standalone behavior, packaging, and dependency changes before implementation.
-The current integrated-pet plan remains in force pending that choice; no service or repository split is approved.
+[Decision 0013](decisions/0013-separate-standalone-pet-scope.md) accepts one app with an independent pet module and optional agent services.
+The pet module will own animation, assets, interaction, placement, and preferences without importing agent session types.
+The app will own optional service lifecycle. An adapter will translate shared session snapshots into pet presentation.
+Pet-first setup requires no coding agent or hook configuration. Pet-only startup will start no agent or usage services.
+After approved agent setup, received sessions will trigger agent presentation without a manual mode switch for each session.
+Missing events will not prove that a session ended. Unknown state and unresolved notices will retain their existing meanings.
+The user approved separate standalone pet and agent-reaction features. Their implementation task lists still need approval.
+This is accepted architecture awaiting implementation. No second app, background service, or repository split is planned.
 
 ## Proposed compatible pet input
 
