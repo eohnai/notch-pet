@@ -356,7 +356,9 @@ Build alongside the notch; do not wait for the pet, action channels or hook inst
 U2 is split into independently verified implementation tasks; forwarding acceptance remains incomplete.
 - [x] U2a: Parse bounded Claude 5-hour/weekly status-line fields into anonymous usage observations; verify five parser tests, independent missing windows, reset units and bounded errors.
 - [ ] U2b: Add a bounded Claude status-line forwarding wrapper that preserves original stdin/stdout, cancellation and exit behavior without changing installed configuration.
-- [ ] U2c: Deliver forwarded quota through a separate bounded usage transport into the app store; verify app-unavailable behavior and reversible setup under an explicitly approved configuration plan.
+- [x] U2c1: Send typed quota observations through a separate bounded nonblocking Unix datagram endpoint; verify five socket/path/permission tests.
+- [ ] U2c2: Receive bounded quota datagrams into the app store, validating the private endpoint and payload before publication; verify isolated receiver lifecycle cases.
+- [ ] U2c3: Connect the forwarding helper and receiver, verify app-unavailable behavior and live Claude quota in the notch, and review reversible setup before any installed configuration changes.
 U3 is split into full-snapshot parsing and the read-only connection; live acceptance remains incomplete.
 - [x] U3a: Normalize bounded full Codex quota snapshots, preserving buckets, account identity and actual durations; verify five parser tests without compatibility double-counting.
 - [x] U3b1: Sequence read-only Codex quota protocol initialization and response-ID matching; verify five isolated protocol tests without thread/turn methods.
@@ -796,3 +798,14 @@ On completion/error/cancellation, close owned pipe ends and terminate only the o
 Do not print raw stdout/stderr or retain unrelated notification content. Five isolated process
 tests must prove real handshake order, wrong-ID interleaving, error/EOF, timeout/cancellation and
 output bounds, including child cleanup. No live read precedes these checks.
+
+### U2c1 quota sender verification, 2026-10-29
+
+UsageDelivery.send(_:endpointURL:) uses a separate Unix datagram endpoint at
+/private/tmp/notch-pet-<uid>/usage-v1.sock. Each JSON observation is at most 8192 bytes.
+The owned parent must be a real 0700 directory and endpoint an owned 0600 socket; symlinks
+and regular files are rejected. Sending is nonblocking, with no spool, output or acknowledgement.
+Five tests first failed the missing-type baseline then passed against real disposable sockets.
+Datagrams keep each small quota message atomic without reusing lifecycle framing. The same-user
+filesystem boundary is retained; receipt does not authenticate a provider or establish measurement freshness.
+The app receiver and terminal wrapper remain unfinished. No installed configuration changed.
