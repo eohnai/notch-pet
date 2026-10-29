@@ -101,8 +101,12 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
     private var inbox: SessionEventInbox?
     private var expiryTimer: DispatchSourceTimer?
     private var receiptCutoffNs: UInt64 = 0
+    private var notchPanel: NotchPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let notchPanel = NotchPanelController(sessionStore: sessionStore)
+        self.notchPanel = notchPanel
+        notchPanel.show()
         let inbox = SessionEventInbox { [weak self] batch, lost in
             guard let self else { return }
             // Delivery happened even when a clock cutoff prevents it from restoring session freshness.
