@@ -6,6 +6,7 @@ import SwiftUI
 @MainActor
 final class NotchPanelController {
     private let panel: NSPanel
+    private let usageStore = UsageStore()
 
     init(sessionStore: SessionStore) {
         panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel],
@@ -24,7 +25,7 @@ final class NotchPanelController {
             return max(0, right.minX - left.maxX)
         } ?? 0
         panel.contentView = NSHostingView(rootView: NotchSessionView(
-            sessionStore: sessionStore, headerHeight: max(32, top), notchWidth: notch,
+            sessionStore: sessionStore, usageStore: usageStore, headerHeight: max(32, top), notchWidth: notch,
             onExpand: { [weak self] expanded in self?.updatePlacement(expanded: expanded) }))
         updatePlacement(expanded: false)
     }

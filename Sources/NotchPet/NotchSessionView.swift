@@ -3,6 +3,7 @@ import SwiftUI
 
 struct NotchSessionView: View {
     @ObservedObject var sessionStore: SessionStore
+    let usageStore: UsageStore
     let headerHeight: CGFloat
     let notchWidth: CGFloat
     let onExpand: (Bool) -> Void
@@ -18,11 +19,13 @@ struct NotchSessionView: View {
             } label: {
                 HStack(spacing: 0) {
                     Image(systemName: "pawprint.fill")
+                        .padding(.leading, 6)
                         .frame(maxWidth: .infinity)
                     Color.clear.frame(width: notchWidth)
                     Text("\(sessionStore.sessions.count)")
                         .font(.system(.caption, design: .rounded).weight(.semibold))
                         .monospacedDigit()
+                        .padding(.trailing, 6)
                         .frame(maxWidth: .infinity)
                 }
                 .frame(height: headerHeight)
@@ -34,20 +37,21 @@ struct NotchSessionView: View {
 
             if expanded {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Sessions").font(.headline)
-                    if sessionStore.sessions.isEmpty {
-                        Text("No sessions observed yet.")
-                            .foregroundStyle(.secondary)
-                        Spacer(minLength: 0)
-                    } else {
-                        ScrollView {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 16) {
+                            NotchUsageView(store: usageStore,
+                                           activeProviders: NotchPresentation.activeProviders(sessionStore.sessions))
+                            Text("Sessions").font(.headline)
+                            if sessionStore.sessions.isEmpty {
+                                Text("No sessions observed yet.").foregroundStyle(.secondary)
+                            }
                             LazyVStack(spacing: 0) {
                                 ForEach(NotchPresentation.ordered(sessionStore.sessions)) { snapshot in
                                     NotchSessionRow(snapshot: snapshot, selection: $selection)
                                     Divider().overlay(.white.opacity(0.12))
                                 }
                             }
-                        }
+                        }.frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding(20)
