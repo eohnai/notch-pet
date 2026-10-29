@@ -3,7 +3,7 @@
 - Goal file: docs/goals/notch-agent-limits.md
 - Created: 2026-10-29 20:56 +08
 - Turn limit: 30
-- Status: running
+- Status: blocked; pending exact-command commit approval
 
 ## Turns
 
@@ -24,9 +24,15 @@
 
 | 7 | 2026-10-29T21:20+08:00 | 1 build pass; 2 previous 64 pass, not rerun; 3 session details implemented, actual-app acceptance pending; 4 not implemented; 5 whitespace pass, tasks open | Panel and width committed as 6bf60c0/4ed152a. Added disclosure rows keyed by SessionKey with full project/session identity, status, refresh time and retained requests. Menu now has Show Notch and Quit only. Three app files changed; isolated build exits 0. No N4/I1 checkbox tick without actual-app verification. |
 
+| 8 | 2026-10-29T21:23+08:00 | 1 build pass; 2 focused five selection tests pass; 3 ordering/selection wired, runtime pending; 4 provider visibility rule tested, sources pending; 5 whitespace pass | Session-details commit d59fef3. Frozen five new selection/provider tests first failed missing-type baseline, then passed. Added three pure presentation functions: active providers exclude ended/unsupported sessions, confirmed requests sort first, valid selection survives priority changes. Notch view now uses ordering and selection reconciliation. No quota connection yet. |
+
+| 9 | 2026-10-29T21:24+08:00 | 1 previous build pass; 2 previous focused five pass; 3 runtime acceptance pending; 4 sources not implemented; 5 whitespace pass | Presentation commit approval pending; no staging. Reviewed U1 source identity/window/freshness requirements and corrected stale STATUS activation/implementation claims. STATUS is a separate checkpoint change outside the already proposed commit paths. No new source/config changes. |
+
+| 10 | 2026-10-29T21:25+08:00 | 1 previous build pass; 2 previous focused five pass; 3 runtime pending; 4 sources pending; 5 whitespace pass | Same commit approval remains unanswered for goal turns 8–10. User requested commit after each task; no next implementation task started and no unauthorized staging occurred. Checkpoint and mark blocked until approval. |
+
 ## Final result
 
-Incomplete, running. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
+Incomplete, blocked pending the presentation-task commit approval. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.
 
 Planning clarification: provider visibility depends on active observed sessions, not cached quota. Codex-only hides Claude, Claude-only hides Codex, both active shows both. The goal was subsequently activated.
 

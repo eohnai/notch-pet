@@ -42,7 +42,7 @@ struct NotchSessionView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 0) {
-                                ForEach(sessionStore.sessions) { snapshot in
+                                ForEach(NotchPresentation.ordered(sessionStore.sessions)) { snapshot in
                                     NotchSessionRow(snapshot: snapshot, selection: $selection)
                                     Divider().overlay(.white.opacity(0.12))
                                 }
@@ -64,5 +64,11 @@ struct NotchSessionView: View {
         }
         .preferredColorScheme(.dark)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.24), value: expanded)
+        .onAppear {
+            selection = NotchPresentation.selection(selection, sessions: sessionStore.sessions)
+        }
+        .onChange(of: sessionStore.sessions) { sessions in
+            selection = NotchPresentation.selection(selection, sessions: sessions)
+        }
     }
 }
