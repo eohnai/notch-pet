@@ -22,6 +22,8 @@
 
 | 6 | 2026-10-29T21:14+08:00 | 1 previous build pass; 2 focused five pass, full target pending; 3 latest animation/width unverified; 4 not implemented; 5 whitespace pass | Revalidated current files and branch. Placement tests pass unchanged against 560-point expanded width. Preparing separate panel and width commits for approval; no staging/commit without approval. No UI retry or provider/config access. |
 
+| 7 | 2026-10-29T21:20+08:00 | 1 build pass; 2 previous 64 pass, not rerun; 3 session details implemented, actual-app acceptance pending; 4 not implemented; 5 whitespace pass, tasks open | Panel and width committed as 6bf60c0/4ed152a. Added disclosure rows keyed by SessionKey with full project/session identity, status, refresh time and retained requests. Menu now has Show Notch and Quit only. Three app files changed; isolated build exits 0. No N4/I1 checkbox tick without actual-app verification. |
+
 ## Final result
 
 Incomplete, running. Placement committed; panel shell built and expanded/collapsed in actual app. Session details and quota integration remain outstanding.

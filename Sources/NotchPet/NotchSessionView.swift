@@ -7,6 +7,7 @@ struct NotchSessionView: View {
     let notchWidth: CGFloat
     let onExpand: (Bool) -> Void
     @State private var expanded = false
+    @State private var selection: SessionKey?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -34,11 +35,20 @@ struct NotchSessionView: View {
             if expanded {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Sessions").font(.headline)
-                    Text(sessionStore.sessions.isEmpty ? "No sessions observed yet." :
-                         "\(sessionStore.sessions.count) sessions observed.")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 0)
+                    if sessionStore.sessions.isEmpty {
+                        Text("No sessions observed yet.")
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 0)
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 0) {
+                                ForEach(sessionStore.sessions) { snapshot in
+                                    NotchSessionRow(snapshot: snapshot, selection: $selection)
+                                    Divider().overlay(.white.opacity(0.12))
+                                }
+                            }
+                        }
+                    }
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
