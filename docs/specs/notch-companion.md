@@ -2,7 +2,9 @@
 
 Record migration approved on 2026-10-29: [decision 0011](../decisions/0011-organize-records-by-feature.md) replaces the single-spec layout.
 The area indexes are [sessions](sessions/area.md), [notch](notch/area.md), [usage](usage/area.md), [actions](actions/area.md), and [pets](pets/area.md).
-This file remains the task and evidence source until `plan-feature` migrates each feature.
+This file remains the source for unmigrated tasks and evidence.
+[Observation bridge](sessions/observation-bridge.md) now owns its seven completed tasks and copied historical evidence.
+Historical evidence below remains intact during migration. Do not count moved tasks twice.
 Its earlier single-spec instructions are historical and superseded. Do not drop tasks or treat implementation as verified completion during migration.
 
 ## Goal
@@ -286,19 +288,18 @@ New tasks use stable IDs, so later refinements do not renumber that evidence.
 
 ### Completed foundation
 
-- [x] Verify installed agent event coverage and Otty pane identity; save a compatibility matrix and sanitized example payloads.
+Completed historical tasks 1, 4, 5, 6, and 8 moved to [observation-bridge](sessions/observation-bridge.md#tasks), with their checked states unchanged.
+The shared architecture, usage investigation, and session-store tasks remain below until their feature migration.
+
 - [x] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
 - [x] Settle proposed architecture records using the compatibility findings and user review.
-- [x] Add the native app shell with a menu-bar quit action and a reproducible local launch command.
-- [x] Specify the versioned event contract with session identity, ordering, freshness, and bounded payload behavior.
-- [x] Add the local event bridge with checks for malformed input and an unavailable app.
 - [x] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
-- [x] Implement the Codex event adapter and verify it with fictional inputs.
 
 ### G: Finish bridge verification
 
-- [x] G1: Resolve the maximum-input helper deadline failure while preserving accepted payload bounds, the 250 ms internal deadline, and silent failure behavior; complete the helper process checks.
-- [x] G2: Complete verification of the implemented Claude Code adapter using the full bridge and store checks before marking the original adapter task complete.
+Completed G1 and G2 moved to [observation-bridge](sessions/observation-bridge.md#tasks).
+Their full [verification record](sessions/observation-bridge.md#g1g2-verification-2026-10-28) is preserved there and below.
+
 
 ### I: See sessions and manage agent setup
 
@@ -715,7 +716,7 @@ configuration access, runtime check, commit, push, or pull request was performed
 
 ### Revised acceptance coverage
 
-- Native launch and bounded delivery: completed foundation, G1–G2, R8.
+- Native launch and bounded delivery: [observation-bridge](sessions/observation-bridge.md), plus final release verification in R8.
 - Both agents, concurrent sessions, questions, honest completion and uncertainty: I1, N4–N6, P1, R3, R6–R8.
 - Reversible setup, trustworthy health messages, and correct-pane navigation: I2–I6, N1–N2, R8.
 - Notch geometry, focus, click-through behavior, and recovery access: N3, R1–R4.
