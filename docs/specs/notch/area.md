@@ -5,7 +5,7 @@ Code: `Sources/NotchPet/` and shared presentation services in `Sources/SessionSt
 
 ## Specs
 
-- `session-island`: Inspect sessions and requests in the expandable notch, replacing the menu session list. Needs: sessions/session-state.
+- [`session-island`](session-island.md): Inspect sessions and requests in the expandable notch, replacing the menu session list. Needs: sessions/session-state.
 - `desktop-recovery`: Keep the notch accessible through display changes, Spaces, fullscreen, and sleep/wake. Needs: session-island.
 - `accessible-controls`: Support keyboard controls, Reduce Motion, and perceivable alerts without unsolicited focus. Needs: session-island.
 

@@ -5,8 +5,8 @@ Code: usage services in `Sources/SessionState/`, `Sources/NotchPet/NotchUsageVie
 
 ## Specs
 
-- `codex-allowance`: Read real Codex allowance and show it for active Codex sessions, including the shared usage store. Needs: notch/session-island.
-- `claude-allowance`: Forward real Claude allowance while preserving terminal output and cancellation. Needs: codex-allowance.
+- [`codex-allowance`](codex-allowance.md): Read real Codex allowance and show it for active Codex sessions, including the shared usage store. Needs: notch/session-island.
+- [`claude-allowance`](claude-allowance.md): Forward real Claude allowance while preserving terminal output and cancellation. Needs: codex-allowance.
 - `refresh-recovery`: Handle stale data, sparse updates, account changes, disconnects, and bounded retries. Needs: codex-allowance, claude-allowance.
 
 ## Shared context

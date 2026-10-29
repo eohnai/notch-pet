@@ -6,8 +6,8 @@ Code: `Sources/EventBridge/`, session and integration-health services in `Source
 ## Specs
 
 - `observation-bridge`: Deliver agent events through the helper into the running app, preserving the native shell and bridge foundation.
-- `session-state`: Distinguish concurrent sessions, requests, response-ready notices, and unknown state. Needs: observation-bridge.
-- `integration-health`: Report version, configuration, helper, receiver, and delivery evidence separately. Needs: observation-bridge.
+- [`session-state`](session-state.md): Distinguish concurrent sessions, requests, response-ready notices, and unknown state. Needs: observation-bridge.
+- [`integration-health`](integration-health.md): Report version, configuration, helper, receiver, and delivery evidence separately. Needs: observation-bridge.
 - `codex-setup`: Install and remove owned Codex hooks without overwriting user changes. Needs: integration-health.
 - `claude-setup`: Install and remove owned Claude lifecycle hooks while preserving the status line. Needs: integration-health.
 - `pane-navigation`: Report exact-pane, application-only, or unavailable navigation through optional terminal adapters. Needs: session-state.

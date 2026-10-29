@@ -4,6 +4,7 @@ Record migration approved on 2026-10-29: [decision 0011](../decisions/0011-organ
 The area indexes are [sessions](sessions/area.md), [notch](notch/area.md), [usage](usage/area.md), [actions](actions/area.md), and [pets](pets/area.md).
 This file remains the source for unmigrated tasks and evidence.
 [Observation bridge](sessions/observation-bridge.md) now owns its seven completed tasks and copied historical evidence.
+Five retrospective specs now own the tasks of features that already have code: [session-state](sessions/session-state.md), [integration-health](sessions/integration-health.md), [session-island](notch/session-island.md), [codex-allowance](usage/codex-allowance.md), and [claude-allowance](usage/claude-allowance.md).
 Historical evidence below remains intact during migration. Do not count moved tasks twice.
 Its earlier single-spec instructions are historical and superseded. Do not drop tasks or treat implementation as verified completion during migration.
 
@@ -83,7 +84,7 @@ The sprite-sheet compatibility proposal below has its own acceptance checks. It 
 - Do not change payload limits, the helper deadline, freshness, or recovery semantics merely to make a check pass.
 - Preserve agent hook trust review, existing Otty and agent configuration, and existing Claude status-line output.
 - Keep active sessions in memory; new evidence is required after restart. Preferences and imported assets remain outside the repository.
-- Preserve all completed work and the existing single-spec layout requested by the user. Do not migrate specs or decision records into new folders.
+- Preserve all completed work and the existing single-spec layout requested by the user. Do not migrate specs or decision records into new folders. Superseded on 2026-10-29 by decision 0011: specs now live in area folders. Preserving completed work still applies.
 - Reimplement selected reference behavior through supported native APIs. Reference inspection is evidence of packaged code, not runtime verification or a performance benchmark.
 
 ## Terminal independence and standalone pet review, 2026-10-30
@@ -109,7 +110,7 @@ This documentation update does not resume the paused goal or authorize runtime c
 
 The user approved the prior notch direction and requested adding 5-hour and weekly limits.
 This update changes records only. No goal is active after the user cleared the old goal.
-Keep the existing single specification as previously requested; N and U are separate feature slices.
+Keep the existing single specification as previously requested; N and U are separate feature slices. (Superseded on 2026-10-29 by decision 0011. N and U tasks now live in area specs.)
 Completed tasks and historical evidence remain intact. Open task wording reflects the new direction.
 
 ### Feature 1: access sessions in the notch
@@ -298,7 +299,7 @@ Do not add transcript fallbacks, private endpoints, token-based allowance estima
 - Treat detailed colors, animation timings, usage layout, and performance budgets as prototype decisions.
 - Track no deadline or assigned owner because the user supplied neither.
 - Treat the 2026-10-28 request as authorization to revise the documented plan, with revised implementation tasks presented for review.
-- Keep independent acceptance groups as delivery slices inside this existing spec, honoring the user's single-spec preference rather than applying the skill's default area migration.
+- Keep independent acceptance groups as delivery slices inside this existing spec, honoring the user's single-spec preference rather than applying the skill's default area migration. Superseded on 2026-10-29 by decision 0011.
 - Recommend sprite-sheet normalization as an optional input adapter; keep the choice open instead of replacing the accepted pet format.
 
 ## Tasks
@@ -312,7 +313,7 @@ The user requested the Flux-informed planning update on 2026-10-28 and retained 
 The user accepted adding local approvals and replies, with SSH/cloud support recorded as optional future work, on 2026-10-28.
 The revised remaining tasks below are proposed for review; the earlier approval is not approval of every added task or open design choice.
 The user activated the bounded G1/G2 goal on 2026-10-28, approving those two tasks and their parser/verification plan only; other revised tasks remain subject to review.
-The user approved I1's three-file implementation plan on 2026-10-28, initially deferred testing, subsequently authorized verification, then requested skipping the remaining checks. A later renewed verification passed the isolated build and 48-test Swift suite; the user then stopped further checks and explicitly requested committing and pushing the current work. Do not run further builds, tests, or UI checks without a renewed request. I1 remains unchecked because running-menu verification is incomplete. I2 is the agreed next goal candidate after I1; its goal is prepared but inactive, and its implementation has not started. The user authorized separate task commits and pushing the current work; incomplete verification must remain documented.
+The user approved I1's three-file implementation plan on 2026-10-28, initially deferred testing, subsequently authorized verification, then requested skipping the remaining checks. A later renewed verification passed the isolated build and 48-test Swift suite; the user then stopped further checks and explicitly requested committing and pushing the current work. Do not run further builds, tests, or UI checks without a renewed request. I1 remains unchecked because running-menu verification is incomplete. I2 is the agreed next goal candidate after I1; its goal is prepared but inactive, and its implementation has not started. (Superseded: I2 code was written later, with verification deferred. See [integration-health](sessions/integration-health.md).) The user authorized separate task commits and pushing the current work; incomplete verification must remain documented.
 Each task includes its relevant configuration, documentation, and verification. Limit each implementation task to at most three files, with at most three added functions or five added test cases; split it before starting if that cannot fit.
 The user subsequently approved starting I2, deferring I1 verification, and keeping all checks paused. This authorizes the prepared I2a/I2b/I2c implementation split and separate implementation commits under the earlier per-task commit instruction. Write tests but do not run tests, builds, probes, helper injections, or UI checks. Implementation commits do not complete the unchecked verification requirements.
 The user approved splitting I3 into documentation, configuration planning, and installation tasks, and starting only I3a's three-file documentation plan on 2026-10-28. The setup contract remains proposed; this approval selects neither an ownership mechanism nor an interruption-recovery algorithm. I3b/I3c implementation, runtime verification, commits, and pushes are not authorized by this documentation approval. The recorded I2 goal remains incomplete; no new goal is active in this chat.
@@ -323,11 +324,12 @@ The 2026-10-30 documentation request adds P0 and N7–N8 for planning. Their imp
 ### Completed foundation
 
 Completed historical tasks 1, 4, 5, 6, and 8 moved to [observation-bridge](sessions/observation-bridge.md#tasks), with their checked states unchanged.
-The shared architecture, usage investigation, and session-store tasks remain below until their feature migration.
+The shared architecture task remains below. The usage investigation and session-store tasks moved on 2026-10-30.
 
-- [x] Verify both providers' usage sources and account-mode limitations without exposing credentials or starting agent turns.
 - [x] Settle proposed architecture records using the compatibility findings and user review.
-- [x] Add the shared session store with checks for duplicate, delayed, concurrent, and terminal-state events.
+
+The completed usage-source investigation moved to [codex-allowance](usage/codex-allowance.md#tasks).
+The completed session-store task moved to [session-state](sessions/session-state.md#tasks). Both keep their checked states.
 
 ### G: Finish bridge verification
 
@@ -339,10 +341,8 @@ Their full [verification record](sessions/observation-bridge.md#g1g2-verificatio
 
 Start after G1–G2. Establish a visible integration before building the notch and pet.
 
-- [ ] I1: Retire the temporary menu session list when N3–N5 provide notch session access; retain partial menu verification as historical evidence, not a requirement to finish the retired menu walkthrough.
-- [ ] I2a: Define independent integration-health evidence and classification for both providers; verify five model tests. Implementation written; verification deferred at the user's request.
-- [ ] I2b: Add bounded read-only version, hook-configuration and helper checks; verify five isolated probe tests without changing configuration. Implementation written; verification deferred at the user's request.
-- [ ] I2c: Feed actual receiver lifecycle and recorded delivery times into health independently of session state; verify the full suite/build and checkpoint I2 completion. Implementation written; verification deferred at the user's request.
+I1 moved to [session-island](notch/session-island.md#tasks). I2a–I2c moved to [integration-health](sessions/integration-health.md#tasks). Their checkbox states are unchanged.
+
 - [x] I3a: Document the proposed Codex hook ownership and reversible installation contract, retaining open design choices; review fictional install/reinstall/user-edit/malformed-input cases and verify documentation.
 - [ ] I3b: Settle Codex hook ownership and interruption recovery, then add a pure configuration planner with idempotent app-owned entries, version/shape gates, preservation checks, and at most five isolated tests; review its implementation plan before coding.
 - [ ] I3c: Add the bounded Codex hook installer using the accepted planner and recovery design, guarded file updates, helper and supported-version checks, and preserved hook trust review; review and split the file-operation checks as needed before implementation.
@@ -358,9 +358,7 @@ Plan N7 before implementing navigation adapters. N8 verifies operation without O
 
 - [ ] N1: Validate Otty pane selectors against current live identity and report closed, reused, stale, and ambiguous matches without creating panes.
 - [ ] N2: Connect session selection to exact-pane navigation, with an explicit activate-Otty fallback and checks that another same-folder pane is never selected.
-- [ ] N3: Add a compact/expandable native notch panel on the built-in display with supported geometry, no unsolicited focus, keyboard expansion/collapse and click-through inactive areas; verify launch and placement.
-- [ ] N4: Present all sessions and request details in the expanded notch, preserving selection and distinguishing same-folder sessions; remove menu session rows and retain basic controls when the notch is usable.
-- [ ] N5: Derive notch attention selection once from shared snapshots, prioritizing confirmed requests and retaining unknown/unconfirmed, response-ready and ended meanings; reuse this state for the later pet.
+N3–N5 moved to [session-island](notch/session-island.md#tasks), unchecked.
 - [ ] N6: Verify live approval, structured-question, response-ready, and unknown presentations through the notch and correct Otty pane jumps using isolated agent sessions.
 - [ ] N7: Specify terminal navigation capabilities separately from monitoring and provider actions; review exact-pane, application-only, unavailable, and missing-metadata cases before implementation. Plan any new wire metadata separately.
 - [ ] N8: Verify both supported agents through the real helper, store, and visible app in at least one local terminal other than Otty, with no Otty executable or pane metadata required; check concurrent same-folder sessions and honest unavailable navigation, then record the tested matrix.
@@ -402,21 +400,15 @@ Terminal navigation is optional under decision 0012, including for the integrate
 
 Build alongside the notch; do not wait for the pet, action channels or hook installer. First support Claude Code and Codex. Preserve account-mode limits from the usage compatibility record.
 
-- [ ] U1: Add a shared usage store that preserves provider/window identity, account confidence, full bucket maps, receipt/source/reset timestamps, and sparse-update behavior without creating session events.
-U2 is split into independently verified implementation tasks; forwarding acceptance remains incomplete.
-- [x] U2a: Parse bounded Claude 5-hour/weekly status-line fields into anonymous usage observations; verify five parser tests, independent missing windows, reset units and bounded errors.
-- [ ] U2b: Add a bounded Claude status-line forwarding wrapper that preserves original stdin/stdout, cancellation and exit behavior without changing installed configuration.
-- [x] U2c1: Send typed quota observations through a separate bounded nonblocking Unix datagram endpoint; verify five socket/path/permission tests.
-- [x] U2c2: Validate and receive bounded quota datagrams through a private receiver callback with app receipt time; verify five isolated delivery/lifecycle cases. App-store wiring remains in U2c3.
-- [ ] U2c3: Connect the forwarding helper and receiver, verify app-unavailable behavior and live Claude quota in the notch, and review reversible setup before any installed configuration changes.
-U3 is split into full-snapshot parsing and the read-only connection; live acceptance remains incomplete.
-- [x] U3a: Normalize bounded full Codex quota snapshots, preserving buckets, account identity and actual durations; verify five parser tests without compatibility double-counting.
-- [x] U3b1: Sequence read-only Codex quota protocol initialization and response-ID matching; verify five isolated protocol tests without thread/turn methods.
-- [ ] U3b2: Run the quota protocol over bounded Codex App Server process I/O; verify timeout, cancellation, framing, oversized output and cleanup with isolated fake executables, then perform a sanitized managed-provider read.
+U1, U3a, U3b1, and U3b2 moved to [codex-allowance](usage/codex-allowance.md#tasks).
+U2a, U2b, U2c1, U2c2, and U2c3 moved to [claude-allowance](usage/claude-allowance.md#tasks). Their checkbox states are unchanged.
+
 - [ ] U3c: Handle rate-limit notifications by rereading full snapshots, account changes and source failures; verify cancellation and reconnect without stale-account leakage.
 - [ ] U4: Add bounded refresh, cancellation, reconnect, and retry backoff; provider failures and passed reset times must retain honest stale/unavailable status.
-- [ ] U5: Show agent-aware 5-hour and weekly allowance sections in the notch for Claude Code and Codex in use, with used percentages, reset times, freshness and account confidence; preserve other returned Codex durations and avoid double-counting.
 - [ ] U6: Verify live Claude forwarding/output preservation and Codex coexistence, reconnect, sparse updates, and account changes; document unavailable account modes without private-endpoint fallbacks.
+
+U5 moved to [codex-allowance](usage/codex-allowance.md#tasks), unchecked. It covers both providers.
+U6 stays here until `refresh-recovery` is written, because it spans three usage specs.
 
 ### R: Verify desktop behavior and the release workflow
 

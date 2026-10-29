@@ -2,33 +2,31 @@
 
 ## Now
 
-Branch: `docs/observation-bridge`, based on `2816716` before this uncommitted documentation update. The approved retrospective review closes `sessions/observation-bridge` with `Status: done` and Results. Its seven completed task lines and historical evidence remain unchanged.
-The review found no new bridge scope gap. It used static code inspection and historical evidence, not new runtime results. Current app wiring and later live-provider acceptance remain unverified.
-Terminal independence is accepted in decision 0012. Standalone pet scope and packaging remain proposed in decision 0013. Other feature migrations remain unfinished.
-The notch/allowance goal remains paused after 26 logged turns of its 30-turn limit. Existing edits in `NotchPanelController.swift`, `NotchPetApp.swift`, and `docs/goals/notch-agent-limits-log.md` remain uncommitted and untouched.
+Branch: `docs/observation-bridge` at `1b992b3`, with uncommitted documentation on top. The `migrate-implemented-specs` goal is done. `python3 docs/goals/check-spec-migration.py` printed 10/10 criteria pass with exit 0 this session.
+Five retrospective specs now exist: `sessions/session-state`, `sessions/integration-health`, `notch/session-island`, `usage/codex-allowance`, and `usage/claude-allowance`. They moved 19 task lines and their evidence from the source spec, with checkbox states unchanged. Four stale single-spec and I2 lines in the source spec are marked superseded.
+`usage/claude-allowance` records five open usage receiver decisions and one proposed task to settle them. That task awaits user approval. No code, build, test, or configuration access happened this session.
+The notch/allowance goal remains paused after 26 of 30 turns. The uncommitted edits in `NotchPanelController.swift`, `NotchPetApp.swift`, and `docs/goals/notch-agent-limits-log.md` are unchanged.
 
 ## Next
 
-1. Review and commit the bridge closure documentation. Review the full branch scope before merging. Merge before starting dependent spec work, unless explicitly stacking that work.
-2. Run `plan-feature` for `sessions/session-state` after the dependency is available. Carry decision 0012 and N7–N8 into navigation/first-use planning. Preserve task IDs, checkbox states, requirements, and evidence, including implemented but unverified work.
-3. Resolve P0 and proposed decision 0013 before pet implementation. Define standalone behavior and choose packaging before changing the current pet dependency graph.
-4. Before implementation resumes, plan the unfinished usage receiver wiring within `usage/claude-allowance`; review the interrupted build and app lifecycle checks.
-5. Resume the paused goal only on explicit request. Reconcile its records and remaining budget first.
+1. Review the five new specs and the proposed settle task in `docs/specs/usage/claude-allowance.md`. Then commit the documentation. Choose whether to stack it on `docs/observation-bridge` or move it to a new branch first.
+2. Settle the five open decisions in `usage/claude-allowance` (socket providers, stale socket recovery, receiver health, source lifetime, service ownership) before U2c3 continues.
+3. Review the evidence for U3b2, U1, and I2a–I2c, recorded under Open questions in their specs, before you tick any of them. Decide whether to mark `sessions/session-state` done. Its only task is checked.
+4. Run `plan-feature` for the next unwritten spec in area build order. Carry decision 0012 and N7–N8 into navigation and first-use planning.
+5. Resolve P0 and proposed decision 0013 before pet implementation. Resume the paused goal only on explicit request.
 
 ## Blockers
 
-- Branch scope: `docs/observation-bridge` contains 20 committed changes across 43 files beyond `origin/feat/notch-companion`, including earlier notch/usage work. This review changes two documentation files only. Review the full branch before merging; its name does not describe the full diff.
-- Migration pending: other area specs still need feature files. The board combines migrated observation-bridge tasks and unmigrated tasks in the source specification. Missing spec files do not imply missing implementations.
-- Terminal independence is accepted scope, not completed compatibility verification. The optional version-1 terminal object and helper metadata remain Otty-specific. N7–N8 require planning and live acceptance; no new wire shape is approved.
-- Standalone pet scope and packaging remain open in P0/decision 0013. The current pet dependency is retained pending that choice.
+- Build failure, found by the 2026-10-30 code review: `swift build` fails at `Sources/NotchPet/NotchPanelController.swift:37` with `error: ambiguous use of 'sync(execute:)'`. The reviewer confirmed in a scratch copy that `_ =` fixes it. It is not fixed. Recorded in `usage/claude-allowance`.
+- Branch scope: `docs/observation-bridge` contains 21 commits beyond `origin/feat/notch-companion`, including earlier notch and usage code. Review the full branch before merging. Its name does not describe the full diff.
+- Migration pending: 15 area specs have no file yet. The source spec still owns their tasks and evidence. Missing spec files do not imply missing implementations.
+- Terminal independence is accepted scope, not completed compatibility verification. The optional version-1 terminal object and helper metadata stay Otty-specific. N7–N8 need planning and live acceptance.
+- Standalone pet scope and packaging remain open in P0 and decision 0013.
 - Keep the source spec until every task and acceptance check has a destination. Confirm its final move or removal with the user before changing it.
-- Interrupted check: `env TMPDIR=/private/tmp/notch-pet-notch-limits DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only`. Its result was not captured before pause. The saved tool handle now reports `exec cell 190 not found`. The current source wiring is unverified.
-- Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Fixtures cannot establish live-source acceptance.
-- Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Existing usage sockets have no crash-stale endpoint recovery.
-- Stale: `docs/specs/notch-companion.md`: U3b2 remains unchecked although bounded Codex process I/O and a sanitized live read were verified earlier. Leave unchanged until an evidence review.
-- Stale: `docs/specs/notch-companion.md`: an older task-approval paragraph says I2 implementation has not started. Later I2 evidence and current integration-health code show implementation exists with verification deferred. Reconcile during its feature migration.
-- Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state. SessionStore enforces the accepted unseen-turn rule.
-- Known test limitation: `Tests/EventBridgeTests/ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. Historical diagnostics showed that byte can arrive later. The contract rejects buffered extra bytes. Correction remains proposed.
-- Stale: `docs/ARCHITECTURE.md` describes visible session/usage surfaces and integration-health services as planned. Notch session/usage surfaces and integration-health code now exist, with incomplete verification recorded in the source spec and area indexes.
-- Stale: `README.md` describes the notch, usage limits, and session presentation as planned. Their implementations exist with incomplete runtime verification. Review these descriptions during the owning feature migrations.
+- Real Claude forwarding and terminal-output/cancellation preservation are incomplete. Codex reconnect, account switching, and remaining physical-notch acceptance are unverified.
+- Stale: `docs/specs/usage/codex-allowance.md`: U3b2 is unchecked, but goal-log turn 19 records passing process tests and a sanitized live read. Leave it unchanged until an evidence review.
+- Stale: `scripts/check-event-contract.py` lets a previously conflicting turn ID restore working state. `SessionStore` enforces the accepted unseen-turn rule.
+- Known test limitation: `Tests/EventBridgeTests/ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. The byte can arrive later. Correction remains proposed.
+- Stale: `docs/ARCHITECTURE.md` describes visible session/usage surfaces and integration-health services as planned. That code exists, with incomplete verification.
+- Stale: `README.md` describes the notch, usage limits, and session presentation as planned. Their implementations exist, with incomplete runtime verification.
 - Sprite-sheet input choice P5 remains proposed and blocks P6. No deadlines are recorded.
