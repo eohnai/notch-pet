@@ -194,6 +194,7 @@ class ReferenceStore:
                 return "event_id_conflict"
             return "duplicate"
         turn = message.get("turn_id")
+        known_turn = turn is not None and turn in session.turns
         if (session.saturated or len(session.seen) >= POLICY["event_ids"]
                 or (turn is not None and turn not in session.turns
                     and len(session.turns) >= POLICY["turn_ids"])):
@@ -230,6 +231,9 @@ class ReferenceStore:
                 return "repeated_submit"
             if session.baseline and turn is None:
                 session.unknown("missing_turn_identity")
+                return "conflict"
+            if session.baseline and known_turn:
+                session.unknown("overlapping_turns")
                 return "conflict"
             if session.pending or (session.baseline and session.status == "working"):
                 session.unknown("overlapping_turns")
@@ -405,6 +409,33 @@ def check_capacities() -> None:
     assert len(session.pending) == POLICY["requests"] and session.status == "unknown"
 
 
+def check_unseen_turn_recovery() -> None:
+    for agent in ("codex", "claude"):
+        store = ReferenceStore()
+        assert deliver(store, example_event(1, agent=agent)) == "applied"
+        assert deliver(store, example_event(2, agent=agent, turn_id="conflict")) == "conflict"
+        session = next(iter(store.sessions.values()))
+        original_deadline = session.deadline
+        assert deliver(store, example_event(3, agent=agent, turn_id="conflict")) == "conflict", agent
+        assert session.status == "unknown" and session.deadline == original_deadline, agent
+        assert deliver(store, example_event(4, agent=agent, turn_id="unseen")) == "applied", agent
+        assert session.status == "working", agent
+
+        store = ReferenceStore()
+        assert deliver(store, example_event(1, agent=agent)) == "applied"
+        assert deliver(store, example_event(2, "PermissionRequest", agent=agent,
+                                            tool_name="Write", tool_use_id="tool")) == "applied"
+        assert deliver(store, example_event(3, agent=agent, turn_id="blocked")) == "conflict"
+        assert deliver(store, example_event(4, "PostToolUse", agent=agent,
+                                            tool_name="Write", tool_use_id="tool")) == "resolved_but_unknown"
+        session = next(iter(store.sessions.values()))
+        assert not session.pending
+        assert deliver(store, example_event(5, agent=agent, turn_id="blocked")) == "conflict", agent
+        assert session.status == "unknown", agent
+        assert deliver(store, example_event(6, agent=agent, turn_id="fresh")) == "applied", agent
+        assert session.status == "working", agent
+
+
 def check_document() -> None:
     contract = ROOT / "docs/contracts/agent-events-v1.md"
     text = contract.read_text()
@@ -437,6 +468,8 @@ def main() -> None:
     print(f'PASS {len(cases["sequences"])} state sequences ({steps} steps)')
     check_capacities()
     print("PASS 4 memory capacity boundaries")
+    check_unseen_turn_recovery()
+    print("PASS 4 unseen-turn recovery cases (both providers)")
 
 
 if __name__ == "__main__":

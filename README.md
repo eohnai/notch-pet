@@ -127,8 +127,58 @@ git diff --check
 ```
 
 Success means all Swift tests pass and the process checker prints `Bridge process checks passed`.
-The contract checker prints four `PASS` lines. The diff check prints nothing.
+The contract checker prints five `PASS` lines, including unseen-turn recovery checks. The diff check prints nothing.
 Process timings include launch time. They are observations on this Mac, not a real-time scheduling guarantee.
+
+## Continuous integration
+
+The `CI` GitHub Actions workflow runs for pull requests targeting `main`, pushes to `main`, and manual dispatch.
+The intended default branch is `main`; feature-branch targets do not trigger this workflow.
+Its mandatory jobs validate source syntax, build both executables, run all four Swift test targets with coverage,
+and exercise the real hook helper with fictional socket input. `Required` runs even after an upstream failure and
+accepts only successful results from every other declared job; missing, skipped, cancelled and failed results fail it.
+
+The primary native environment is the standard Apple Silicon `macos-15` runner with Xcode 26.3 selected explicitly
+and its Swift 6.2 compiler family verified. Runner OS/compiler details appear in diagnostics. Local Swift 6.4 evidence
+does not establish that hosted environment, other architectures, the minimum macOS runtime, visual behavior, or installed-agent compatibility.
+Compatibility, release artifacts and incremental swift-format enforcement are separate approved follow-on specs in the [CI area](docs/specs/ci/area.md).
+
+Reproduce the native checks with full Xcode selected. These commands build without launching the app and keep generated files outside this repository:
+
+```bash
+set -euo pipefail
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+export TMPDIR=/private/tmp/notch-pet-ci-core/
+mkdir -p "$TMPDIR"
+bash scripts/run.sh --build-only
+swift test --scratch-path "$TMPDIR/notch-pet-dev/build" --enable-code-coverage 2>&1 | tee "$TMPDIR/full-tests.log"
+swift package --scratch-path "$TMPDIR/notch-pet-dev/build" dump-package > "$TMPDIR/package.json"
+python3 -B scripts/ci/check-source.py --test-log "$TMPDIR/full-tests.log" --manifest-json "$TMPDIR/package.json"
+python3 -B scripts/ci/check-coverage.py --scratch-path "$TMPDIR/notch-pet-dev/build" --output-dir "$TMPDIR/coverage"
+python3 -B scripts/check-event-contract.py
+python3 -B scripts/check-event-bridge.py
+python3 -B scripts/ci/check-source.py
+python3 -B -m unittest discover -s scripts/ci -p 'test_*.py' -v
+git diff --check
+```
+
+The bridge checker refuses an existing per-user socket or listener; a separate worktree alone does not isolate that endpoint.
+It recognizes both native SwiftPM and Swift Build debug layouts and refuses ambiguous products. Use one build system per scratch directory.
+
+Coverage includes a raw LLVM report and module summary for Pet, EventBridge, SessionState and NotchPet, with revision, dirty-tree and toolchain metadata.
+Missing, malformed or empty production reports fail validation. There is no arbitrary percentage floor; helper-process coverage is explicitly unmeasured.
+CI retains allowlisted native/process diagnostics and coverage for three days, identified by run and attempt.
+Each retained `.log` is capped at 2 MiB with an explicit truncation header; coverage JSON is kept intact.
+
+Actions are pinned to full commit SHAs, checkout does not retain credentials, workflow permissions are read-only, jobs have timeouts,
+and newer runs cancel obsolete runs for the same pull request/ref. CI installs no hooks, starts no app UI or live agents,
+and requires no account credentials, signing certificates or hosted coverage service.
+
+After an authorized first hosted run succeeds, configure the repository's branch rules to require **Required** from workflow **CI**
+(displayed as **CI / Required**). This documentation does not change those rules. New mandatory jobs must be added to the gate's
+JSON-compatible `needs` list; its checker verifies that list against every other declared job. Pushing a feature branch alone does not
+trigger this workflow: use an authorized PR to `main`, or dispatch once GitHub recognizes the workflow. Commits, pushes, PRs and dispatches need explicit user authorization.
+Local checks and a parsed workflow are not hosted acceptance; track that evidence in the [PR-checks spec](docs/specs/ci/pull-request-checks.md).
 
 ## Start here
 

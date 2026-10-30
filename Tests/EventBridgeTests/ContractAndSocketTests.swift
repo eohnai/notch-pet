@@ -132,9 +132,8 @@ struct ContractAndSocketTests {
         defer { server.stop() }
         let message = try envelope(), valid = try message.frame()
         let text = String(decoding: valid, as: UTF8.self)
-        let padded = Data(valid.dropLast()) + Data(repeating: 32, count: 16_384 - valid.count) + Data([10, 32])
         let frames = [Data("{}\n".utf8), valid + valid, Data(valid.dropLast()),
-                      Data([255, 10]), Data(repeating: 32, count: 16_385), padded,
+                      Data([255, 10]), Data(repeating: 32, count: 16_385),
                       Data(text.replacingOccurrences(of: String(message.observedAtMs), with: "0").utf8),
                       Data(text.replacingOccurrences(of: String(message.observedAtMs), with: "9007199254740991").utf8)]
         for frame in frames {
@@ -145,6 +144,37 @@ struct ContractAndSocketTests {
         try EventBridgeClient(endpoint: endpoint).send(envelope())
         #expect(observations.signal.wait(timeout: .now() + 2) == .success)
         #expect(observations.count == 1)
+    }
+
+    @Test func maximumFrameRejectsOnlyAlreadyBufferedExtraBytes() throws {
+        let valid = try envelope().frame()
+        let maximum = Data(valid.dropLast())
+            + Data(repeating: 32, count: HookEnvelopeV1.frameLimit - valid.count) + Data([10])
+        for extraQueued in [false, true] {
+            var pair: [Int32] = [0, 0]
+            try #require(socketpair(AF_UNIX, SOCK_STREAM, 0, &pair) == 0)
+            defer { close(pair[0]); close(pair[1]) }
+            var capacity: Int32 = 65_536
+            try #require(setsockopt(pair[0], SOL_SOCKET, SO_SNDBUF, &capacity,
+                                   socklen_t(MemoryLayout.size(ofValue: capacity))) == 0)
+            try #require(fcntl(pair[0], F_SETFL, O_NONBLOCK) == 0)
+            // Complete the write before reading: no scheduler assumption about the extra byte.
+            try writeAll(pair[0], data: maximum + (extraQueued ? Data([32]) : Data()),
+                         until: deadline(after: 50))
+            if extraQueued {
+                #expect(throws: BridgeError.invalidMessage) {
+                    try readBounded(pair[1], limit: HookEnvelopeV1.frameLimit,
+                                    until: deadline(after: 100), framed: true)
+                }
+            } else {
+                let received = try readBounded(pair[1], limit: HookEnvelopeV1.frameLimit,
+                                               until: deadline(after: 100), framed: true)
+                #expect(received == maximum)
+                #expect(try HookEnvelopeV1.decode(frame: received).sessionID == "fictional")
+                // A later byte cannot retroactively invalidate a completed read.
+                try writeAll(pair[0], data: Data([32]), until: deadline(after: 50))
+            }
+        }
     }
 
     @Test func receiverDeadlineDoesNotResetForEachByte() throws {

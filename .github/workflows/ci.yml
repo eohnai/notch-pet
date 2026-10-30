@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TZ: UTC
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  quality:
+    name: Source quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check source syntax and changed whitespace
+        run: python3 scripts/ci/check-source.py
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      - name: Test CI report validators
+        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py' -v
+
+  tests:
+    name: Swift tests and coverage
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      TMPDIR: ${{ runner.temp }}/notch-pet-tests/
+      CI_OUTPUT: ${{ runner.temp }}/notch-pet-tests/evidence
+      CI_BUILD: ${{ runner.temp }}/notch-pet-tests/build
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify selected native toolchain
+        run: |
+          mkdir -p "$TMPDIR" "$CI_OUTPUT"
+          test "$(uname -m)" = arm64
+          test -d "$DEVELOPER_DIR"
+          sw_vers | tee "$CI_OUTPUT/macos.txt"
+          xcodebuild -version | tee "$CI_OUTPUT/xcode.txt"
+          grep -Fx 'Xcode 26.3' "$CI_OUTPUT/xcode.txt"
+          swift --version | tee "$CI_OUTPUT/swift.txt"
+          grep -E 'Apple Swift version 6\.2\.' "$CI_OUTPUT/swift.txt"
+      - name: Build both executables
+        run: |
+          swift build --scratch-path "$CI_BUILD" --product NotchPet 2>&1 | tee "$CI_OUTPUT/build-app.log"
+          swift build --scratch-path "$CI_BUILD" --product NotchPetHook 2>&1 | tee "$CI_OUTPUT/build-hook.log"
+          plutil -lint Resources/Info.plist
+      - name: Run all Swift test targets with coverage
+        run: |
+          swift package --scratch-path "$CI_BUILD" dump-package > "$CI_OUTPUT/package.json"
+          swift test --scratch-path "$CI_BUILD" --enable-code-coverage 2>&1 | tee "$CI_OUTPUT/tests.log"
+          python3 scripts/ci/check-source.py --test-log "$CI_OUTPUT/tests.log" --manifest-json "$CI_OUTPUT/package.json"
+      - name: Export and validate production coverage
+        run: |
+          python3 scripts/ci/check-coverage.py --scratch-path "$CI_BUILD" --output-dir "$CI_OUTPUT/coverage" 2>&1 | tee "$CI_OUTPUT/coverage.log"
+          cat "$CI_OUTPUT/coverage/summary.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Bound retained native logs
+        if: ${{ !cancelled() }}
+        run: python3 scripts/ci/check-source.py --trim-logs "$CI_OUTPUT"
+      - name: Retain bounded native diagnostics
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: native-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.CI_OUTPUT }}/
+          retention-days: 3
+          if-no-files-found: warn
+
+  bridge:
+    name: Helper process and contract
+    runs-on: macos-15
+    timeout-minutes: 10
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      TMPDIR: ${{ runner.temp }}/notch-pet-bridge/
+      CI_OUTPUT: ${{ runner.temp }}/notch-pet-bridge/evidence
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify selected native toolchain
+        run: |
+          mkdir -p "$TMPDIR" "$CI_OUTPUT"
+          test "$(uname -m)" = arm64
+          test -d "$DEVELOPER_DIR"
+          xcodebuild -version | tee "$CI_OUTPUT/xcode.txt"
+          grep -Fx 'Xcode 26.3' "$CI_OUTPUT/xcode.txt"
+          swift --version | tee "$CI_OUTPUT/swift.txt"
+          grep -E 'Apple Swift version 6\.2\.' "$CI_OUTPUT/swift.txt"
+      - name: Build development bundle without launching
+        run: bash scripts/run.sh --build-only 2> >(tee "$CI_OUTPUT/bundle-build.log" >&2) | tee "$CI_OUTPUT/bundle-path.txt"
+      - name: Run real fictional-input helper checks
+        run: python3 scripts/check-event-bridge.py 2>&1 | tee "$CI_OUTPUT/bridge.log"
+      - name: Check reference contract and recovery cases
+        run: python3 scripts/check-event-contract.py 2>&1 | tee "$CI_OUTPUT/contract.log"
+      - name: Bound retained process logs
+        if: ${{ !cancelled() }}
+        run: python3 scripts/ci/check-source.py --trim-logs "$CI_OUTPUT"
+      - name: Retain bounded process diagnostics
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bridge-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.CI_OUTPUT }}/
+          retention-days: 3
+          if-no-files-found: warn
+
+  required:
+    name: Required
+    needs: ["quality", "tests", "bridge"]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Require every declared job to succeed
+        run: python3 scripts/ci/check-required.py
+        env:
+          CI_JOB_RESULTS: ${{ toJSON(needs) }}

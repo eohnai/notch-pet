@@ -2,33 +2,21 @@
 
 ## Now
 
-Branch: `feat/pets-built-in-pet`, saving the BP6b2 lifecycle implementation and records after `ada1984`. The user explicitly requested this checkpoint and then committing/pushing the feature changes on this branch; unrelated `.vscode/launch.json` is excluded and preserved.
-The planned built-in-pet implementation is complete, including panel/settings visibility and sleep wiring. The implementation-only goal is closed; full feature acceptance remains incomplete and the spec stays open. Details are in `docs/specs/pets/built-in-pet.md` and `docs/goals/complete-built-in-pet-log.md`.
-The user prohibited screen recording, then requested implementation without testing. Do not restart tests, builds, app launches/captures or test-only instrumentation unless requested. No new implementation or verification ran for this checkpoint.
-Older goals and other feature work remain untouched. Communicate in English as requested.
+CI goal work is isolated on `feat/ci-pull-request-checks` in `/private/tmp/notch-pet-ci-worktree`, based on `ec1d5b2`. PR1-PR6 are locally verified: 130 Swift tests, ten Python validator tests, real helper/contract checks and production LLVM coverage. PR7 hosted acceptance remains open.
+The user required `main` as default and sole automated CI target. Main was created from existing commit `1c5d9cf7e2f698357b05230832071aa097621133` and made default; the original feature branch is preserved.
+The user then explicitly requested committing/pushing first and settling the remainder later. Commit/push is authorized only for this CI worktree; no PR or further runtime verification is requested. Pause the goal after that publication.
 
 ## Next
 
-1. Review the completed built-in-pet implementation and the goal/spec handoff. Keep BP2/BP3/BP5/BP6b3/BP7 acceptance deferred until the user requests it; do not treat them as pending coding tasks.
-2. Plan Flux-like session-island opening/closing and limits presentation with their session/usage owners; retain the accepted pet-first architecture and optional services.
-3. Plan `pets/agent-reactions` and `pets/detachable-pet`, preserving original P1/P2 source lines and drag-out/hide plus overlap-return. Coordinate monitoring controls with session setup and the optional collector.
-4. Review the separate telemetry task lists and provisional battery budgets before starting C1 lifecycle/protocol design.
-5. Resume the older notch/allowance goal only on explicit request.
+1. Finish the requested scoped commit/push on `feat/ci-pull-request-checks`; report the resulting commit and remote branch.
+2. On the user's later request, settle the PR base/integration strategy against current main, then obtain hosted Xcode 26.3 and artifact/Required evidence for PR7.
+3. Do not mark PR7 or the spec complete without hosted evidence; retain the six locally verified task checkboxes.
+4. Follow with the approved compatibility, development-artifact and maintenance specs after this prerequisite is accepted/merged.
+5. Preserve the concurrent agent-session worktree, older feature goals, installed agent settings and deferred visual acceptance.
 
 ## Blockers
 
-- Full built-in-pet acceptance is deferred by the user's latest instruction: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features.
-- Capture reproduction command: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/check-standalone-pet.py --app "/private/var/folders/t3/6n_zw1rn5nn6vv7ccx9r6s240000gn/T/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-completion/evidence/standalone` failed with `could not create image from window` / screencapture exit 1. The native preflight returned screenCaptureAuthorized=false; the user explicitly prohibited further captures and later all further testing. Do not request that permission or retry the failing capture.
-- The sandboxed BP6b1 command `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --filter 'Pet(ViewPlayback|PlaybackPolicy)Tests'` failed with `error opening '/Users/bytedance/.cache/clang/ModuleCache/Swift-7JL1KBZ3A6V3.swiftmodule' for output` / `Operation not permitted`. Outside-sandbox execution resolved this tooling restriction; use the approval mechanism if future Swift commands require the user cache. The expected pre-implementation missing-view-API failure was resolved by implementation; details remain in the spec.
-- CodeGraph tooling was unavailable this session: `codegraph-remote explore "Locate built-in pet lifecycle rendering visibility sleep Reduce Motion focus implementation and related symbols"` first failed endpoint probes (TLS timeout/DNS); its approved outside-sandbox retry reported `repoId is not set`. Local source reads were used instead; no repository configuration was added.
-- Telemetry C1–C8, H1–H7 and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability and instrumentation coverage require their recorded reviews. Battery targets are provisional and unmeasured.
-- Stale: historical `ambiguous use of 'sync(execute:)'` reports in usage records do not match current NotchPanelController source and prior rabbit build evidence. No separate repair was made; review the owning usage record before changing it.
-- Migration pending: 15 area specs have no file yet. Keep the source specification and its original tasks/evidence until every requirement has a destination; confirm its final move/removal before changing it.
-- Terminal independence is accepted scope, not completed compatibility verification. Optional version-1 terminal metadata remains Otty-specific. N7–N8 need planning and live acceptance.
-- Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Settle the five open Claude allowance decisions before U2c3.
-- Stale: `docs/specs/usage/codex-allowance.md` leaves U3b2 unchecked despite historical goal-log evidence. Review U3b2, U1 and I2a–I2c evidence before changing those checkboxes; session-state still awaits a closure decision.
-- Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state; SessionStore enforces the accepted unseen-turn rule.
-- Known test limitation: `ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. Its correction remains proposed.
-- Stale: `README.md` still calls implemented session/notch/usage surfaces planned and decision 0013 proposed; `docs/ARCHITECTURE.md` still describes visible session/usage and health services, plus the now-written pet boundary, as planned. Leave their unrelated edits with their owning work.
-- Stale: `docs/specs/pets/area.md` summarizes implementation only through BP1–BP5 and the earlier capture failure. BP6b2 lifecycle wiring and later no-capture evidence are recorded in `built-in-pet.md`; retain that current feature-level handoff when selecting future work.
-- Sprite-sheet input choice P5 remains proposed and blocks source P6. Monitoring pause/disconnect/resume and notice retention need feature planning. No deadlines are recorded.
+- Hosted acceptance is deferred by the user's "just commit and push first, settle later" instruction. No PR, dispatch, merge or additional hosted setting change is authorized.
+- CI's local evidence used Apple Swift 6.4/Xcode 27; selected hosted macOS 15/Xcode 26.3 remains unverified.
+- A main-only CI branch push does not itself run the workflow; a later authorized PR to main or recognized workflow dispatch is still needed.
+- Full pet/notch/usage/installed-agent acceptance is unchanged. No screen capture, GUI launch or agent configuration change is authorized by this CI work.
