@@ -3,7 +3,7 @@
 ## Now
 
 On `feat/sessions-codex-setup`. Codex-setup R8 is done and uncommitted: the five stores and controllers use `@Observable`, and decision D5 records how controllers observe stores.
-R7 is committed (`5034dfd`). The test and build authorization for R7 and R8 is used up. Runtime checks, configuration changes, and older goals stay paused.
+R7 is committed (`5034dfd`). The user allowed app launches on 2026-10-31. Configuration changes and older goals stay paused.
 
 ## Next
 
@@ -15,10 +15,8 @@ R7 is committed (`5034dfd`). The test and build authorization for R7 and R8 is u
 
 ## Blockers
 
-- Existing no-testing instruction remains in force: do not start tests, builds, app launches/captures, or test-only instrumentation unless requested. The user authorized builds and tests for R7 and R8 only, on 2026-10-31. Both are done, so no runtime authorization remains. Documentation checks do not resume runtime acceptance.
+- Existing no-testing instruction remains in force for tests, builds, captures, helper injections, and test-only instrumentation: do not start them unless requested. The user authorized builds and tests for R7 and R8 only; both are done. The user allowed app launches on 2026-10-31, and one fictional helper injection for the R8 check. Documentation checks do not resume runtime acceptance.
 - Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
-- R8 is unverified in the running app: the notch session count and list, the Codex usage status, and pet visibility/sleep now update through Observation. Tests cover `ObservationLoop` and the stores, not SwiftUI rendering. Check them when app launches are next authorized.
-- R7 focus change is unverified in the running app: Pet Settings now calls `NSApplication.shared.activate()`, which asks for focus instead of forcing it. Check that the window comes to the front from the menu when app launches are next authorized.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
 - Capture reproduction command: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/check-standalone-pet.py --app "/private/var/folders/t3/6n_zw1rn5nn6vv7ccx9r6s240000gn/T/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-completion/evidence/standalone` failed with `could not create image from window` / screencapture exit 1. The native preflight returned screenCaptureAuthorized=false; the user explicitly prohibited further captures and later all further testing. Do not request that permission or retry the failing capture.
