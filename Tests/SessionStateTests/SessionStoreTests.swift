@@ -1,6 +1,7 @@
-import Combine
 import EventBridge
 import Foundation
+import Observation
+import os
 import SessionState
 import Testing
 
@@ -230,17 +231,17 @@ struct SessionStoreTests {
         #expect(backwards.sessions.first?.reason == .clockOrWake)
     }
 
-    @Test func queuedObservationExpiresBeforeFirstPublication() throws {
+    @Test func queuedObservationIsExpiredWhenObserversFirstRead() async throws {
         let store = SessionStore()
         let event = try observation(1)
-        var publications: [[SessionSnapshot]] = []
-        let subscription = store.$sessions.dropFirst().sink { publications.append($0) }
-        defer { subscription.cancel() }
+        let announced = OSAllocatedUnfairLock(initialState: false)
+        _ = withObservationTracking { store.sessions } onChange: { announced.withLock { $0 = true } }
         store.applyBatch([event], observationsLost: false, wallMs: 1_120_001,
                          monotonicNs: 1_120_001_000_000)
+        // Observers read after a main-actor hop, so they never see a value within the batch.
+        await Task { @MainActor in }.value
+        #expect(announced.withLock { $0 })
         #expect(store.sessions.first?.reason == .expired)
-        #expect(publications.count == 1)
-        #expect(publications.first?.first?.reason == .expired)
     }
 
     @Test func newEvidenceCanRecoverAfterAMonotonicClockReset() throws {

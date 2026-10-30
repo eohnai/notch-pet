@@ -2,8 +2,8 @@ import SessionState
 import SwiftUI
 
 struct NotchUsageView: View {
-    @ObservedObject var store: UsageStore
-    @EnvironmentObject private var usageController: AgentUsageController
+    let store: UsageStore
+    @Environment(AgentUsageController.self) private var usageController
     let activeProviders: Set<IntegrationAgent>
 
     var body: some View {

@@ -2,20 +2,22 @@
 
 ## Now
 
-On `feat/sessions-codex-setup`. Codex-setup R7 is done and uncommitted: the package targets macOS 14, and decision D4 records why.
-R7 also replaced the two `onChange(of:perform:)` calls and `activate(ignoringOtherApps:)`. A fresh build has no warnings, as before the change.
-Builds and tests stay authorized for R8 only. Other runtime checks, configuration changes, and older goals stay paused.
+On `feat/sessions-codex-setup`. Codex-setup R8 is done and uncommitted: the five stores and controllers use `@Observable`, and decision D5 records how controllers observe stores.
+R7 is committed (`5034dfd`). The test and build authorization for R7 and R8 is used up. Runtime checks, configuration changes, and older goals stay paused.
 
 ## Next
 
-1. Do codex-setup R8: move the five `ObservableObject` classes to `@Observable`. Verify with the spec's `swift test` command.
-2. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization.
-3. Review integration-health evidence and session-island acceptance before I3b2. Start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`.
-4. Do R4–R6 in any order, then plan I3b2 in `docs/specs/sessions/codex-setup.md`. Codex 0.164.0 still needs isolated qualification.
+1. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
+2. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization and a design review.
+3. Do R5 and R6. R6 needs a user decision on the 128-session limit before any code change.
+4. Review integration-health evidence and session-island acceptance before I3b2. Start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`.
+5. Plan I3b2 in `docs/specs/sessions/codex-setup.md` after R1–R6. Codex 0.164.0 still needs isolated qualification.
 
 ## Blockers
 
-- Existing no-testing instruction remains in force: do not start tests, builds, app launches/captures, or test-only instrumentation unless requested. The user authorized builds and tests for codex-setup R7 and R8 only, on 2026-10-31. R7 is done, so only R8 remains authorized. Documentation checks do not resume runtime acceptance.
+- Existing no-testing instruction remains in force: do not start tests, builds, app launches/captures, or test-only instrumentation unless requested. The user authorized builds and tests for R7 and R8 only, on 2026-10-31. Both are done, so no runtime authorization remains. Documentation checks do not resume runtime acceptance.
+- Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
+- R8 is unverified in the running app: the notch session count and list, the Codex usage status, and pet visibility/sleep now update through Observation. Tests cover `ObservationLoop` and the stores, not SwiftUI rendering. Check them when app launches are next authorized.
 - R7 focus change is unverified in the running app: Pet Settings now calls `NSApplication.shared.activate()`, which asks for focus instead of forcing it. Check that the window comes to the front from the menu when app launches are next authorized.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.

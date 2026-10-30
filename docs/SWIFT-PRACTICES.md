@@ -27,8 +27,10 @@ Those skills assume iOS 17, MVVM, and XCTest. This project uses none of those, s
 
 ## State and observation
 
-- Use `@Observable` for stores and controllers.
-  **Not yet:** five classes still use `ObservableObject`. The package targets macOS 14 ([D4](DECISIONS.md#d4-target-macos-14-so-stores-and-controllers-can-use-observable)), and R8 moves the classes. Until R8, keep each class's current model.
+- Use `@Observable` for stores and controllers ([D4](DECISIONS.md#d4-target-macos-14-so-stores-and-controllers-can-use-observable)).
+  Example: `SessionStore`, `AgentUsageController`.
+- Observe a store from a controller with `ObservationLoop`, not a hand-written `withObservationTracking` call ([D5](DECISIONS.md#d5-observe-stores-from-controllers-with-withobservationtracking)).
+  Example: `AgentUsageController.start()`.
 - Mark `@State` as `private`. Never declare a value passed in by the parent as `@State`, because `@State` keeps only the first value.
 - Keep one source of truth. Compute derived values instead of storing a copy that must be kept in step.
 

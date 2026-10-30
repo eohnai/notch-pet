@@ -101,6 +101,7 @@ These are future verification requirements. No runtime verification ran while wr
 - **Accept content-based ownership limits, accepted 2026-10-30.** Exact descriptions detect visible edits and duplicates, but cannot detect identical replacement history.
   Marker-only identity was rejected because copying and deleting the original defeats it too. See the [review and alternatives](../../contracts/codex-hook-setup.md#i3b1-review-2026-10-30).
 - [D4: Target macOS 14 so stores and controllers can use `@Observable`](../../DECISIONS.md#d4-target-macos-14-so-stores-and-controllers-can-use-observable), accepted 2026-10-31 for R7 and R8.
+- [D5: Observe stores from controllers with `withObservationTracking`](../../DECISIONS.md#d5-observe-stores-from-controllers-with-withobservationtracking), accepted 2026-10-31 for R8.
 
 ## My calls
 
@@ -123,7 +124,7 @@ These are future verification requirements. No runtime verification ran while wr
 - [x] I3b1: Review prerequisite evidence and settle the Codex version/enablement gate, timeout, ownership schema, recovery states, and concurrent-writer guarantees using the contract's fictional cases; record accepted choices before coding.
 - [x] R1: Write `docs/SWIFT-PRACTICES.md` from the conventions and accepted findings in the 2026-10-30 review, and link it from `AGENTS.md`.
 - [x] R7: Raise the deployment target to macOS 14 in `Package.swift`, `Info.plist`, `README.md`, and `ARCHITECTURE.md`; replace the two deprecated `onChange(of:perform:)` calls; record the decision; build passes with no new warnings.
-- [ ] R8: Move the five `ObservableObject` classes and their views to `@Observable`; no behavior change, full suite passes.
+- [x] R8: Move the five `ObservableObject` classes and their views to `@Observable`; no behavior change, full suite passes.
 - [ ] R2: Split `SessionState` into `SessionState`, `Usage`, and `Integration` targets, and move the executable and configuration-directory locator out of the app target; no behavior change, full suite passes.
 - [ ] R3: Add typed `Agent` and `HookEvent` enums at the bridge boundary; remove the duplicated hook-name sets, the `default: .sessionEnded` branch, and the force unwraps they make unnecessary; wire format unchanged.
 - [ ] R4: Update `ARCHITECTURE.md` to describe stores, pure presentation functions, AppKit controllers, and D3's view-model rule.

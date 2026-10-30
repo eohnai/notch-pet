@@ -98,3 +98,26 @@ The development Mac runs macOS 26, and no record names a macOS 13 user. ^[inferr
 **Consequences.** R7 replaced two `onChange(of:perform:)` calls and `activate(ignoringOtherApps:)` with their macOS 14 forms.
 `activate()` asks for focus instead of forcing it. Pet Settings opens from a menu click, so it should still come to the front, but this is unverified in the running app.
 R8 can now move the stores and controllers to `@Observable`. Revisit if a supported user needs macOS 13.
+
+## D5: Observe stores from controllers with `withObservationTracking`
+
+- Status: accepted
+- Date: 2026-10-31
+
+**Context.** R8 moves stores and controllers to `@Observable`, which has no Combine publisher.
+`AgentUsageController` subscribed to `SessionStore.$sessions` to start and stop Codex usage polling, and one store test counted publications through `$sessions`.
+
+**Options.**
+- **`withObservationTracking`, wrapped in one helper:** no store API change and no behavior change; the one-shot callback must be re-armed, and Swift 6 needs a main-actor hop that delays the reaction by one turn.
+- **A stream or callback on `SessionStore`:** exact values in order; adds public API and a second observation path to a module R2 is about to split.
+- **`.task(id:)` in the view:** least code; polling would follow what is on screen instead of whether a Codex session is active.
+- **`Observations`:** Apple's async sequence without re-arming; the SDK marks it macOS 26, above the D4 target.
+
+**Decision.** Controllers observe stores with `withObservationTracking`. `ObservationLoop` in the app target holds the re-arm logic, so it is written and tested once.
+
+**Reasoning.** The user chose this on 2026-10-31 as Apple's documented way to observe `@Observable` outside SwiftUI on macOS 14.
+It is the only option that changes neither behavior nor the store's public API.
+
+**Consequences.** Observers see only the final value of each main-actor turn, so tests can no longer count assignments within one call.
+The user accepted replacing the store's publication-count check with a check of the first value observers read.
+Revisit when the target reaches macOS 26, where `Observations` can replace `ObservationLoop`.
