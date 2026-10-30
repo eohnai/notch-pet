@@ -38,11 +38,12 @@ See the [pets area](area.md) for later detachment, custom artwork, and agent rea
 - Use the accepted [asset-only format](../../decisions/0006-import-asset-only-pet-packs.md) and independently supplied artwork.
 - Do not copy Flux artwork or execute pet-pack scripts. Keep imported packs and runtime files outside the repository.
 - Keep preferences in UserDefaults. No database or persisted live session state is added.
-- Preserve all source P0–P8 task lines and checkbox states. BP1–BP4 were approved through the standalone-rabbit goal; the user later approved BP5 implementation with tests deferred. The user approved the BP6a/BP6b split and BP6a implementation with focused tests and a packaged build on 2026-10-30. BP6b and BP7 remain proposed.
+- Preserve all source P0–P8 task lines and checkbox states. BP1–BP4 were approved through the standalone-rabbit goal; the user later approved BP5 implementation with tests deferred. The user approved the BP6a/BP6b split and BP6a implementation with focused tests and a packaged build on 2026-10-30. The later BP6b1/BP6b2/BP6b3 split and BP6b1 rendering plan are approved; BP6b2, BP6b3 and BP7 implementation/acceptance remain proposed.
 - Before each implementation task, confirm a limit of three changed files, three added production functions, and five added test cases.
 - Include assets, package configuration, and packaging scripts in that file budget. Split a task before coding if it cannot fit.
 - The approved [standalone-rabbit goal](../../goals/standalone-rabbit.md), including its later BP5 extension, permits bounded implementation slices and exempts mandatory goal/log, STATUS and spec checkpoint edits from the three-file limit. It separately authorizes original artwork preparation.
 - The separately approved BP6a goal permits two implementation/test files and three added production members, plus mandatory STATUS and spec records. It does not resume the older goal, app launches/captures, or other deferred acceptance.
+- The approved BP6b1 task permits two implementation/test files, at most three added production functions and three new tests, plus STATUS and spec checkpoint records outside the file budget. Its approval covers focused tests and a packaged build only; no goal, native lifecycle wiring or actual-app acceptance is resumed.
 
 ## Verify
 
@@ -55,6 +56,7 @@ See the [pets area](area.md) for later detachment, custom artwork, and agent rea
 - Check single-frame fallback and hidden, asleep, and Reduce Motion behavior with focused checks and one batched actual-app pass.
 - Existing physical recovery and five-minute resource measurements remain in source R1–R5 and their later feature owners.
 - Run builds, tests, and app checks only during approved implementation. BP6a authorizes the focused command `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --filter PetPlaybackPolicyTests` (five tests, zero failures) and the packaged build above. Actual app checks remain deferred.
+- BP6b1 focused checks: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --filter 'Pet(ViewPlayback|PlaybackPolicy)Tests'`. Pass: eight tests in two suites, zero failures. Then run `bash scripts/run.sh --build-only`; pass: exit 0 and `Info.plist: OK`. Frame selection checks do not establish actual scheduling, native lifecycle or focus acceptance.
 
 ## Decisions
 
@@ -80,7 +82,7 @@ See the [pets area](area.md) for later detachment, custom artwork, and agent rea
 
 ## Tasks
 
-The user approved BP1–BP4 and a separate original-artwork step through the standalone-rabbit goal on 2026-10-30. The user subsequently approved BP5 implementation with tests deferred, then approved splitting BP6 and implementing BP6a as a bounded goal with focused verification. BP6b and BP7 remain proposals. Written implementation is distinguished from completed verification below.
+The user approved BP1–BP4 and a separate original-artwork step through the standalone-rabbit goal on 2026-10-30. The user subsequently approved BP5 implementation with tests deferred, then approved splitting BP6 and implementing BP6a as a bounded goal with focused verification. The user later approved splitting BP6b into rendering, native lifecycle wiring and app acceptance, and implementing only BP6b1 with focused tests and a packaged build. BP6b2, BP6b3 and BP7 remain proposals. Written implementation is distinguished from completed verification below.
 
 - [x] BP1: Add standalone idle presentation and missing-animation fallback in an agent-free pet module, with focused behavior checks and required package configuration.
 - [ ] BP2: Bundle and render independently supplied default pet artwork through the pet module, checking the packaged resource and visible fallback.
@@ -88,7 +90,9 @@ The user approved BP1–BP4 and a separate original-artwork step through the sta
 - [x] BP4: Save and restore pet size with safe defaults, checking missing and invalid preferences without persisting session state.
 - [ ] BP5: Add minimal pet setup and settings with a preview and size control, plus menu actions to open settings and reveal the pet without agent setup.
 - [x] BP6a: Add an independent playback policy with five focused tests covering normal playback, single-frame artwork, hidden state, sleep and Reduce Motion; verify the packaged build.
-- [ ] BP6b: Wire the playback policy into pet rendering and app-owned visibility/sleep lifecycle, stop unnecessary animation, honor Reduce Motion, and check stable visible artwork plus no unsolicited focus. Review the bounded implementation and verification plan before coding.
+- [x] BP6b1: Connect PetPlaybackPolicy to PetView rendering with monotonic elapsed time, cancellable scheduling, visibility/sleep inputs, Reduce Motion and artwork fallback; verify three component frame-selection tests, the five policy tests and the packaged build.
+- [ ] BP6b2: Wire app-owned visibility and sleep lifecycle into pet rendering, including the settings preview; review a bounded implementation and verification plan before coding.
+- [ ] BP6b3: Verify actual scheduling cancellation/resumption, single-frame and missing-artwork fallback, stable visible artwork, Reduce Motion and no unsolicited focus in a batched actual-app pass; review and approve the acceptance plan first.
 - [ ] BP7: Verify first launch, setup, settings, size restoration, fallback, and pet-only service isolation in the actual app, recording results and remaining limitations.
 
 Coverage: BP1–BP2 cover module independence, artwork, and fallback. BP3 covers pet-only startup and service isolation.
@@ -149,3 +153,14 @@ five-test plan and packaged-build command. This does not resume the standalone-r
 - `bash scripts/run.sh --build-only` exited 0 with `Info.plist: OK`. The packaged app is at `/var/folders/t3/6n_zw1rn5nn6vv7ccx9r6s240000gn/T/notch-pet-dev/Notch Pet.app`; it was not launched.
 - Both successful commands ran outside the sandbox because Swift requires its user compiler cache. The full test suite, app checks and captures were not run.
 - BP6a is complete. `PetView` still selects its first frame; the policy is not yet connected to rendering. Actual scheduling, visibility/sleep signals, Reduce Motion updates and focus/visible-artwork acceptance remain open in BP6b and BP7. BP2/BP3/BP5 acceptance states are unchanged.
+
+## BP6b1 verification, 2026-10-30
+
+The user approved the BP6b1/BP6b2/BP6b3 task split and the BP6b1 rendering API, limits, three-test plan and packaged-build command. This is one hands-on task, not a goal resumption. The approved split is recorded in Tasks rather than as a new architecture decision.
+
+- Changed only `Sources/Pet/PetView.swift` and the new `Tests/PetTests/PetViewPlaybackTests.swift` outside mandatory STATUS/spec records. Added three production functions: `frame(at:reduceMotion:)`, `image(for:)` and `updatePlayback()`. Extended the existing initializer with defaulted `isVisible`/`isSleeping` inputs, preserving existing callers. Private `PlaybackID` contains the frames, timing and playback inputs so SwiftUI cancels/restarts its task when they change.
+- The view uses PetPlaybackPolicy for frame selection, reads SwiftUI's accessibility Reduce Motion environment and derives elapsed seconds from monotonic system uptime. Its task returns before entering the sleep loop when the policy disables animation, and exits on cancellation. Missing frame resources still fall back to the first idle resource, then the existing unavailable-artwork symbol. The bundled rabbit remains single-frame artwork.
+- Exactly three new component tests cover requested-pose timing, missing-pose idle playback and stable frame selection for hidden/sleeping/Reduce Motion inputs plus single-frame artwork. They exercise the method used by the view body; they do not mount a SwiftUI view or measure task scheduling.
+- The first sandboxed focused command failed with `error opening '/Users/bytedance/.cache/clang/ModuleCache/Swift-7JL1KBZ3A6V3.swiftmodule' for output` / `Operation not permitted`. The outside-sandbox retry exited 1 with the expected missing `frame(at:reduceMotion:)`/initializer API errors before production implementation.
+- After implementation, `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --filter 'Pet(ViewPlayback|PlaybackPolicy)Tests'` exited 0: `Test run with 8 tests in 2 suites passed`. `bash scripts/run.sh --build-only` exited 0 with `Info.plist: OK`. Both successful commands ran outside the sandbox for Swift compiler-cache access. The packaged app is under `$TMPDIR/notch-pet-dev/Notch Pet.app` and was not launched.
+- BP6b1 is complete. Native panel/settings visibility and sleep signals remain unwired; existing callers use the default visible/awake inputs. Actual scheduling cancellation/resumption, Reduce Motion changes and visible-artwork/focus acceptance remain open in BP6b2/BP6b3. The full suite, app launch/capture, BP2/BP3/BP5 acceptance and older goals were not resumed.
