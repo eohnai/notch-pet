@@ -26,3 +26,37 @@ public struct PetPresentation: Sendable {
         pose == .idle ? idle : animations[pose] ?? idle
     }
 }
+
+/// Selects frames without owning a clock, scheduler, window or agent service.
+public struct PetPlaybackPolicy: Sendable {
+    private let animation: PetAnimation
+    private let isVisible: Bool
+    private let isSleeping: Bool
+    private let reduceMotion: Bool
+
+    public init(animation: PetAnimation, isVisible: Bool, isSleeping: Bool, reduceMotion: Bool) {
+        self.animation = animation
+        self.isVisible = isVisible
+        self.isSleeping = isSleeping
+        self.reduceMotion = reduceMotion
+    }
+
+    /// The caller should schedule updates only while this is true.
+    public var shouldAnimate: Bool {
+        animation.frames.count > 1 && isVisible && !isSleeping && !reduceMotion
+    }
+
+    /// The caller supplies monotonic elapsed seconds since playback started or resumed.
+    /// Inactive playback and invalid elapsed values retain a stable first frame.
+    public func frame(at elapsedSeconds: Double) -> String {
+        guard shouldAnimate, elapsedSeconds.isFinite, elapsedSeconds >= 0 else {
+            return animation.frames[0]
+        }
+        let frameDuration = Double(animation.frameDurationMs) / 1000
+        let cycleDuration = frameDuration * Double(animation.frames.count)
+        // Reduce to one cycle before integer conversion, even for very large elapsed values.
+        let position = elapsedSeconds.truncatingRemainder(dividingBy: cycleDuration) / frameDuration
+        let index = min(Int(position), animation.frames.count - 1)
+        return animation.frames[index]
+    }
+}
