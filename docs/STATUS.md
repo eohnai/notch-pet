@@ -2,34 +2,30 @@
 
 ## Now
 
-The working tree is on `feat/pets-built-in-pet` at `b747da2`, with earlier uncommitted pet code, artwork, packaging, and planning changes preserved.
-The user confirmed D2: one optional collector, local SQLite history, and next-task/debug-issue/checkpoint telemetry in one repository/release.
-Three telemetry feature specs and their proposed task lists are saved alongside the battery requirements. Runtime contracts and task implementation still need review.
-This planning work ran no builds, runtime profiles, Swift tests, service installs, hook changes, goal resumes, or agent-skills edits.
+Branch: `feat/pets-built-in-pet`. This checkpoint includes the rabbit implementation, artwork, packaging and records; the earlier telemetry-planning commit `67680e4` is preserved. The user authorized committing and pushing this work without resuming tests or app checks.
+Implementation through BP5 is written: independent pet core/renderer, original white lionhead artwork, pet-first startup, optional agent services, size persistence and native setup/settings with menu access and Escape handling. BP1/BP4 are checked on earlier evidence; BP2/BP3/BP5 remain open for acceptance.
+The standalone-rabbit goal is blocked on deferred acceptance. The user requested implementation focus and no further tests/captures; do not retry the interrupted app-open request. This checkpoint changes records only and does not resume the goal or authorize BP6/BP7.
+Telemetry D2 remains accepted; collector/history/skill-telemetry implementation tasks and battery budgets remain proposed. No telemetry or older notch/allowance goal was resumed.
 
 ## Next
 
-1. Review the three telemetry task lists in `docs/specs/telemetry/area.md`; start with C1's lifecycle/protocol design after approval. Review E1–E5 and initial battery budgets alongside them.
-2. Review the existing standalone-rabbit goal and its current implementation/evidence with its owning work. Do not infer activation or resume it from telemetry planning.
-3. Settle the five open decisions in `usage/claude-allowance` before U2c3. Review U3b2, U1, I2a–I2c, and session-state evidence before changing completion states.
-4. Plan `pets/agent-reactions` and `pets/detachable-pet` when reached, preserving original P1/P2 lines. Coordinate monitoring controls with telemetry/background-collection.
-5. Reassess the historical build-failure report during approved verification. Resume the paused notch/allowance goal only on explicit request.
+1. Review and approve BP6's bounded implementation plan for animation visibility, sleep, Reduce Motion and focus behavior before coding it. Keep BP7 acceptance separate.
+2. Plan Flux-like session-island opening/closing and limits presentation with their session/usage owners; retain the accepted pet-first architecture and optional services.
+3. Plan `pets/agent-reactions` and `pets/detachable-pet`, preserving original P1/P2 source lines and drag-out/hide plus overlap-return. Coordinate monitoring controls with session setup and the optional collector.
+4. Review the separate telemetry task lists and provisional battery budgets before starting C1 lifecycle/protocol design.
+5. Resume rabbit visual/focus/Quit-relaunch and BP5 interaction acceptance only when requested. Resume the older notch/allowance goal only on explicit request.
 
 ## Blockers
 
-- Telemetry scope and SQLite direction are confirmed; C1–C8, H1–H7, and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability, and instrumentation coverage require their recorded reviews. Battery targets remain provisional and unmeasured.
-- Stale: earlier standalone-pet records describe no implementation or artwork, but the working tree now contains both. Their activation, verification, and task completion need evidence review by the owning work; this session did not run or complete that goal.
-
-- Stale: the historical `swift build` failure (`ambiguous use of 'sync(execute:)'` at `NotchPanelController.swift:37`) does not match current source: that file contains no `sync` call. No build ran to establish current build status. The BP3 blocker and `usage/claude-allowance` report still need review before editing their records.
-- Migration pending: 15 area specs have no file yet. The source spec still owns their tasks and evidence. Missing spec files do not imply missing implementations.
-- Terminal independence is accepted scope, not completed compatibility verification. The optional version-1 terminal object and helper metadata stay Otty-specific. N7–N8 need planning and live acceptance.
-- The standalone-rabbit goal is not activated. Its proposed checkpoint-file budget exception and bounded BP1-BP4 task slices await approval. Original white lionhead artwork is chosen but not generated or bundled. Agent pause, disconnect, resume and notice retention still need planning.
-- Stale: `docs/specs/pets/built-in-pet.md` still says the default artwork source needs resolution. The user has now chosen newly created original white lionhead rabbit artwork, recorded in the pets area decisions. The rest of the seven-task list is unchanged and still proposed.
-- Keep the source spec until every task and acceptance check has a destination. Confirm its final move or removal with the user before changing it.
-- Real Claude forwarding and terminal-output/cancellation preservation are incomplete. Codex reconnect, account switching, and remaining physical-notch acceptance are unverified.
-- Stale: `docs/specs/usage/codex-allowance.md`: U3b2 is unchecked, but goal-log turn 19 records passing process tests and a sanitized live read. Leave it unchanged until an evidence review.
-- Stale: `scripts/check-event-contract.py` lets a previously conflicting turn ID restore working state. `SessionStore` enforces the accepted unseen-turn rule.
-- Known test limitation: `Tests/EventBridgeTests/ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. The byte can arrive later. Correction remains proposed.
-- Stale: `docs/ARCHITECTURE.md` describes visible session/usage surfaces and integration-health services as planned. That code exists, with incomplete verification.
-- Stale: `README.md` describes the notch, usage limits, and session presentation as planned. Their implementations exist, with incomplete runtime verification.
-- Sprite-sheet input choice P5 remains proposed and blocks P6. No deadlines are recorded.
+- Rabbit app acceptance is incomplete. `python3 scripts/check-standalone-pet.py --app "/private/tmp/notch-pet-first/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-first/evidence` reached the first case's native window and zero production service-start snapshot, then failed with `could not create image from window` (`screencapture` exit 1). The six-case check did not pass; capture failure cause is not established. Further tests/captures are deferred by the user.
+- BP5 setup/settings and a live size control are written, with compile-only evidence. Interaction acceptance is deferred. BP6 lifecycle work, agent reactions and detachment are unimplemented and require their own approved task slices. The original goal plus explicit BP5 extension authorizes no further implementation.
+- Telemetry C1–C8, H1–H7 and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability and instrumentation coverage require their recorded reviews. Battery targets are provisional and unmeasured.
+- Stale: the historical `ambiguous use of 'sync(execute:)'` build report in usage records does not match current NotchPanelController source. The rabbit goal's unchanged-baseline and changed-source packaged builds succeeded earlier; no separate repair was made. Review the remaining usage record before changing it.
+- Migration pending: 15 area specs have no file yet. Keep the source specification and its original tasks/evidence until every requirement has a destination; confirm its final move/removal before changing it.
+- Terminal independence is accepted scope, not completed compatibility verification. Optional version-1 terminal metadata remains Otty-specific. N7–N8 need planning and live acceptance.
+- Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Settle the five open Claude allowance decisions before U2c3.
+- Stale: `docs/specs/usage/codex-allowance.md` leaves U3b2 unchecked despite historical goal-log evidence. Review U3b2, U1 and I2a–I2c evidence before changing those checkboxes; session-state still awaits a closure decision.
+- Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state; SessionStore enforces the accepted unseen-turn rule.
+- Known test limitation: `ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. Its correction remains proposed.
+- Stale: README still calls implemented session/notch/usage surfaces planned and decision 0013 proposed; ARCHITECTURE still describes visible session/usage and health services, plus the now-written pet boundary, as planned. Leave their unrelated edits with their owning work.
+- Sprite-sheet input choice P5 remains proposed and blocks source P6. Monitoring pause/disconnect/resume and notice retention need feature planning. No deadlines are recorded.

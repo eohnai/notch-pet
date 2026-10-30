@@ -9,6 +9,8 @@ Code: `Sources/NotchPet/` and shared presentation services in `Sources/SessionSt
 - `desktop-recovery`: Keep the notch accessible through display changes, Spaces, fullscreen, and sleep/wake. Needs: session-island.
 - `accessible-controls`: Support keyboard controls, Reduce Motion, and perceivable alerts without unsolicited focus. Needs: session-island.
 
+- [`resource-efficiency`](resource-efficiency.md): Measure and constrain idle CPU, memory, wakeups, rendering, and provider refresh across native components.
+
 ## Shared context
 
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).

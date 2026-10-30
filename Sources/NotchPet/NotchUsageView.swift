@@ -1,11 +1,10 @@
-import Darwin
 import SessionState
 import SwiftUI
 
 struct NotchUsageView: View {
     @ObservedObject var store: UsageStore
+    @EnvironmentObject private var usageController: AgentUsageController
     let activeProviders: Set<IntegrationAgent>
-    @State private var codexStatus = "Reading allowance…"
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
@@ -18,7 +17,7 @@ struct NotchUsageView: View {
                             .font(.headline)
                         let observations = snapshots.filter { $0.observation.provider == provider.rawValue }
                         if observations.isEmpty {
-                            Text(provider == .codex ? codexStatus : "Awaiting Claude status-line data.")
+                            Text(provider == .codex ? usageController.status : "Awaiting Claude status-line data.")
                                 .font(.caption).foregroundStyle(.secondary)
                             Text("5-hour: unavailable · Weekly: unavailable")
                                 .font(.caption).foregroundStyle(.secondary)
@@ -63,7 +62,6 @@ struct NotchUsageView: View {
                 }
             }
         }
-        .task(id: activeProviders) { await refreshCodex() }
     }
 
     private func label(_ minutes: Int?) -> String {
@@ -75,25 +73,4 @@ struct NotchUsageView: View {
         }
     }
 
-    @MainActor
-    private func refreshCodex() async {
-        guard activeProviders.contains(.codex) else { return }
-        codexStatus = "Reading allowance…"
-        let path = getenv("PATH").map { String(cString: $0) } ?? "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
-        guard path.utf8.count <= 16_384 else { codexStatus = "Executable search path unavailable."; return }
-        let candidates = path.split(separator: ":").prefix(64).map(String.init) +
-            [FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".local/bin").path,
-             "/opt/homebrew/bin", "/usr/local/bin"]
-        let executable = candidates.filter { $0.hasPrefix("/") }
-            .map { URL(fileURLWithPath: String($0)).appendingPathComponent("codex") }
-            .first { FileManager.default.isExecutableFile(atPath: $0.path) }
-        guard let executable else { codexStatus = "Codex executable unavailable."; return }
-        while !Task.isCancelled {
-            let observation = await CodexUsageConnection.read(executableURL: executable, sourceID: "codex-managed")
-            guard !Task.isCancelled else { return }
-            store.apply(observation)
-            do { try await Task.sleep(for: .seconds(120)) }
-            catch { return }
-        }
-    }
 }

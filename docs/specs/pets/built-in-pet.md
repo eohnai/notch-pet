@@ -38,9 +38,10 @@ See the [pets area](area.md) for later detachment, custom artwork, and agent rea
 - Use the accepted [asset-only format](../../decisions/0006-import-asset-only-pet-packs.md) and independently supplied artwork.
 - Do not copy Flux artwork or execute pet-pack scripts. Keep imported packs and runtime files outside the repository.
 - Keep preferences in UserDefaults. No database or persisted live session state is added.
-- Preserve all source P0–P8 task lines and checkbox states. The tasks below are new proposals awaiting approval.
+- Preserve all source P0–P8 task lines and checkbox states. BP1–BP4 were approved through the standalone-rabbit goal; the user later approved BP5 implementation with tests deferred. BP6–BP7 remain proposed.
 - Before each implementation task, confirm a limit of three changed files, three added production functions, and five added test cases.
 - Include assets, package configuration, and packaging scripts in that file budget. Split a task before coding if it cannot fit.
+- The approved [standalone-rabbit goal](../../goals/standalone-rabbit.md), including its later BP5 extension, permits bounded implementation slices and exempts mandatory goal/log, STATUS and spec checkpoint edits from the three-file limit. It separately authorizes original artwork preparation.
 
 ## Verify
 
@@ -72,17 +73,17 @@ See the [pets area](area.md) for later detachment, custom artwork, and agent rea
 - Pet-only is the first-use default. Later explicit agent setup enables monitoring without a per-session mode switch.
 - Keep agent connection entry points with their owning features. Do not add dead setup buttons before those features exist.
 - Keep the original integrated P1 task in the source spec until agent-reactions is written. Do not split or reword it here.
-- Resolve the default artwork source before implementation. No pet artwork is bundled in the current repository.
+- The user chose original white lionhead rabbit artwork on 2026-10-30. Its first idle PNG and manifest are now bundled through the independent pet target.
 - Track no deadline or owner because none was supplied.
 
 ## Tasks
 
-These seven tasks are proposals. Approval of the direction does not authorize implementation.
+The user approved BP1–BP4 and a separate original-artwork step through the standalone-rabbit goal on 2026-10-30. The user subsequently approved BP5 implementation with tests deferred; BP6–BP7 remain proposals. Written implementation is distinguished from completed verification below.
 
-- [ ] BP1: Add standalone idle presentation and missing-animation fallback in an agent-free pet module, with focused behavior checks and required package configuration.
+- [x] BP1: Add standalone idle presentation and missing-animation fallback in an agent-free pet module, with focused behavior checks and required package configuration.
 - [ ] BP2: Bundle and render independently supplied default pet artwork through the pet module, checking the packaged resource and visible fallback.
-- [ ] BP3: Launch the pet through an app-owned presentation path that starts no agent or usage services, checking isolated startup and preserving the optional integration path. (blocked: reported app build failure needs a separate fix)
-- [ ] BP4: Save and restore pet size with safe defaults, checking missing and invalid preferences without persisting session state.
+- [ ] BP3: Launch the pet through an app-owned presentation path that starts no agent or usage services, checking isolated startup and preserving the optional integration path.
+- [x] BP4: Save and restore pet size with safe defaults, checking missing and invalid preferences without persisting session state.
 - [ ] BP5: Add minimal pet setup and settings with a preview and size control, plus menu actions to open settings and reveal the pet without agent setup.
 - [ ] BP6: Pause unnecessary animation while hidden or asleep and honor Reduce Motion, checking that the pet remains visible and does not take unsolicited focus.
 - [ ] BP7: Verify first launch, setup, settings, size restoration, fallback, and pet-only service isolation in the actual app, recording results and remaining limitations.
@@ -91,7 +92,7 @@ Coverage: BP1–BP2 cover module independence, artwork, and fallback. BP3 covers
 BP4–BP5 cover setup, preferences, and basic controls. BP6 covers animation lifecycle, Reduce Motion, and focus.
 BP7 checks the complete standalone flow in the real app.
 
-## Planning evidence
+## Planning evidence (before implementation)
 
 The user approved pet-first setup, optional one-time agent connection, automatic session-driven features, and one app with an independent pet module.
 They also approved separate built-in-pet and agent-reactions specs, with only this first spec written now.
@@ -109,3 +110,27 @@ No historical evidence is moved or rewritten by this plan.
 Known prerequisite: the current app has a reported `ambiguous use of 'sync(execute:)'` build error in `NotchPanelController.swift`.
 It was not reproduced or fixed here. Resolve that separate blocker before requiring an app build for these tasks.
 No build, runtime check, Swift test, configuration access, or paused-goal work ran in this planning session.
+
+## Implementation checkpoint, 2026-10-30
+
+BP1–BP4 implementation is written on `feat/pets-built-in-pet`. No new tests or app launches ran during this checkpoint; the user requested skipping tests and focusing on implementation.
+
+- BP1 is verified by the independent Pet target build and three focused presentation tests run earlier in this session. Pet imports no EventBridge or SessionState types.
+- BP2 has an original white lionhead rabbit idle PNG, a versioned manifest, resource lookup, SwiftUI rendering and packaged SwiftPM resources. Two artwork tests passed earlier. It remains unchecked because actual visual/fallback acceptance is incomplete.
+- BP3 has a nonactivating pet panel, pet-first app delegate, lazy optional-service owner and production service-start instrumentation. Existing session handling remains in optional AgentServices; usage I/O moved out of the view. Three lifecycle tests passed earlier. The isolated app recorded a visible 120-point window, loaded artwork, monitoring disabled and zero starts across event receiver, usage receiver, provider process, configuration probe and agent refresh. Full real-app acceptance remains incomplete, so BP3 stays unchecked.
+- BP4 is verified by four earlier preference tests: missing/invalid/nonfinite values use 120 points, writes accept 64–256 points, a new preference instance restores the saved size, and only pet size is persisted. Actual Quit/relaunch size acceptance remains with the deferred app check.
+- The full Swift command from the approved goal passed earlier with 116 tests and zero failures (104 existing plus 12 new). Module and packaged-app builds also exited 0. These are historical results from this session, not checks rerun for this checkpoint.
+- The six-case app harness did not pass: `python3 scripts/check-standalone-pet.py --app "/private/tmp/notch-pet-first/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-first/evidence` reached window capture, where `screencapture` exited 1 with `could not create image from window`. The first case's diagnostic snapshot is in `.../evidence/b76eca08a3884cd9a610263ca73ba2ca/missing-preferences/pet.json`; it is not a screenshot or proof of all six cases.
+- The earlier build-error report was not reproduced: both unchanged-baseline and changed-source packaged builds passed. No separate build repair was made. The temporary-directory diagnostic guard was fixed after a direct Foundation probe confirmed `/private/tmp` canonicalizes to `/tmp` on this Mac.
+
+The user prefers Flux-like opening, Escape-to-close and limits presentation. Those preferences guide later setup/session interface work. Drag-out/hide and overlap-return stay accepted for detachable-pet; neither is implemented here.
+
+## BP5 implementation, 2026-10-30
+
+The user explicitly approved BP5 setup/settings, preview, size control, menu access and Escape-to-close, with tests deferred. Implementation is written in three bounded slices:
+
+1. PetSettingsView (initializer and body) plus PetSettingsWindow.cancelOperation: two files, three production members. Preview uses the existing PetView; the view forwards actions to its app-owned controller.
+2. PetSettingsController.init(defaults:onSizeChange:), show(activate:) and close(): one file, three functions. Size changes persist through PetPreferences and update the live pet. Start/Done sets pet.setupComplete; Escape/window close dismisses without claiming setup completion. First-use show uses activate:false; explicit settings requests activation.
+3. PetAppController/NotchPetApp/PetPanelController wiring: three files, two added functions (showSettings and setSize). Added Pet Settings… with Command-comma. Resizing retains the pet's top-center anchor. Agent connection and monitoring configuration remain with their owning features.
+
+The compile-only packaged build exited 0 with valid Info.plist after these changes. No new tests, captures or app launches ran for BP5. Its checkbox remains open until setup, persistence, focus, Escape and menu behavior are verified. The next proposed implementation task is BP6; it is not authorized by this BP5 approval.

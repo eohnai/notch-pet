@@ -7,10 +7,12 @@ import SwiftUI
 final class NotchPanelController {
     private let panel: NSPanel
     private let usageStore = UsageStore()
+    private let usageController: AgentUsageController
 
     init(sessionStore: SessionStore) {
         panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel],
                         backing: .buffered, defer: false)
+        usageController = AgentUsageController(store: usageStore, sessions: sessionStore)
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -26,12 +28,19 @@ final class NotchPanelController {
         } ?? 0
         panel.contentView = NSHostingView(rootView: NotchSessionView(
             sessionStore: sessionStore, usageStore: usageStore, headerHeight: max(32, top), notchWidth: notch,
-            onExpand: { [weak self] expanded in self?.updatePlacement(expanded: expanded) }))
+            onExpand: { [weak self] expanded in self?.updatePlacement(expanded: expanded) })
+            .environmentObject(usageController))
         updatePlacement(expanded: false)
     }
 
     func show() {
         panel.orderFrontRegardless()
+        usageController.start()
+    }
+
+    func stop() {
+        usageController.stop()
+        panel.orderOut(nil)
     }
 
     func updatePlacement(expanded: Bool) {

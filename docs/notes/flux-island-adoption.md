@@ -112,6 +112,37 @@ Flux writes recent session snapshots through `saveSessions` around line 40862, b
 The inspection therefore does not establish restoration of old snapshots into live sessions.
 Our restart behavior continues to require fresh evidence.
 
+## Pet comparison refreshed, 2026-10-30
+
+The installed app is still version `0.1.25`, with the same archive SHA-256 recorded above.
+Selected packaged JavaScript was re-extracted into `/private/tmp/notch-pet-flux-review/` for read-only inspection.
+No app launch, credential/configuration-file inspection, build, runtime benchmark, or code reuse occurred.
+
+The internal [pet customization guide](https://bytedance.larkoffice.com/wiki/NzngwydZGihADLkW6picsbATnqf)
+documents a built-in default appearance and externally generated replacement `usagi.png` files.
+Artwork generation belongs to the external `flux-double-pet` skill, not the pet renderer.
+The [product guide's pet-mode section](https://bytedance.larkoffice.com/wiki/YeuYwd83siaJlrkC49bcR7pMnic#ByVxdFhDSoksJoxLSYWcUh0knTg)
+documents dragging out the icon and dragging it back to the island.
+
+Reconfirmed packaged behavior:
+
+- `out/renderer/assets/pet-H4m9z7If.js:31` defines the seven sprite rows. `derivePetStatus` at line 57 prioritizes attention, running, then complete. The renderer slices the PNG onto an HTML canvas and advances frames at 90, 120, or 150 ms intervals.
+- The same renderer falls back to bundled artwork on an image-load error. Empty optional rows do not fall back to the idle pose: their frame count becomes one, which can render transparent pixels. The animation effect continues to schedule a timer for a single frame; no visibility or Reduce Motion gate was found in this pet renderer.
+- `out/main/index.js:61256` resolves a user PNG override before the packaged default. `initSpriteDirs` seeds the user directory from the bundled asset when needed.
+- `PetWindow` at line 25462 provides a separate transparent Electron window, mouse passthrough, drag movement, and a session panel. `enterPetMode` at line 59404 hides the island and supplies the current sessions. `tryReturnToIsland` at line 59430 compares the pet canvas rectangle with the island rectangle and restores the island on overlap.
+- The coordinator at line 59242 starts the bridge, quota service, process monitor, and reconciliation in the ordinary startup path. Entering pet mode changes presentation; it does not establish a service-free pet startup path.
+
+At the comparison point, before the subsequent rabbit implementation, local code had a SwiftUI/AppKit session island, the event bridge, shared session state, and usage infrastructure.
+`Package.swift` has no pet target, and `Resources/` has no pet artwork.
+`BridgeAppDelegate.applicationDidFinishLaunching` starts the bridge and island;
+`NotchUsageView.refreshCodex` owns a view-triggered refresh loop.
+The independent pet module, pet rendering, setup/settings, size persistence, detachment/return, and pet-only startup remain unimplemented.
+This records the pre-implementation static comparison, not current runtime acceptance or a numerical completion estimate. The later pet implementation and remaining acceptance are recorded in [built-in-pet](../specs/pets/built-in-pet.md#implementation-checkpoint-2026-10-30).
+
+The user reaffirmed pet-first startup with optional agent services and accepted drag-out/hide plus overlap-to-return.
+The accepted behavior is recorded in [pets area decisions](../specs/pets/area.md#decisions).
+Its implementation remains with `detachable-pet`; the comparison itself changed no BP or source task checkbox.
+
 ## Planning outcome
 
 The spec retains the user's existing single-spec layout and completed foundation tasks.
