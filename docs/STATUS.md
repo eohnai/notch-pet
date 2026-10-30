@@ -2,14 +2,14 @@
 
 ## Now
 
-On `main` after built-in-pet merged in `1c5d9cf`. The approved priority remains Sessions → Notch → Usage, starting with optional Codex setup, a visible real session, and real Codex limits.
-On 2026-10-30 the user approved a seventh area, Settings, plus general preferences, attention behavior, local activity statistics, and verified token statistics.
-The supplied session-panel and settings images guide those roadmap entries. This session updates records only; full specs, counting rules, detailed control semantics, and implementation task lists still need review.
-Pet acceptance remains deferred. No tests, builds, app launches, captures, configuration changes, or older goal execution were resumed.
+On `main` at `9cbf613`. Priority remains Sessions → Notch → Usage: optional Codex setup, a visible real session, and real Codex limits.
+On 2026-10-30 the user confirmed `sessions/codex-setup` scope and menu-first controls to avoid waiting for Settings.
+The user approved its eight-task list on 2026-10-30. Recovery, concurrent-writer guarantees, version gates, and prerequisite closure remain open.
+This session changed documentation only. Pet acceptance, runtime checks, configuration changes, and older goals remain paused.
 
 ## Next
 
-1. Run `/plan-feature` for `sessions/codex-setup`, starting from `docs/specs/sessions/area.md` and `docs/contracts/codex-hook-setup.md`. Include explicit connection controls and real helper-to-visible-session acceptance.
+1. Start I3b1's design review in `docs/specs/sessions/codex-setup.md` with `/next-task`. The task list is approved; do not resume runtime checks without an explicit request.
 2. Review session-state closure and integration-health evidence before dependent implementation. Plan remaining session-island interaction and acceptance work with its owner.
 3. Review `usage/codex-allowance` evidence and remaining requirements for the first session-and-limits milestone. Preserve unchecked tasks until their acceptance is established.
 4. Plan Claude setup/forwarding and monitoring controls in the approved area order. Keep configuration ownership separate from runtime control semantics.
@@ -23,12 +23,14 @@ Pet acceptance remains deferred. No tests, builds, app launches, captures, confi
 - Telemetry C1–C8, H1–H7 and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability and instrumentation coverage require their recorded reviews. Battery targets are provisional and unmeasured.
 - Stale: `docs/specs/usage/codex-allowance.md` describes view-owned reads. AgentUsageController now owns those reads; NotchPanelController still owns the store/controller. Reconcile during feature review.
 - Stale: `docs/specs/usage/claude-allowance.md` describes uncommitted receiver wiring and an `ambiguous use of 'sync(execute:)'` build error. Current app code has no UsageReceiver startup path or that closure. Review its five open decisions against current code before U2c3.
-- Migration pending: 21 planned area specs have no file yet, including monitoring-controls and the five settings/reference additions. Keep the source specification and its original tasks/evidence until every requirement has a destination; confirm its final move/removal before changing it.
+- Codex setup scope and its eight tasks are approved. The separate ownership file is accepted; recovery, concurrent-writer limitations, and supported version/enablement/timeout gates remain open. `integration-health` and `notch/session-island` must complete before dependent implementation.
+- Migration pending: 20 planned area specs have no file yet, including monitoring-controls and the five settings/reference additions. Codex setup maps its source obligations without removing shared I5/I6 tasks. Keep the source specification and its original tasks/evidence until every requirement has a destination; confirm its final move/removal before changing it.
 - Terminal independence is accepted scope, not completed compatibility verification. Optional version-1 terminal metadata remains Otty-specific. N7–N8 need planning and live acceptance.
 - Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Settle the five open Claude allowance decisions before U2c3.
 - Stale: `docs/specs/usage/codex-allowance.md` leaves U3b2 unchecked despite historical goal-log evidence. Review U3b2, U1 and I2a–I2c evidence before changing those checkboxes; session-state still awaits a closure decision.
 - Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state; SessionStore enforces the accepted unseen-turn rule.
 - Known test limitation: `ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. Its correction remains proposed.
 - Stale: `README.md` still calls implemented session/notch/usage surfaces planned and decision 0013 proposed; `docs/ARCHITECTURE.md` still describes visible session/usage and health services, plus the now-written pet boundary, as planned. Leave their unrelated edits with their owning work.
+- Stale: `docs/specs/sessions/integration-health.md` describes health supplied through the menu environment. Current `AgentServices` keeps its health controller private and the menu has no health controls; codex-setup I6a owns exposing those actions.
 - Sprite-sheet input choice P5 remains proposed and blocks source P6. Monitoring pause/disconnect/resume and notice retention need planning in sessions/monitoring-controls. No deadlines or owners are recorded.
 - Activity counting and token-counter sources remain unverified. Define coverage, units, deduplication, and time boundaries before statistics implementation. Hook events do not establish chat-message totals, and tokens do not establish remaining allowance.
