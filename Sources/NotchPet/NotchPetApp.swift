@@ -6,13 +6,11 @@ import SwiftUI
 
 @main
 struct NotchPetApp: App {
-    @NSApplicationDelegateAdaptor(BridgeAppDelegate.self) private var delegate
+    @NSApplicationDelegateAdaptor(PetAppController.self) private var delegate
 
     var body: some Scene {
         MenuBarExtra("Notch Pet", systemImage: "pawprint.fill") {
-            CompanionMenu(onShowNotch: { delegate.showNotch() })
-                .environmentObject(delegate.sessionStore)
-                .environmentObject(delegate.integrationHealth)
+            CompanionMenu(onShowPet: { delegate.showPet() }, onOpenSettings: { delegate.showSettings() })
         }
         .menuBarExtraStyle(.menu)
     }
@@ -35,6 +33,7 @@ private final class IntegrationHealthController: ObservableObject {
 
     func refresh(agent: IntegrationAgent) async {
         guard !Task.isCancelled, refreshing.insert(agent).inserted else { return }
+        ServiceStartLedger.record(.configurationProbe)
         defer { refreshing.remove(agent) }
         let manager = FileManager.default
         // Access only these path settings; do not inventory the environment or read auth files.
@@ -94,16 +93,16 @@ private final class IntegrationHealthController: ObservableObject {
 }
 
 @MainActor
-private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
+final class AgentServices: NSObject, AppAgentService {
     let sessionStore = SessionStore()
-    let integrationHealth = IntegrationHealthController()
+    private let integrationHealth = IntegrationHealthController()
     private let bridge = EventBridgeServer()
     private var inbox: SessionEventInbox?
     private var expiryTimer: DispatchSourceTimer?
     private var receiptCutoffNs: UInt64 = 0
     private var notchPanel: NotchPanelController?
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func start() {
         let notchPanel = NotchPanelController(sessionStore: sessionStore)
         self.notchPanel = notchPanel
         notchPanel.show()
@@ -119,6 +118,7 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
         }
         self.inbox = inbox
         do {
+            ServiceStartLedger.record(.eventReceiver)
             try bridge.start { inbox.receive($0) }
             integrationHealth.setReceiver(.listening)
         } catch BridgeError.unsafeEndpoint {
@@ -137,7 +137,8 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
 
     func showNotch() { notchPanel?.show() }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func stop() {
+        notchPanel?.stop()
         bridge.stop()
         integrationHealth.setReceiver(.stopped)
         expiryTimer?.cancel()
@@ -178,10 +179,13 @@ private final class BridgeAppDelegate: NSObject, NSApplicationDelegate {
 }
 
 private struct CompanionMenu: View {
-    let onShowNotch: () -> Void
+    let onShowPet: () -> Void
+    let onOpenSettings: () -> Void
 
     var body: some View {
-        Button("Show Notch", action: onShowNotch)
+        Button("Show Pet", action: onShowPet)
+        Button("Pet Settings…", action: onOpenSettings)
+            .keyboardShortcut(",")
         Divider()
         Button("Quit Notch Pet") {
             NSApplication.shared.terminate(nil)

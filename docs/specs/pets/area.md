@@ -1,7 +1,7 @@
 # Pets
 
 Owns pet rendering, detachment and return, safe artwork imports, preferences, and pet desktop behavior.
-Code: future independent pet module and AppKit panels, with an optional adapter for shared session presentation.
+Code: `Sources/Pet/` and AppKit controllers in `Sources/NotchPet/`; the optional shared-session adapter remains future work.
 
 ## Specs
 
@@ -35,8 +35,22 @@ Code: future independent pet module and AppKit panels, with an optional adapter 
 - Preserve optional integration, unknown, ended, attention, and response-ready checks across the split. A pet-only feature does not complete them.
 - Keep runtime files, imported packs, and fixture assets outside the repository. Invalid imports must preserve the selected pet.
 
+## Decisions
+
+- **Keep pet-first startup with optional agent services; add drag-out and overlap-return presentation.** Accepted on 2026-10-30: dragging the pet out hides the island, and overlapping the detached pet with the island's location returns the pet and restores the island. The user chose Flux's interaction while retaining decision 0013's independent pet module and optional services.
+- Detachment and return belong to `detachable-pet` and work without an agent connection. Switching surfaces does not start or stop monitoring, change connection settings, or resolve retained notices. This accepts behavior; the feature's task list and implementation plan still require approval.
+- **Use original white lionhead rabbit artwork for the default pet.** Accepted on 2026-10-30: the user chose newly created original artwork over supplying an existing image, then specified a white lionhead rabbit. At this decision point the standalone-rabbit goal was prepared but not activated; its later approved asset step and implementation are summarized below.
+
+## Implementation status
+
+The original white lionhead idle PNG and manifest are bundled through the independent Pet target.
+BP1–BP5 implementation is written, including pet-first startup, optional agent-service ownership,
+size persistence and native setup/settings. BP1/BP4 have focused verification; other app acceptance
+is deferred by the user. See [built-in-pet](built-in-pet.md#implementation-checkpoint-2026-10-30)
+and the [blocked goal](../../goals/standalone-rabbit.md). Detachment and agent reactions remain unimplemented.
+
 ## Open questions
 
-- Default pet artwork is not bundled yet. Resolve an independently supplied artwork source before implementation.
+- Actual-app visual/fallback, focus and Quit/relaunch acceptance remains deferred; the six-case harness stopped at window capture.
 - Detailed pause, disconnect, resume, and notice-retention behavior needs planning in session first-use and agent-reactions.
 - Sprite-sheet conversion versus a second runtime loader remains proposed. The optional importer is not a first-release dependency.
