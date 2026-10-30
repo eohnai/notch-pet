@@ -1,5 +1,7 @@
 # Track agent session state
 
+Status: done
+
 Needs: observation-bridge
 
 ## Goal
@@ -107,3 +109,11 @@ A temporary diagnostic confirmed acceptance when that extra byte arrives after t
 This matches the contract's buffered-extra-byte rule.
 The final full run passed. The bridge and existing test remain unchanged, with the diagnostic removed.
 Physical sleep/wake and live provider behavior remain later verification work.
+
+## Closure review, 2026-10-30
+
+The user closed this spec on 2026-10-30 after the [session-state and architecture review](../../reports/2026-10-30-session-state-and-architecture-review.md).
+`swift test` passed 129 tests in 23 suites, and `python3 scripts/check-event-contract.py` passed 37 sequences (122 steps). Both exited 0.
+Every Done-when item has code and current test evidence. The same-folder case is met because the project path is not part of `SessionKey`. No test sets it directly.
+Physical sleep/wake (R3) and live provider checks (N6, R6–R7) stay with their owning tasks. The reference-model open question stays open.
+The 128-session limit follows the accepted contract. Its review is a codex-setup follow-up task, not a gap in this spec.

@@ -48,3 +48,30 @@ This updates decision 0013's app-owned service boundary for telemetry and decisi
 Their independent pet, preferences/assets, and fresh live-evidence requirements remain intact. Earlier implementation evidence is not rewritten.
 D1's measured resource requirements apply to every new process. Exact registration, IPC, schemas, and limits receive task-level review.
 This accepts scope and storage direction, not implementation tasks, service installation, hook edits, or goal resumption.
+
+## D3: Add view models only where a view owns state
+
+- Status: accepted
+- Date: 2026-10-30
+
+**Context.** Decision 0002 and `ARCHITECTURE.md` describe MVVM, but the code has no view models.
+Read-only views observe stores directly. Pure functions such as `NotchPresentation` and `PetPresentation` prepare their state.
+`AgentUsageController` and `PetSettingsController` already publish status and handle actions.
+The [2026-10-30 review](reports/2026-10-30-session-state-and-architecture-review.md) (M4) raised the mismatch.
+
+**Options.**
+- **A view model for every view:** one uniform structure; most would pass store properties through, and cached derived state can become a stale copy of session truth.
+- **No view models:** least code now; async action state would move into views or AppKit controllers once Codex setup actions and Settings arrive.
+- **View models only where a view owns state:** read-only views stay thin and testable through pure functions; needs a stated rule for when to add one.
+
+**Decision.** Read-only views observe stores directly and use pure presentation functions.
+A view gets a view model when it owns state the store does not hold: actions with async results, in-progress flags, drafts, or validation.
+Use `ObservableObject`, because `@Observable` needs macOS 14 and the package targets macOS 13.
+
+**Reasoning.** The user accepted this on 2026-10-30. Pure functions already do the view-model job for read-only views and are easier to test.
+The views that need action state either already have a controller for it or are still planned.
+
+**Consequences.** This updates the view-model consequence of decision 0002. Services, shared stores, and explicit dependencies remain as accepted.
+Codex setup menu actions (I6a), the Settings window, and the reply composer are expected to get view models.
+Existing `…Controller` types that act as view models keep their names until a task touches them.
+Revisit if read-only views start to duplicate derivation logic, or when the deployment target reaches macOS 14.

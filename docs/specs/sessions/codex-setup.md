@@ -110,12 +110,21 @@ These are future verification requirements. No runtime verification ran while wr
   Exact wording and health presentation receive interface review in I6a.
 - Use eight approved session-sized tasks. Keep each task within the existing three-file, three-function, and five-test limits, including required records.
   Review exact files, interfaces, and checks per task. Split any oversized task with user approval before coding.
+- R1–R6 come from the [2026-10-30 review](../../reports/2026-10-30-session-state-and-architecture-review.md), which the user accepted in full on 2026-10-30.
+  R1–R3 come before I3b2, because the scanner and planner need the new `Integration` module and typed hook names. R4–R6 can run in any order.
+  R2 moves more than three files. Split it or get an explicit exception to the three-file limit when planning it.
 - Preserve the source checklist until shared Codex/Claude checks have complete destinations. This spec's tasks refine that work; they are not extra source requirements.
   Do not add source and refinement counts as independent work estimates.
 
 ## Tasks
 
 - [x] I3b1: Review prerequisite evidence and settle the Codex version/enablement gate, timeout, ownership schema, recovery states, and concurrent-writer guarantees using the contract's fictional cases; record accepted choices before coding.
+- [ ] R1: Write `docs/SWIFT-PRACTICES.md` from the conventions and accepted findings in the 2026-10-30 review, and link it from `AGENTS.md`.
+- [ ] R2: Split `SessionState` into `SessionState`, `Usage`, and `Integration` targets, and move the executable and configuration-directory locator out of the app target; no behavior change, full suite passes.
+- [ ] R3: Add typed `Agent` and `HookEvent` enums at the bridge boundary; remove the duplicated hook-name sets, the `default: .sessionEnded` branch, and the force unwraps they make unnecessary; wire format unchanged.
+- [ ] R4: Update `ARCHITECTURE.md` to describe stores, pure presentation functions, AppKit controllers, and D3's view-model rule.
+- [ ] R5: Collect `ServiceStartLedger`, pet evidence writing, and the preferences-suite override into one verification type with one entry point.
+- [ ] R6: Review the 128-session contract limit and its silent refusal; record a decision before any store or contract change.
 - [ ] I3b2: Add bounded lossless hook-JSON scanning with duplicate-key, malformed-input, numeric-value, and size-limit fixture checks.
 - [ ] I3b3: Add the pure setup planner with seven separately owned groups, safe helper invocation, unchanged reinstall, and ownership/conflict fixture checks.
 - [ ] I3c1: Add guarded configuration and ownership writes with the approved durable-update order, path/permission checks, and stale-state fault checks; keep the service unavailable to menu callers until recovery passes.
