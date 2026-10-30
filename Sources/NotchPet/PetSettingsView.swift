@@ -5,16 +5,21 @@ struct PetSettingsView: View {
     private let presentation: PetPresentation
     @State private var size: Double
     private let firstUse: Bool
+    private let isVisible: Bool
+    private let isSleeping: Bool
     private let onSizeChange: (Double) -> Void
     private let onDone: () -> Void
     private let onClose: () -> Void
 
     init(presentation: PetPresentation, size: Double, firstUse: Bool,
+         isVisible: Bool, isSleeping: Bool,
          onSizeChange: @escaping (Double) -> Void, onDone: @escaping () -> Void,
          onClose: @escaping () -> Void) {
         self.presentation = presentation
         _size = State(initialValue: size)
         self.firstUse = firstUse
+        self.isVisible = isVisible
+        self.isSleeping = isSleeping
         self.onSizeChange = onSizeChange
         self.onDone = onDone
         self.onClose = onClose
@@ -31,7 +36,7 @@ struct PetSettingsView: View {
 
             HStack {
                 Spacer()
-                PetView(presentation: presentation)
+                PetView(presentation: presentation, isVisible: isVisible, isSleeping: isSleeping)
                     .frame(width: 144, height: 144)
                 Spacer()
             }

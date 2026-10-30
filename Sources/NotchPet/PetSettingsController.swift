@@ -21,9 +21,12 @@ final class PetSettingsController {
     func show(activate: Bool = true) {
         guard let presentation = PetArtwork.presentation() else { return }
         let firstUse = !defaults.bool(forKey: "pet.setupComplete")
+        let size = PetPreferences(defaults: defaults).size
         window.title = firstUse ? "Set up your rabbit" : "Pet settings"
-        window.contentView = NSHostingView(rootView: PetSettingsView(
-            presentation: presentation, size: PetPreferences(defaults: defaults).size, firstUse: firstUse,
+        window.contentView = NSHostingView(rootView: PetWindowPlayback(window: window) { [weak self] visible, sleeping in
+            PetSettingsView(
+            presentation: presentation, size: size, firstUse: firstUse,
+            isVisible: visible, isSleeping: sleeping,
             onSizeChange: { [weak self] size in
                 guard let self else { return }
                 var preferences = PetPreferences(defaults: self.defaults)
@@ -35,7 +38,8 @@ final class PetSettingsController {
                 self.defaults.set(true, forKey: "pet.setupComplete")
                 self.close()
             },
-            onClose: { [weak self] in self?.close() }))
+            onClose: { [weak self] in self?.close() })
+        })
         if !window.isVisible { window.center() }
         window.orderFrontRegardless()
         if activate {

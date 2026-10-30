@@ -20,7 +20,9 @@ final class PetPanelController {
         panel.becomesKeyOnlyIfNeeded = true
         panel.ignoresMouseEvents = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        panel.contentView = NSHostingView(rootView: PetView(presentation: presentation))
+        panel.contentView = NSHostingView(rootView: PetWindowPlayback(window: panel) { visible, sleeping in
+            PetView(presentation: presentation, isVisible: visible, isSleeping: sleeping)
+        })
         if let screen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main {
             panel.setFrameOrigin(NSPoint(x: screen.frame.midX - size / 2,
                                          y: screen.frame.maxY - screen.safeAreaInsets.top - size))
