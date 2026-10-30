@@ -1,0 +1,30 @@
+# Settings
+
+Owns the shared native settings window, sidebar navigation, and app-wide general preferences.
+Code: settings views and window controllers in `Sources/NotchPet/`.
+Feature-specific behavior stays with Sessions, Notch, Usage, Pets, and Telemetry.
+
+## Specs
+
+- `settings-window`: Open a native sidebar settings window from the app menu and show the existing pet controls through a working page.
+- `general-preferences`: Save launch-at-login and language preferences and apply them through supported native behavior. Needs: settings-window.
+
+## Shared context
+
+- The user approved this area and both roadmap entries on 2026-10-30 after supplying settings reference images.
+- Sessions and real allowance limits remain the first delivery milestone. This area extends that path without making the settings shell a prerequisite for existing session work.
+- Use the supplied reference's sidebar, clear page titles, grouped controls, and explanatory secondary text as the settings direction.
+- Initial feature pages include General, Agents, Display, Pet, and Statistics as their owned features become available. Do not expose dead navigation entries.
+- The first settings-window feature connects the real menu entry, window, navigation, and existing pet controls. It does not require agent setup or telemetry.
+- Session setup contributes the Agents controls. Notch owns attention behavior and display preferences. Telemetry owns statistics and their data requirements.
+- Opening Settings is an explicit focus request. Showing the pet, session updates, and attention expansion retain their separate focus rules.
+- Preserve pet-first setup, existing size preferences, and optional agent services. Opening Settings alone does not enable monitoring or a collector.
+- General preferences use UserDefaults. Login registration and localization need their own reviewed implementation tasks and acceptance.
+- Other sidebar labels in the reference do not define additional integrations or provider support. Keep future page scope explicit.
+- Roadmap approval defines feature scope and order. Full specifications and implementation task lists remain separate work.
+
+## Open questions
+
+- Review launch-at-login ownership and the enabled/disabled/error states before changing system registration.
+- Choose supported languages and define fallback and restart behavior during general-preferences planning.
+- Define how the shared window hosts feature pages while preserving existing pet setup and settings entry points.

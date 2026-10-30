@@ -5,14 +5,24 @@ Code: `Sources/NotchPet/` and shared presentation services in `Sources/SessionSt
 
 ## Specs
 
-- [`session-island`](session-island.md): Inspect sessions and requests in the expandable notch, replacing the menu session list. Needs: sessions/session-state.
+- `session-island`: Open, expand, collapse, and inspect sessions and requests without unsolicited focus, replacing the menu session list. Needs: sessions/session-state.
+- `attention-behavior`: Save expansion preferences, suppress automatic expansion for a verified foreground target, and provide optional haptic feedback. Needs: session-island, settings/settings-window.
 - `desktop-recovery`: Keep the notch accessible through display changes, Spaces, fullscreen, and sleep/wake. Needs: session-island.
 - `accessible-controls`: Support keyboard controls, Reduce Motion, and perceivable alerts without unsolicited focus. Needs: session-island.
-
-- [`resource-efficiency`](resource-efficiency.md): Measure and constrain idle CPU, memory, wakeups, rendering, and provider refresh across native components.
+- `resource-efficiency`: Measure and constrain idle CPU, memory, wakeups, rendering, and provider refresh across native components.
 
 ## Shared context
 
+- Sessions, Notch, and Usage are the immediate delivery priority, approved on 2026-10-30.
+- The first delivery milestone is optional Codex setup, a visible real session, and real limits. Coordinate with sessions/codex-setup and usage/codex-allowance.
+- Opening, closing, expansion, and collapse belong to session-island. Do not create a separate feature for the same island interactions.
+- Retain pet-first startup and optional agent services. Island visibility does not enable monitoring or resolve retained notices.
+- Refine Flux-like interaction details during feature planning. Existing implementation and approved area scope do not establish actual-app acceptance.
+- Reference images approved on 2026-10-30 show a compact allowance strip above a session/request card. Keep session identity, request details, and any terminal-return action clear.
+- Manual opening and closing remain in session-island. The new attention-behavior feature owns preferences and automatic expansion for response-ready notices or requests needing attention.
+- Response ready means a finished response. It does not establish task success or a confirmed session end.
+- Attention controls appear in the shared settings window. Haptic feedback is optional and receives its own reviewed trigger behavior.
+- Focus-aware suppression requires evidence about the selected target. A foreground terminal application alone does not establish that its relevant tab or pane is visible.
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
 - [Terminal independence](../../decisions/0012-support-terminal-independent-operation.md) is accepted. Display sessions and notices without requiring navigation metadata.
 - Expose only verified terminal navigation capabilities. Unavailable navigation must not hide alerts or disable provider actions that have a verified channel.
@@ -26,3 +36,5 @@ Code: `Sources/NotchPet/` and shared presentation services in `Sources/SessionSt
 ## Open questions
 
 - Physical-notch focus, click-through, and desktop acceptance remain incomplete.
+- Define automatic expansion defaults, dismissal, repeated-notice handling, and suppression when foreground-target evidence is unavailable.
+- Review haptic support, fallback, and trigger frequency before implementation.

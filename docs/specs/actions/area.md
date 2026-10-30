@@ -12,6 +12,7 @@ Code: future shared action services, provider adapters, and notch/pet action con
 
 ## Shared context
 
+- Later priority after the session-and-limits delivery path, approved on 2026-10-30. Existing scope and dependencies remain intact.
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
 - [Source specification](../notch-companion.md): A1–A8 remain planned, not implemented capabilities.
 - [Accepted local-action scope](../../decisions/0010-add-local-agent-actions.md).

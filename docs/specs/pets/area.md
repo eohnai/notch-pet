@@ -13,6 +13,7 @@ Code: `Sources/Pet/` and AppKit controllers in `Sources/NotchPet/`; the optional
 
 ## Shared context
 
+- Later priority after the session-and-limits delivery path, approved on 2026-10-30. Preserve pet-first startup and deferred acceptance.
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
 - [Terminal independence](../../decisions/0012-support-terminal-independent-operation.md) is accepted. Pet reactions must not require Otty or terminal navigation.
 - [Standalone pet scope and packaging](../../decisions/0013-separate-standalone-pet-scope.md) is accepted. Use one app with an independent pet module and optional agent services.
@@ -30,7 +31,8 @@ Code: `Sources/Pet/` and AppKit controllers in `Sources/NotchPet/`; the optional
 - Divide P8 actual-app checks among the features they verify. Preserve pet Reduce Motion and hidden/asleep animation checks from R4.
 - R5 includes the animated-pet resource profile on the target Mac. Do not replace measured acceptance with a native-stack assumption.
 - Basic pet setup and size controls belong to built-in-pet. Custom artwork selection and desktop placement keep their existing owners.
-- Connect and removal belong to the session setup features. Plan Pause monitoring and Disconnect semantics with session first-use before coding them.
+- Connect and owned configuration removal belong to session setup. Runtime pause, resume, and disconnect belong to sessions/monitoring-controls.
+- Monitoring controls reuse setup removal logic. Coordinate notice retention with agent-reactions and later collector lifecycle with telemetry.
 - When no observed sessions or unresolved notices require agent presentation, show ordinary pet behavior without session or allowance panels.
 - Preserve optional integration, unknown, ended, attention, and response-ready checks across the split. A pet-only feature does not complete them.
 - Keep runtime files, imported packs, and fixture assets outside the repository. Invalid imports must preserve the selected pet.
@@ -44,13 +46,15 @@ Code: `Sources/Pet/` and AppKit controllers in `Sources/NotchPet/`; the optional
 ## Implementation status
 
 The original white lionhead idle PNG and manifest are bundled through the independent Pet target.
-BP1–BP5 implementation is written, including pet-first startup, optional agent-service ownership,
-size persistence and native setup/settings. BP1/BP4 have focused verification; other app acceptance
-is deferred by the user. See [built-in-pet](built-in-pet.md#implementation-checkpoint-2026-10-30)
-and the [blocked goal](../../goals/standalone-rabbit.md). Detachment and agent reactions remain unimplemented.
+Built-in-pet implementation includes pet-first startup, optional agent services, saved size, setup/settings,
+playback policy, and BP6b2 visibility/sleep wiring for the panel and preview. It merged into main in 1c5d9cf.
+The implementation-only goal is closed. Full acceptance remains deferred by the user.
+See the [current handoff](built-in-pet.md#implementation-handoff-after-testing-deferral-2026-10-30)
+and [completion log](../../goals/complete-built-in-pet-log.md). Detachment and agent reactions remain unimplemented.
 
 ## Open questions
 
-- Actual-app visual/fallback, focus and Quit/relaunch acceptance remains deferred; the six-case harness stopped at window capture.
-- Detailed pause, disconnect, resume, and notice-retention behavior needs planning in session first-use and agent-reactions.
+- Setup/slider/menu interactions, actual multi-frame scheduling, Reduce Motion changes, and visual/fallback appearance remain unverified.
+- Later nonvisual harness evidence is recorded in built-in-pet. Do not retry captures or resume tests without a user request.
+- Detailed pause, disconnect, resume, and notice-retention behavior needs planning in sessions/monitoring-controls and agent-reactions.
 - Sprite-sheet conversion versus a second runtime loader remains proposed. The optional importer is not a first-release dependency.
