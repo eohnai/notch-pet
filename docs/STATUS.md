@@ -2,15 +2,15 @@
 
 ## Now
 
-On `main` at `9cbf613`. Priority remains Sessions → Notch → Usage: optional Codex setup, a visible real session, and real Codex limits.
-On 2026-10-30 the user confirmed `sessions/codex-setup` scope and menu-first controls to avoid waiting for Settings.
-The user approved its eight-task list on 2026-10-30. Recovery, concurrent-writer guarantees, version gates, and prerequisite closure remain open.
+On `feat/sessions-codex-setup` at `622158c`, with the accepted I3b1 documentation review uncommitted.
+Priority remains Sessions → Notch → Usage: optional Codex setup, a visible real session, and real Codex limits.
+I3b1 is complete as a documentation review. The user accepted its version, timeout, ownership, recovery, and writer/identity choices on 2026-10-30.
 This session changed documentation only. Pet acceptance, runtime checks, configuration changes, and older goals remain paused.
 
 ## Next
 
-1. Start I3b1's design review in `docs/specs/sessions/codex-setup.md` with `/next-task`. The task list is approved; do not resume runtime checks without an explicit request.
-2. Review session-state closure and integration-health evidence before dependent implementation. Plan remaining session-island interaction and acceptance work with its owner.
+1. Review session-state closure, integration-health evidence, and remaining session-island acceptance before dependent implementation. Start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`. Do not resume runtime checks without an explicit request.
+2. After those gates are resolved, plan I3b2 in `docs/specs/sessions/codex-setup.md` on this spec branch. Codex 0.164.0 still needs isolated qualification before installation can become available.
 3. Review `usage/codex-allowance` evidence and remaining requirements for the first session-and-limits milestone. Preserve unchecked tasks until their acceptance is established.
 4. Plan Claude setup/forwarding and monitoring controls in the approved area order. Keep configuration ownership separate from runtime control semantics.
 5. After the session-and-limits path, plan settings/settings-window and general-preferences, notch/attention-behavior, and telemetry activity/token statistics with their listed dependencies. Keep actions, pets, and existing telemetry scope; resume older goals or deferred testing only on request.
@@ -23,7 +23,7 @@ This session changed documentation only. Pet acceptance, runtime checks, configu
 - Telemetry C1–C8, H1–H7 and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability and instrumentation coverage require their recorded reviews. Battery targets are provisional and unmeasured.
 - Stale: `docs/specs/usage/codex-allowance.md` describes view-owned reads. AgentUsageController now owns those reads; NotchPanelController still owns the store/controller. Reconcile during feature review.
 - Stale: `docs/specs/usage/claude-allowance.md` describes uncommitted receiver wiring and an `ambiguous use of 'sync(execute:)'` build error. Current app code has no UsageReceiver startup path or that closure. Review its five open decisions against current code before U2c3.
-- Codex setup scope and its eight tasks are approved. The separate ownership file is accepted; recovery, concurrent-writer limitations, and supported version/enablement/timeout gates remain open. `integration-health` and `notch/session-island` must complete before dependent implementation.
+- I3b1's design is accepted, including the final independent-editor race and indistinguishable identical replacement. Codex 0.164.0 is a qualification candidate, not a qualified installer release. Effective enablement/policy evidence and timeout enforcement still need isolated verification. `integration-health`, session-state closure, and `notch/session-island` acceptance remain open before dependent implementation.
 - Migration pending: 20 planned area specs have no file yet, including monitoring-controls and the five settings/reference additions. Codex setup maps its source obligations without removing shared I5/I6 tasks. Keep the source specification and its original tasks/evidence until every requirement has a destination; confirm its final move/removal before changing it.
 - Terminal independence is accepted scope, not completed compatibility verification. Optional version-1 terminal metadata remains Otty-specific. N7–N8 need planning and live acceptance.
 - Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Settle the five open Claude allowance decisions before U2c3.

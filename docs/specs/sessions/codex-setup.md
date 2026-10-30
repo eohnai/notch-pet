@@ -9,8 +9,9 @@ A real Codex session must reach the visible notch through the bundled helper.
 This starts the approved Sessions → Notch → Usage path. See the [sessions area](area.md) for shared context.
 
 The user confirmed this scope and menu-first controls on 2026-10-30.
-The user approved the eight-task list on 2026-10-30. Start with I3b1's design review.
-Task approval does not accept the open design proposals, close prerequisites, or resume runtime verification.
+The user approved the eight-task list and accepted I3b1's design choices on 2026-10-30.
+The [accepted I3b1 review](../../contracts/codex-hook-setup.md#i3b1-review-2026-10-30) records prerequisite evidence and fictional-case results.
+Design acceptance does not close prerequisites, qualify a release, or resume runtime verification.
 
 ## Done when
 
@@ -19,7 +20,8 @@ Task approval does not accept the open design proposals, close prerequisites, or
   Unsupported versions, disabled hooks, missing helpers, unsafe paths, and invalid configuration produce bounded, useful messages without configuration changes.
 - Repeating Connect with unchanged owned entries leaves hook bytes unchanged and creates no duplicate entries.
 - Setup and removal preserve unrelated handlers, their order, unrelated JSON values, and later user edits.
-  Edited, missing, copied, or ambiguous managed entries produce a conflict without destructive cleanup.
+  Detectable edited, missing, copied, or ambiguous managed entries produce a conflict without destructive cleanup.
+  These guarantees follow the accepted independent-writer and identical-replacement limits below.
 - The accepted ownership file records only app-created data. Interrupted updates recover under a reviewed protocol or stop with recovery instructions.
   The approved design states its concurrent-writer guarantees and limitations before implementation.
 - Normal Codex hook trust review remains intact. Installation, trust, receiver availability, and actual delivery remain distinct outcomes.
@@ -42,7 +44,8 @@ Task approval does not accept the open design proposals, close prerequisites, or
 
 - Keep SwiftUI/AppKit, shared session state, the version-1 event contract, and the silent helper's existing deadline.
 - Follow the preservation requirements in the [setup contract](../../contracts/codex-hook-setup.md).
-  Only its separate ownership-file representation is accepted. Schema, recovery, timeout, and file-update proposals still need review.
+  I3b1 accepts the version gate, timeout, ownership schema, journal recovery, and writer/identity limits.
+  Concrete implementation plans and runtime qualification remain separate gates.
 - Keep the pure planner separate from file operations. Bound hook input, candidate output, ownership records, and recovery data to 262144 bytes each.
   Reject duplicate JSON keys and preserve unrelated numeric values without floating-point conversion.
 - Use the effective bounded absolute `CODEX_HOME` path. Reject invalid overrides without falling back to another configuration directory.
@@ -87,12 +90,16 @@ These are future verification requirements. No runtime verification ran while wr
 - [0011: Preserve feature ownership and historical evidence](../../decisions/0011-organize-records-by-feature.md).
 - [0012: Support terminal-independent observation](../../decisions/0012-support-terminal-independent-operation.md).
 - [0013: Keep agent setup optional](../../decisions/0013-separate-standalone-pet-scope.md).
-- **Open:** Which ownership schema, collision rules, and interruption protocol make installation and removal safe?
-  Review the proposed journal against alternatives and enumerate every interruption state in I3b1.
-- **Open:** Is the proposed advisory-lock/recheck/replace limitation acceptable against independent writers, or is another write strategy required?
-  Settle this in I3b1 before file-operation implementation. Preservation must not be promised beyond the chosen guarantees.
-- **Open:** Which selected Codex version verifies hook enablement, configuration shape, helper invocation, and agent-enforced timeout?
-  Settle the gate and unavailable guidance in I3b1. Historical version evidence is not a supported-version range.
+- **Use schema version 1 and an install/remove journal, accepted 2026-10-30.** Store only exact app-created groups and bounded identity/digest metadata.
+  Ownership-first and unjournaled writes were rejected because they can leave false or missing ownership. Recover only exact known states.
+- **Use app-lock/recheck/replace with an explicit independent-writer limit, accepted 2026-10-30.** The user selected option A after the lost-edit example.
+  This retains the Connect path. Deferring automatic writes, option B, was not selected. Preservation does not cover arbitrary concurrent editors.
+- **Qualify exact Codex releases, accepted 2026-10-30.** Start with 0.164.0 as a candidate. No installer release is qualified yet.
+  Reject a minimum-version range because version-specific evidence is incomplete. Missing effective enablement/policy evidence prevents installation.
+- **Use a three-second synchronous hook timeout, accepted 2026-10-30.** Allow process-launch overhead beyond the unchanged 250 ms helper deadline.
+  The helper deadline alone does not bound the whole invocation. Agent enforcement still requires qualification for the chosen release.
+- **Accept content-based ownership limits, accepted 2026-10-30.** Exact descriptions detect visible edits and duplicates, but cannot detect identical replacement history.
+  Marker-only identity was rejected because copying and deleting the original defeats it too. See the [review and alternatives](../../contracts/codex-hook-setup.md#i3b1-review-2026-10-30).
 
 ## My calls
 
@@ -108,7 +115,7 @@ These are future verification requirements. No runtime verification ran while wr
 
 ## Tasks
 
-- [ ] I3b1: Review prerequisite evidence and settle the Codex version/enablement gate, timeout, ownership schema, recovery states, and concurrent-writer guarantees using the contract's fictional cases; record accepted choices before coding.
+- [x] I3b1: Review prerequisite evidence and settle the Codex version/enablement gate, timeout, ownership schema, recovery states, and concurrent-writer guarantees using the contract's fictional cases; record accepted choices before coding.
 - [ ] I3b2: Add bounded lossless hook-JSON scanning with duplicate-key, malformed-input, numeric-value, and size-limit fixture checks.
 - [ ] I3b3: Add the pure setup planner with seven separately owned groups, safe helper invocation, unchanged reinstall, and ownership/conflict fixture checks.
 - [ ] I3c1: Add guarded configuration and ownership writes with the approved durable-update order, path/permission checks, and stale-state fault checks; keep the service unavailable to menu callers until recovery passes.
@@ -135,3 +142,16 @@ No Codex installer, planner, removal service, or connection menu is present in t
 The app already has an opt-in service owner and receiver/delivery health wiring; their existing acceptance remains open in the prerequisite specs.
 Earlier helper-to-menu screenshots established partial fictional delivery only. See [session-island historical evidence](../notch/session-island.md#historical-evidence).
 They do not establish real-provider setup or complete I6b.
+
+## I3b1 review evidence, 2026-10-30
+
+The review compared prerequisite specs, recorded suite/app evidence, current service ownership, and fetched official documentation.
+It maps all eight fictional cases and the install/remove durable boundaries in the [contract](../../contracts/codex-hook-setup.md#i3b1-review-2026-10-30).
+Current health evidence does not establish effective hook enablement. No qualified installer version can be claimed from this review.
+Integration-health, session-state closure, and actual-notch acceptance remain separate gates before dependent implementation.
+The health menu-environment description is stale. I6a still owns exposing the private health controller through actions.
+
+The user accepted all I3b1 choices on 2026-10-30. Only documentation checks are authorized for this task.
+`git diff --check` exited 0. The progress script resolved both dependency names and retained all eight tasks.
+I3b1 is complete on design acceptance and documentation evidence only. No installer release was qualified.
+Keep I3b2–I6b open. This review does not resume any older goal or runtime acceptance.

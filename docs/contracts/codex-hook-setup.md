@@ -1,7 +1,8 @@
-# Codex lifecycle hook setup proposal
+# Codex lifecycle hook setup contract
 
-Status: proposed implementation contract, 2026-10-28. The user accepted a separate ownership file.
-The recovery design and implementation plan still require review before I3b implementation.
+Status: design accepted, 2026-10-30. The user accepted the separate ownership file and the I3b1 design choices.
+The [accepted I3b1 review](#i3b1-review-2026-10-30) governs where it refines the historical proposals below.
+Task-level implementation plans, prerequisite closure, and runtime qualification remain separate gates.
 No hook installation, configuration access, or runtime verification is established by this document.
 
 ## Existing requirements
@@ -265,10 +266,161 @@ Read-only package-path inspection found `standalone/current` points to release
 schema file in that package. This metadata does not prove timeout parsing or effective feature
 enablement. No agent process, configuration probe, or schema-generation command was run.
 
-### Size review
+### Historical size review, 2026-10-28
 
 Lossless parsing, ownership comparison, durable file updates and recovery need separate steps.
 Propose retaining I3b/I3c as parent tasks, with reviewed implementation steps for JSON scanning,
 planning/matching, guarded file operations, and recovery. Each step must meet the existing
 three-file, three-function and five-test limits. Keep the five frozen planner tests and five frozen
 installer tests parameterized across the required cases. No task-list split is accepted yet.
+The eight-task split in [codex-setup](../specs/sessions/codex-setup.md#tasks) was subsequently approved on 2026-10-30.
+
+## I3b1 review, 2026-10-30
+
+Status: accepted, 2026-10-30. The user accepted writer option A after its limits were explained.
+The user then accepted the remaining version policy, timeout, ownership schema, recovery table, and identical-replacement limit.
+This section refines the earlier proposals. Acceptance settles the design, not implementation or runtime qualification.
+
+### Prerequisite evidence reviewed
+
+| Requirement | Checked evidence | Conclusion |
+|---|---|---|
+| Integration health | `IntegrationHealth.swift` separates version, shape, helper, receiver, and delivery. Goal-log turn 21 records 94 passing tests after fake-process suite serialization. | Historical suite evidence exists. App-wiring acceptance remains open, so I2a–I2c stay unchecked. |
+| Session presentation | `AgentServices` feeds the inbox/store and creates the notch panel. Goal-log turns 3 and 24 record panel expansion and partial session/usage delivery. | Focus, click-through, keyboard, retained notices, and full state acceptance remain open. I1/N3–N5 stay unchecked. |
+| Session state | The session-state spec records the completed store task but has no `Status: done`. | Closure requires a separate decision. This review does not close it. |
+| Optional services and menu | `AgentServiceOwner` requires explicit opt-in. Health is private in `AgentServices`; the menu exposes Show Pet, Pet Settings, and Quit. | Reuse these owners in later tasks. Historical menu-environment wiring is stale. |
+| Provider version | Compatibility notes record partial Codex 0.164.0 interactive evidence, with normal trust verification incomplete. | A historical event/version match is not an installer support gate. |
+
+Sources: [integration-health](../specs/sessions/integration-health.md), [session-island](../specs/notch/session-island.md),
+[session-state](../specs/sessions/session-state.md), [goal log](../goals/notch-agent-limits-log.md),
+and [compatibility notes](../notes/agent-event-compatibility.md).
+No historical command was rerun. Dependent implementation remains gated on prerequisite closure.
+
+### Accepted provider policy
+
+Current [official hooks documentation](https://learn.chatgpt.com/docs/hooks) describes command-handler `timeout` in seconds,
+with a three-second maximum for `SessionEnd`. Hooks normally run synchronously and receive JSON through stdin.
+User hooks require review of their exact definition. Hooks are enabled by default, but effective settings can disable them.
+The [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) identifies `features.hooks`,
+the deprecated `features.codex_hooks` alias, and `allow_managed_hooks_only`, which excludes user hooks.
+The [official changelog](https://learn.chatgpt.com/docs/changelog) dates CLI 0.164.0 to 2026-10-23.
+These pages were fetched on 2026-10-30. They are not a version-pinned parser or runtime proof.
+
+Use exact-version qualification, starting with **0.164.0 as a candidate**, without a minimum-version range.
+The qualified set stays empty until explicitly authorized isolated checks establish its shape, timeout enforcement,
+effective enablement/policy signal, helper invocation, and normal trust flow. No such checks ran in this review.
+Newer, older, unknown, and prerelease versions remain unavailable until separately qualified.
+This costs additional qualification for each release, but avoids extrapolating incomplete compatibility evidence.
+
+Use `timeout: 3` for all seven synchronous command handlers. Keep the helper's 250 ms shared deadline unchanged.
+This allows process-launch overhead while keeping the selected timeout within the documented SessionEnd limit.
+Do not claim a hard wall-clock bound from configuration alone. Qualify enforcement with the chosen release.
+Use POSIX single-quote escaping for the absolute helper path, including embedded apostrophes, then exactly `--agent codex`.
+Omit `matcher` to cover every supported event. Add no async setting, ownership field, shell wrapper, or trust bypass.
+This command construction remains subject to version-specific verification before installation becomes available.
+
+Installation requires fresh evidence from the same executable and effective configuration context.
+`recordedCompatibility`, hook counts, default enablement, and a prior delivery are insufficient individually.
+Until a bounded supported way to obtain effective enablement and policy is qualified, return `enablementUnverified` without writes.
+Disabled or policy-blocked hooks return unavailable with guidance to review Codex settings or contact the administrator.
+Unsupported versions return guidance to use a qualified release. None of these outcomes authorizes editing `config.toml`.
+Check, trust review, actual receipt, and current session state remain separate outcomes.
+Removal relies on ownership and current file safety, so an unavailable CLI must not prevent safe targeted removal.
+
+### Accepted ownership and collision policy
+
+Use schema version 1: installation UUID, absolute hooks path, parent device/inode identity,
+absolute helper path, and exactly seven records containing event name and the complete app-created group object.
+Each group contains one command handler with only `type`, `command`, and integer `timeout: 3`.
+The record stores no unrelated groups, original configuration, array indices, or credentials.
+Retain the existing 262144-byte bounds, duplicate-key rejection, 0700 record directory, and 0600 record/journal files.
+
+Require exactly one structurally unchanged group per event. Ignore JSON whitespace and object-key order when matching.
+Extra fields, changed values, missing groups, and duplicate candidates conflict. Unrelated group reordering is allowed.
+On first installation, a recognizable invocation of the helper is a collision even without matching ownership.
+Do not adopt it. Do not execute or semantically interpret arbitrary shell commands to identify ownership.
+Equivalent commands hidden in wrappers or other hook sources cannot be exhaustively detected.
+Helper relocation requires a separately reviewed migration. Removal can still use the recorded old path without executing it.
+
+These are content checks, not proof of edit history. Copying a group and deleting its original can leave one identical group.
+No snapshot-based comparison can detect that history. Multiple visible copies conflict, but an identical replacement is indistinguishable.
+The user accepted this limit on 2026-10-30. Markers alone do not solve identical copying.
+
+### Accepted durable updates and recovery
+
+Use a journal for both **install** and **remove**. A journal is a durable record of one pending operation.
+Include schema version, operation, transaction UUID, target/parent identity, previous and candidate configuration state,
+and previous/next ownership states. A configuration state is `missing` or a SHA-256 digest, never file contents.
+Ownership states contain only the bounded app-created record or explicit absence, with a digest for comparison.
+Reject no-op transitions before journaling. An unchanged reinstall returns the original hook bytes.
+Removal leaves a valid hooks file, even when no handlers remain. It never deletes that file or restores an old backup.
+
+Under the app lock, validate paths and descriptor identities, same-user ownership, regular files, links, and permissions.
+Reject metadata that cannot be preserved safely. Preserve existing safe mode and use 0600 for a newly created hooks file.
+Prepare a private same-filesystem candidate temporary file and synchronize it before publishing a synchronized journal.
+Record its app-generated basename for bounded cleanup. It is transient candidate storage, not a recovery backup.
+Recheck the inspected target identity/digest, atomically replace hooks, then synchronize its parent directory.
+Atomically persist/synchronize the next ownership record, or unlink/synchronize ownership for removal.
+Finally unlink the journal and synchronize the record directory. Keep the lock through completion.
+Report completion only after synchronization succeeds. A synchronization error leaves the operation uncertain.
+
+| Durable boundary or restart observation | Required recovery action |
+|---|---|
+| Candidate prepared, no published journal | No hooks/ownership update was authorized. Discard only proven app-created temporary storage under the app lock. |
+| Journal publication interrupted, malformed, or not safely readable | Stop with recovery guidance. Do not infer completion from hook appearance. |
+| Valid journal; hooks equal previous state; ownership equals previous state | Abort pending intent and synchronize journal removal. Leave hooks/ownership unchanged before a fresh plan. |
+| Hook replacement or directory synchronization interrupted | Read current state. Continue only through one of the exact previous/candidate rows; unreadable or different state conflicts. |
+| Hooks equal candidate; ownership equals previous state | Verify identities and operation-specific entries. Finalize next ownership without rewriting hooks. |
+| Ownership replacement/deletion interrupted | Compare against the exact previous/next ownership states. Candidate hooks plus either known state can follow its matching row. |
+| Hooks equal candidate; ownership equals next state | Synchronize the known state, clear/synchronize the journal, and report the operation complete. Add no entries. |
+| Journal removal interrupted | If the journal remains, use the preceding row. If absent, use normal owned/unowned validation. |
+| Hooks equal neither state; ownership is unexpected; identity changed; unsafe path; or missing required evidence | Conflict. Leave hooks/ownership and valid recovery evidence untouched. Require manual reconciliation. |
+
+For install finalization, all seven new groups must match uniquely. For removal finalization, the candidate has none of the recorded groups.
+A configuration inode change is expected after replacement. Recovery binds the parent identity and safe current contents,
+not the pre-replacement file inode. Missing and empty files are distinct states.
+Unrelated edits after a pending operation change its digest and stop automatic recovery, even if groups still look plausible.
+Without a journal, normal owned-entry matching allows unrelated edits. Missing ownership plus lookalikes remains a conflict.
+Manual reconciliation must not automatically discard ownership, adopt entries, restore a configuration backup, or retry over uncertainty.
+
+This is preferred over writing ownership first, which can claim entries never installed, and configuration first without a journal,
+which can leave entries without ownership. Stopping on every interruption is simpler but gives users avoidable manual repair.
+The journal permits recovery only for exact known states. It does not provide a transaction against external editors.
+
+### Concurrent writers: option A accepted
+
+**A — Recommend bounded cooperative protection.** Serialize this app's writers with an advisory lock, recheck before replacement,
+and reject observed stale state. Ask users to finish other configuration edits before Connect or Remove hooks.
+An independent writer can still change the file between the last comparison and replacement, losing that write.
+Directory synchronization and atomic replacement do not eliminate this window. Recovery cannot undo an overwritten external edit.
+The guarantee therefore covers app writers and detected external edits only, not arbitrary concurrent writers.
+
+**B — Decline automatic shared-file writes.** Keep setup unavailable until a supported independent source or coordinated update mechanism is qualified.
+This avoids the shared-file replacement race, but delays the approved Connect behavior and needs a scope/design change.
+Manual editing is not an implemented substitute for Connect. In-place rewriting was considered and rejected because it adds partial-file failures
+without solving independent-writer coordination.
+
+The user selected A on 2026-10-30 after reviewing the example of an independent edit lost during replacement.
+This keeps the planned Connect path with explicitly limited protection. B was not selected because it defers automatic writes.
+Acceptance of A does not accept the other proposals or authorize file-operation implementation before its remaining gates.
+The user subsequently accepted the other I3b1 choices on 2026-10-30. The implementation and verification gates remain in force.
+
+### Fictional-case review and task outcome
+
+| Fictional case | Reviewed result under the accepted design |
+|---|---|
+| Missing hooks, qualified version, enabled policy, available helper | Plan seven separate groups and ownership. With today's unqualified evidence, return unavailable before writes. |
+| Repeat unchanged installation | Return original bytes, no duplicate groups, and no journal. |
+| Otty/unrelated handlers and numeric values | Insert at validated JSON ranges. Preserve unrelated tokens and handler order without numeric conversion. |
+| Edited, missing, copied, or ambiguous entries | Conflict for detectable changes/duplicates. Identical replacement history has the explicit limit above. |
+| Invalid input, duplicate keys, oversized candidate/record, unsafe path, invalid override, unknown version, or missing helper | Bounded failure with unchanged configuration. Do not fall back from an invalid CODEX_HOME override. |
+| Edit during planning or between durable writes | Reject observed staleness. Use the recovery table after interruption. The final external-writer window remains under choice A. |
+| Awaiting trust or no received event | Report installation evidence separately. Never infer delivery or a broken connection from silence. |
+| Remove after unrelated edits | Match all owned groups first, then remove only those groups. Journal removal separately and preserve later unrelated tokens. |
+
+No code, new interfaces, probes, tests, builds, app launches, captures, or installed configuration access occurred.
+The existing planner/installer signatures remain proposals for their implementation tasks.
+The user accepted the gate policy, timeout, schema, recovery table, identity limit, and writer choice A on 2026-10-30.
+I3b1's documentation review is complete. `git diff --check` and the progress script exited 0.
+The board resolved both prerequisites and retained all eight tasks. I3b2–I6b remain separate tasks.
+Documentation checks establish consistency only. They do not qualify a release or close prerequisites.
