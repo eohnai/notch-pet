@@ -19,7 +19,7 @@ The three feature task lists are proposed; no collector service or history datab
 
 ## Run locally
 
-Use macOS 13 or later with Swift 6 tools. Install Apple's Command Line Tools if `swift --version` is unavailable.
+Use macOS 14 or later with Swift 6 tools. Install Apple's Command Line Tools if `swift --version` is unavailable.
 The first build was verified on macOS 26.3.1 with Swift 6.2.3 on the M2 MacBook Air.
 Older supported macOS versions have not been tested yet.
 

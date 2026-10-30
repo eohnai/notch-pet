@@ -51,7 +51,7 @@ This accepts scope and storage direction, not implementation tasks, service inst
 
 ## D3: Add view models only where a view owns state
 
-- Status: accepted
+- Status: accepted (its `ObservableObject` line is replaced by D4)
 - Date: 2026-10-30
 
 **Context.** Decision 0002 and `ARCHITECTURE.md` describe MVVM, but the code has no view models.
@@ -75,3 +75,26 @@ The views that need action state either already have a controller for it or are 
 Codex setup menu actions (I6a), the Settings window, and the reply composer are expected to get view models.
 Existing `…Controller` types that act as view models keep their names until a task touches them.
 Revisit if read-only views start to duplicate derivation logic, or when the deployment target reaches macOS 14.
+
+## D4: Target macOS 14 so stores and controllers can use `@Observable`
+
+- Status: accepted
+- Date: 2026-10-31
+
+**Context.** The package targeted macOS 13, and no record explains why.
+D3 kept `ObservableObject` because `@Observable` needs macOS 14.
+The R1 review of two external Swift skills found that both assume `@Observable`. `docs/SWIFT-PRACTICES.md` adopts it as the rule.
+
+**Options.**
+- **Stay on macOS 13 with `ObservableObject`:** supports one more macOS release, but the practices guide and both skills would describe a model the code cannot use.
+- **Raise the target to macOS 14 and move to `@Observable`:** code matches the practices guide; drops macOS 13 users and replaces APIs deprecated in macOS 14.
+
+**Decision.** Target macOS 14 in `Package.swift` and `Info.plist`. Move the five `ObservableObject` classes to `@Observable` in codex-setup R8.
+This replaces D3's `ObservableObject` line. The rest of D3 stands.
+
+**Reasoning.** The user chose this on 2026-10-31, so the code can follow the practices guide and the Swift skills it is reviewed against.
+The development Mac runs macOS 26, and no record names a macOS 13 user. ^[inferred]
+
+**Consequences.** R7 replaced two `onChange(of:perform:)` calls and `activate(ignoringOtherApps:)` with their macOS 14 forms.
+`activate()` asks for focus instead of forcing it. Pet Settings opens from a menu click, so it should still come to the front, but this is unverified in the running app.
+R8 can now move the stores and controllers to `@Observable`. Revisit if a supported user needs macOS 13.

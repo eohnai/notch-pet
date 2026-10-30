@@ -71,7 +71,7 @@ struct NotchSessionView: View {
         .onAppear {
             selection = NotchPresentation.selection(selection, sessions: sessionStore.sessions)
         }
-        .onChange(of: sessionStore.sessions) { sessions in
+        .onChange(of: sessionStore.sessions) { _, sessions in
             selection = NotchPresentation.selection(selection, sessions: sessions)
         }
     }

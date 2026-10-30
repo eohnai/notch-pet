@@ -69,7 +69,7 @@ struct PetSettingsView: View {
         .padding(24)
         .frame(width: 360, height: 400)
         .preferredColorScheme(.dark)
-        .onChange(of: size, perform: onSizeChange)
+        .onChange(of: size) { _, newSize in onSizeChange(newSize) }
         .onExitCommand(perform: onClose)
     }
 }

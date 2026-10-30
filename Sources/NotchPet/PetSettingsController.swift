@@ -43,7 +43,7 @@ final class PetSettingsController {
         if !window.isVisible { window.center() }
         window.orderFrontRegardless()
         if activate {
-            NSApplication.shared.activate(ignoringOtherApps: true)
+            NSApplication.shared.activate()
             window.makeKeyAndOrderFront(nil)
         }
     }

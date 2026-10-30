@@ -2,22 +2,22 @@
 
 ## Now
 
-On `feat/sessions-codex-setup`. Codex-setup R1 is done and uncommitted: `docs/SWIFT-PRACTICES.md` exists and `AGENTS.md` links it.
-On 2026-10-31 the user removed the three-file, three-function, and five-test task limits. Each task must now fit one session.
-The user also chose to raise the target to macOS 14 and move to `@Observable`. These are new tasks R7 and R8.
-The user authorized builds and tests for R7 and R8 only. Other runtime checks, configuration changes, and older goals stay paused.
+On `feat/sessions-codex-setup`. Codex-setup R7 is done and uncommitted: the package targets macOS 14, and decision D4 records why.
+R7 also replaced the two `onChange(of:perform:)` calls and `activate(ignoringOtherApps:)`. A fresh build has no warnings, as before the change.
+Builds and tests stay authorized for R8 only. Other runtime checks, configuration changes, and older goals stay paused.
 
 ## Next
 
-1. Do codex-setup R7: raise the target to macOS 14 and record the decision. Verify with the spec's build command.
-2. Do R8: move the five `ObservableObject` classes to `@Observable`. Verify with the spec's `swift test` command.
-3. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization.
-4. Review integration-health evidence and session-island acceptance before I3b2. Start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`.
-5. Do R4–R6 in any order, then plan I3b2 in `docs/specs/sessions/codex-setup.md`. Codex 0.164.0 still needs isolated qualification.
+1. Do codex-setup R8: move the five `ObservableObject` classes to `@Observable`. Verify with the spec's `swift test` command.
+2. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization.
+3. Review integration-health evidence and session-island acceptance before I3b2. Start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`.
+4. Do R4–R6 in any order, then plan I3b2 in `docs/specs/sessions/codex-setup.md`. Codex 0.164.0 still needs isolated qualification.
 
 ## Blockers
 
-- Existing no-testing instruction remains in force: do not start tests, builds, app launches/captures, or test-only instrumentation unless requested. The user authorized builds and tests for codex-setup R7 and R8 only, on 2026-10-31. Documentation checks do not resume runtime acceptance.
+- Existing no-testing instruction remains in force: do not start tests, builds, app launches/captures, or test-only instrumentation unless requested. The user authorized builds and tests for codex-setup R7 and R8 only, on 2026-10-31. R7 is done, so only R8 remains authorized. Documentation checks do not resume runtime acceptance.
+- R7 focus change is unverified in the running app: Pet Settings now calls `NSApplication.shared.activate()`, which asks for focus instead of forcing it. Check that the window comes to the front from the menu when app launches are next authorized.
+- Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
 - Capture reproduction command: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/check-standalone-pet.py --app "/private/var/folders/t3/6n_zw1rn5nn6vv7ccx9r6s240000gn/T/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-completion/evidence/standalone` failed with `could not create image from window` / screencapture exit 1. The native preflight returned screenCaptureAuthorized=false; the user explicitly prohibited further captures and later all further testing. Do not request that permission or retry the failing capture.
 - Telemetry C1–C8, H1–H7 and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability and instrumentation coverage require their recorded reviews. Battery targets are provisional and unmeasured.
