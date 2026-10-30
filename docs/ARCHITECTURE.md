@@ -107,7 +107,7 @@ Pet-first setup requires no coding agent or hook configuration. Pet-only startup
 After approved agent setup, received sessions will trigger agent presentation without a manual mode switch for each session.
 Missing events will not prove that a session ended. Unknown state and unresolved notices will retain their existing meanings.
 The user approved separate standalone pet and agent-reaction features. Their implementation task lists still need approval.
-This is accepted architecture awaiting implementation. No second app, background service, or repository split is planned.
+The independent pet remains accepted. [D2](DECISIONS.md#d2-collect-and-inspect-telemetry-locally-with-an-optional-background-process) now adds an optional collector and history; no second app or repository split is planned.
 
 ## Proposed compatible pet input
 
@@ -116,6 +116,21 @@ An optional importer for user-supplied seven-row sprite sheets is proposed in th
 The structural alternatives are normalization into that representation at import, or a second runtime loader.
 Normalization is recommended but remains open; it would leave the renderer with one format and concentrate validation in the import service.
 No runtime format changes, detector rules, or Flux artwork are accepted by this proposal.
+
+## Resource efficiency and collection follow-up
+
+Low idle energy use is an accepted release requirement: see [D1](DECISIONS.md#d1-make-low-idle-energy-use-a-release-requirement).
+The [resource-efficiency spec](specs/notch/resource-efficiency.md) proposes concrete runtime checks, profiling tasks, and initial budgets.
+Native implementation alone is not evidence of low CPU, memory, or battery cost.
+
+The user confirmed one optional local collector, local SQLite history, and three pilot skills under [D2](DECISIONS.md#d2-collect-and-inspect-telemetry-locally-with-an-optional-background-process).
+The [telemetry area](specs/telemetry/area.md) separates background collection, local history, and skill instrumentation.
+The collector will own live session evidence; the app will consume bounded snapshots. Persistent history cannot establish live working state.
+Usage refresh and interactive action channels retain their current owners. The independent pet does not import telemetry or start a collector.
+
+Observation hooks retain bounded one-way delivery. Durable telemetry uses a separate reviewed acknowledgement/retry contract with stable record IDs.
+Data stays on this Mac; no hosted backend, synchronization, transcripts, or credentials are included.
+Existing app-owned collection remains the implemented foundation until the proposed extraction tasks are approved and verified.
 
 ## Data without a database
 
@@ -128,7 +143,7 @@ No runtime format changes, detector rules, or Flux artwork are accepted by this 
 | Credentials | Existing provider-managed authentication | The app does not copy tokens |
 
 Do not persist a session as still working after the app restarts without fresh evidence.
-Use SQLite later only if searchable history or persistent analytics becomes a requirement.
+D2 now accepts SQLite for local telemetry history. The current memory/preferences/files layout remains the foundation until that feature is implemented.
 Adding quota display alone does not require a database.
 Keep runtime files, imported packs, and captured session data outside this repository.
 
@@ -144,10 +159,10 @@ Keep runtime files, imported packs, and captured session data outside this repos
 | Usage source | Provider-supported interfaces | Private endpoints may expose more data, but add authentication and compatibility work |
 | Local interactions | Accepted scope; response mechanisms and action contract require compatibility verification | Otty-only handling is simpler but requires switching away from the app for every decision or reply |
 
-No dependency-injection framework, event broker, backend service, or web account is needed for this scope.
+No dependency-injection framework, external event broker, hosted backend, or web account is needed. D2 adds one optional local collector.
 Pass service dependencies explicitly. Keep the first version small.
 
-Local delivery can lose events while the app is closed. Do not replay unverified activity as live state after restart.
+The current app-owned delivery can lose events while the app is closed. The planned collector removes that UI dependency without making the one-way helper durable. Do not replay unverified activity as live state after restart.
 The [version-1 event contract](contracts/agent-events-v1.md) defines message fields, bounds, and ordering before bridge implementation.
 [Decision 0008](decisions/0008-define-event-ordering.md) records conservative ordering without persistent helper state.
 

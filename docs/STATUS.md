@@ -2,26 +2,29 @@
 
 ## Now
 
-Branch: `docs/observation-bridge` at `326e64f`, with uncommitted pet planning documents. Claude's five-spec migration and goal records are committed. Its goal log records completion, not new runtime acceptance.
-The user accepted decision 0013: one app, an independent pet module, pet-first setup, and optional session-driven agent features. They approved separate built-in-pet and agent-reactions features.
-`pets/built-in-pet` has seven proposed tasks awaiting user approval. Pet implementation has not started. Original task lines, checkbox states, and historical evidence stay unchanged.
-This session changed documentation only. No builds, Swift tests, app checks, agent invocations, or configuration access ran. The notch/allowance goal remains paused at 26 of 30 turns, with its existing code edits and goal log untouched.
+The working tree is on `feat/pets-built-in-pet` at `b747da2`, with earlier uncommitted pet code, artwork, packaging, and planning changes preserved.
+The user confirmed D2: one optional collector, local SQLite history, and next-task/debug-issue/checkpoint telemetry in one repository/release.
+Three telemetry feature specs and their proposed task lists are saved alongside the battery requirements. Runtime contracts and task implementation still need review.
+This planning work ran no builds, runtime profiles, Swift tests, service installs, hook changes, goal resumes, or agent-skills edits.
 
 ## Next
 
-1. Review the seven proposed tasks and My calls in `docs/specs/pets/built-in-pet.md`. Resolve the default artwork source before implementation. Review and commit the pet planning documents when satisfied.
-2. Settle the five open decisions in `usage/claude-allowance` (socket providers, stale socket recovery, receiver health, source lifetime, service ownership) before U2c3 continues.
-3. Review the evidence for U3b2, U1, and I2a–I2c, recorded under Open questions in their specs, before you tick any of them. Decide whether to mark `sessions/session-state` done. Its only task is checked.
-4. Run `plan-feature` for `pets/agent-reactions` next in the pet area. Keep P1 unchanged when migrating it. Plan Connect, Pause monitoring, and Disconnect with their session setup and first-use owners.
-5. Resolve the reported app build failure through a separately approved fix before pet app checks. Resume the paused notch/allowance goal only on explicit request.
+1. Review the three telemetry task lists in `docs/specs/telemetry/area.md`; start with C1's lifecycle/protocol design after approval. Review E1–E5 and initial battery budgets alongside them.
+2. Review the existing standalone-rabbit goal and its current implementation/evidence with its owning work. Do not infer activation or resume it from telemetry planning.
+3. Settle the five open decisions in `usage/claude-allowance` before U2c3. Review U3b2, U1, I2a–I2c, and session-state evidence before changing completion states.
+4. Plan `pets/agent-reactions` and `pets/detachable-pet` when reached, preserving original P1/P2 lines. Coordinate monitoring controls with telemetry/background-collection.
+5. Reassess the historical build-failure report during approved verification. Resume the paused notch/allowance goal only on explicit request.
 
 ## Blockers
 
-- Build failure, found by the 2026-10-30 code review: `swift build` fails at `Sources/NotchPet/NotchPanelController.swift:37` with `error: ambiguous use of 'sync(execute:)'`. The reviewer confirmed in a scratch copy that `_ =` fixes it. It is not fixed. Recorded in `usage/claude-allowance`.
-- Branch scope: `docs/observation-bridge` contains 23 commits beyond `origin/feat/notch-companion`, including earlier notch and usage code. Review the full branch before merging. Its name does not describe the full diff.
+- Telemetry scope and SQLite direction are confirmed; C1–C8, H1–H7, and S1–S6 remain proposed implementation tasks. Service lifecycle, IPC, schema/durability, and instrumentation coverage require their recorded reviews. Battery targets remain provisional and unmeasured.
+- Stale: earlier standalone-pet records describe no implementation or artwork, but the working tree now contains both. Their activation, verification, and task completion need evidence review by the owning work; this session did not run or complete that goal.
+
+- Stale: the historical `swift build` failure (`ambiguous use of 'sync(execute:)'` at `NotchPanelController.swift:37`) does not match current source: that file contains no `sync` call. No build ran to establish current build status. The BP3 blocker and `usage/claude-allowance` report still need review before editing their records.
 - Migration pending: 15 area specs have no file yet. The source spec still owns their tasks and evidence. Missing spec files do not imply missing implementations.
 - Terminal independence is accepted scope, not completed compatibility verification. The optional version-1 terminal object and helper metadata stay Otty-specific. N7–N8 need planning and live acceptance.
-- Pet task approval is pending. Default artwork is not bundled. Agent monitoring pause, disconnect, resume, and notice-retention details still need feature planning.
+- The standalone-rabbit goal is not activated. Its proposed checkpoint-file budget exception and bounded BP1-BP4 task slices await approval. Original white lionhead artwork is chosen but not generated or bundled. Agent pause, disconnect, resume and notice retention still need planning.
+- Stale: `docs/specs/pets/built-in-pet.md` still says the default artwork source needs resolution. The user has now chosen newly created original white lionhead rabbit artwork, recorded in the pets area decisions. The rest of the seven-task list is unchanged and still proposed.
 - Keep the source spec until every task and acceptance check has a destination. Confirm its final move or removal with the user before changing it.
 - Real Claude forwarding and terminal-output/cancellation preservation are incomplete. Codex reconnect, account switching, and remaining physical-notch acceptance are unverified.
 - Stale: `docs/specs/usage/codex-allowance.md`: U3b2 is unchecked, but goal-log turn 19 records passing process tests and a sanitized live read. Leave it unchanged until an evidence review.

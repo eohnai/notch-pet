@@ -9,6 +9,14 @@ SSH and cloud-agent integrations are optional future work.
 
 The working name is `notch-pet`; the user has not chosen a product name.
 
+## Planned local telemetry
+
+The user confirmed an optional background collector, local SQLite history, and telemetry for next-task, debug-issue, and checkpoint.
+Collection will continue while the interface is closed, with no hosted backend or cross-device sync.
+Pet-only use will require no collector. Battery and resource requirements apply to all owned processes.
+See the [telemetry plan](docs/specs/telemetry/area.md) and [resource requirements](docs/specs/notch/resource-efficiency.md).
+The three feature task lists are proposed; no collector service or history database is implemented or installed by this plan.
+
 ## Run locally
 
 Use macOS 13 or later with Swift 6 tools. Install Apple's Command Line Tools if `swift --version` is unavailable.
