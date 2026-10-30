@@ -31,7 +31,8 @@ public enum HookHelper {
         let total = enteredAt + 250_000_000
         do {
             guard arguments.count == 2, arguments[0] == "--agent",
-                  ["codex", "claude"].contains(arguments[1]) else { return }
+                  AgentCatalog.builtIn.descriptor(for: arguments[1])?.capabilities.contains(.observation) == true
+            else { return }
             let flags = fcntl(STDIN_FILENO, F_GETFL)
             guard flags >= 0, fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK) == 0 else { return }
             defer { _ = fcntl(STDIN_FILENO, F_SETFL, flags) }

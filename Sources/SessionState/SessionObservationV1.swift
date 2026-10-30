@@ -28,8 +28,8 @@ public struct SessionObservationV1: Sendable {
         self.envelope = envelope
         self.receiptWallMs = receiptWallMs
         self.receiptMonotonicNs = receiptMonotonicNs
-        let questionTool = envelope.agent == "codex" ? "request_user_input" : "AskUserQuestion"
-        let isQuestion = envelope.toolName == questionTool
+        let questionTools = AgentCatalog.builtIn.descriptor(for: envelope.agent)?.questionTools ?? []
+        let isQuestion = envelope.toolName.map { questionTools.contains($0) } ?? false
         switch envelope.hookEventName {
         case "SessionStart": kind = .sessionStarted
         case "UserPromptSubmit": kind = .turnSubmitted

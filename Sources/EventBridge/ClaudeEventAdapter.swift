@@ -2,7 +2,10 @@ import Foundation
 
 /// Projects the seven Claude hook shapes covered by the recorded investigation.
 /// Hook installation and interactive coverage remain separate workflow checks.
-public enum ClaudeEventAdapter {
+public enum ClaudeEventAdapter: AgentEventAdapter {
+    static let descriptor = AgentDescriptor(id: "claude", displayName: "Claude Code",
+                                           eventNames: HookEnvelopeV1.hooks,
+                                           questionTools: ["AskUserQuestion"], capabilities: [.observation])
     private static let supportedHooks: Set<String> = [
         "SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest",
         "PostToolUse", "Stop", "SessionEnd"

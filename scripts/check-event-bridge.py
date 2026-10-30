@@ -82,6 +82,9 @@ def receive_one(helper: Path, raw: bytes, agent: str, pane: str | None = None) -
 def main() -> None:
     # Build location matches run.sh. Building is a separate, explicit verification step.
     candidates = list(BUILD.glob("*/debug/NotchPetHook"))
+    if not candidates:
+        # Swift's Xcode build system uses this products directory instead.
+        candidates = list(BUILD.glob("out/Products/Debug/NotchPetHook"))
     assert len(candidates) == 1, "build the helper with bash scripts/run.sh --build-only first"
     helper = candidates[0]
     try:

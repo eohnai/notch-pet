@@ -9,7 +9,9 @@ Collapsed, it shows activity and the session count. Expanded, it shows every ses
 It replaces the temporary menu session list. See the [notch area](area.md) for shared context.
 
 This is a retrospective spec. It moves I1 and N3–N5 and their evidence out of the [source specification](../notch-companion.md).
-The notch code exists, but actual-app acceptance is incomplete. All four tasks stay unchecked.
+The notch code exists, but actual-app acceptance is incomplete. The four retrospective tasks stay unchecked.
+The 2026-10-30 planning extension below adds the user's Flux-like opening/closing requirements;
+it is proposed implementation work, not retrospective verification evidence.
 
 ## Done when
 
@@ -25,6 +27,11 @@ These checks come from "Feature 1: access sessions in the notch" in the source s
 - The menu bar has no session list. Quit and Show Notch stay available. Settings and Return Pet appear only when they exist.
 - The real-app check uses fictional events through the bundled helper, not a second mock interface.
   Visual QA is one batched pass and at most one correction pass, with no repeated user screenshot requests.
+- The user's Flux-like extension opens session details from the compact island, supports an explicit
+  Show Sessions recovery action and closes details with Escape when that interaction receives keyboard input.
+  Ordinary alerts/showing never steal focus; any focus for keyboard interaction follows an explicit user action.
+- No observed sessions or retained unresolved notices means ordinary pet presentation, rather than
+  empty agent/allowance panels. Hiding/collapsing presentation never changes monitoring or resolves notices.
 
 ## Out of scope
 
@@ -41,6 +48,8 @@ These checks come from "Feature 1: access sessions in the notch" in the source s
 - Views render snapshots from the shared `SessionStore`. Session meaning stays in the store, under [decision 0002](../../decisions/0002-use-mvvm-with-services.md).
 - Keep shared presentation rules reusable by the later pet.
 - Display sessions without terminal navigation metadata, under [decision 0012](../../decisions/0012-support-terminal-independent-operation.md).
+- For the prepared agent-workflow goal, use no captures or screen recording. Nonvisual native evidence
+  cannot complete historical pixel/physical-notch checks. Builds/tests/app checks require renewed approval.
 
 ## Verify
 
@@ -50,6 +59,9 @@ These checks come from "Feature 1: access sessions in the notch" in the source s
 - Swift checks: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`.
   Placement tests are in `NotchPresentationTests.swift`. Selection and provider tests are in `NotchSelectionTests.swift`.
 - Real app: `bash scripts/run.sh`, then send fictional observations through the bundled helper.
+- The proposed bounded no-capture checker and exact invocation are in
+  [the prepared goal](../../goals/agent-session-workflow.md). It must drive production UI actions and
+  inspect actual rendered/accessibility state; a SessionStore assertion alone is insufficient.
 
 These are reproduction commands. This retrospective spec ran documentation checks only.
 
@@ -66,12 +78,15 @@ These are reproduction commands. This retrospective spec ran documentation check
 - I1 moves here because the notch replaces the menu session list. The older I1 menu evidence is kept below as history, not as a requirement to finish the retired menu walkthrough.
 - N5 moves here, not to `session-state`. Its rules decide presentation order and selection, not session meaning.
 - N6 stays in the source spec. It needs live agents and Otty pane jumps, which depend on N1–N2.
-- No new tasks are added. The remaining work is actual-app verification, which N3–N5 and I1 already require.
+- The original retrospective migration added no tasks. The 2026-10-30 SI1–SI4 extension below adds
+  explicit interaction and native-evidence tasks without changing the historical task states.
 
 ## Open questions
 
 - Physical-notch focus, click-through, and keyboard expansion are not verified in the actual app.
 - Response-ready, ended, and unknown-with-retained-notice states have no fresh actual-notch evidence.
+- Final visual/physical-notch acceptance stays deferred. Do not mark I1/N3/N4/N5 complete from
+  SI4's nonvisual checks if their original requirements remain unverified.
 
 ## Tasks
 
@@ -79,6 +94,18 @@ These are reproduction commands. This retrospective spec ran documentation check
 - [ ] N3: Add a compact/expandable native notch panel on the built-in display with supported geometry, no unsolicited focus, keyboard expansion/collapse and click-through inactive areas; verify launch and placement.
 - [ ] N4: Present all sessions and request details in the expanded notch, preserving selection and distinguishing same-folder sessions; remove menu session rows and retain basic controls when the notch is usable.
 - [ ] N5: Derive notch attention selection once from shared snapshots, prioritizing confirmed requests and retaining unknown/unconfirmed, response-ready and ended meanings; reuse this state for the later pet.
+- [ ] SI1: Add app-owned presentation coordination for observed sessions and retained notices, preserving ordinary pet-only behavior and monitoring independence with at most five focused tests.
+- [ ] SI2: Add compact-island open and explicit Show Sessions recovery actions, checking production placement/selection behavior without unsolicited focus in at most five tests.
+- [ ] SI3: Add Escape-to-close for explicitly requested keyboard interaction, preserving retained notices, selection and monitoring; check actual action dispatch without global key interception.
+- [ ] SI4: Verify real helper-driven native session presentation, selection and open/close behavior with bounded no-capture evidence; record visual/physical-notch checks as deferred and preserve historical checkbox states.
+
+## Agent-workflow planning extension, 2026-10-30
+
+The user confirmed both Codex and Claude plus a Flux-like session island as the first goal and
+requested an adapter boundary for future providers. See [agent connections](../sessions/agent-connections.md).
+This extension reuses the existing panel/store and adds no usage, actions, pet reactions or terminal jumps.
+The proposed implementation branch is `feat/notch-session-island`; coordinating branches across the
+multi-spec goal requires the strategy review in the goal. No task/check ran for this extension.
 
 ## Evidence from the paused goal
 

@@ -249,6 +249,12 @@ Therefore this proposal cannot promise preservation of an external write made in
 Approve this documented limitation or choose a different write strategy before implementation.
 Do not describe a cooperative lock as a transaction across independent configuration writers.
 
+**Concurrency decision, accepted 2026-10-30.** After a plain-language explanation of simultaneous
+settings saves, the user chose automatic setup over manual instructions. Keep cooperative locking,
+fresh validation and conflict refusal, and ask users to close settings editors during Connect/Disconnect.
+The documented final-window limitation is accepted; the remaining schema/version and recovery
+implementation details still require CX1 evidence. No installed configuration write was authorized here.
+
 ### Provider settings and evidence boundary
 
 Current [official hook documentation](https://learn.chatgpt.com/docs/hooks) specifies `timeout` in seconds,

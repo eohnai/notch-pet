@@ -2,7 +2,10 @@ import Foundation
 
 /// Projects the seven Codex hook shapes covered by the recorded investigation.
 /// Interactive coverage and hook installation are separate verification and setup tasks.
-public enum CodexEventAdapter {
+public enum CodexEventAdapter: AgentEventAdapter {
+    static let descriptor = AgentDescriptor(id: "codex", displayName: "Codex",
+                                           eventNames: HookEnvelopeV1.hooks,
+                                           questionTools: ["request_user_input"], capabilities: [.observation])
     // Provider coverage stays explicit even if a future wire contract accepts more events.
     private static let supportedHooks: Set<String> = [
         "SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest",

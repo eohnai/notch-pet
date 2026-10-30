@@ -59,7 +59,8 @@ public struct HookEnvelopeV1: Encodable, Sendable {
               let eventID = fields["event_id"]?.string,
               UUID(uuidString: eventID)?.uuidString.lowercased() == eventID,
               eventID.utf8.count == 36,
-              let agent = fields["agent"]?.string, ["codex", "claude"].contains(agent),
+              let agent = fields["agent"]?.string,
+              AgentCatalog.builtIn.descriptor(for: agent)?.capabilities.contains(.observation) == true,
               let hook = fields["hook_event_name"]?.string, hooks.contains(hook),
               let timestamp = fields["observed_at_ms"]?.integer,
               (0...9_007_199_254_740_991).contains(timestamp)
@@ -113,13 +114,7 @@ public struct HookEnvelopeV1: Encodable, Sendable {
     }
 
     static func project(rawHook: Data, agent: String, paneSelector: String?, deadline: UInt64?) throws -> Self {
-        if agent == "codex" {
-            return try CodexEventAdapter.project(rawHook: rawHook, paneSelector: paneSelector, deadline: deadline)
-        }
-        if agent == "claude" {
-            return try ClaudeEventAdapter.project(rawHook: rawHook, paneSelector: paneSelector, deadline: deadline)
-        }
-        throw BridgeError.invalidMessage
+        return try AgentCatalog.project(rawHook: rawHook, agent: agent, paneSelector: paneSelector, deadline: deadline)
     }
 
     static func rawFields(_ rawHook: Data, deadline: UInt64?) throws -> [String: JSONValue] {
@@ -163,13 +158,18 @@ struct StrictJSON {
     private let bytes: [UInt8]
     private let maxDepth: Int
     private let deadline: UInt64?
+    private let captureRanges: Bool
     private var offset = 0
+    private var path: [JSONPathComponent] = []
+    private(set) var ranges: [[JSONPathComponent]: Range<Int>] = [:]
+    private(set) var childMembers: [[JSONPathComponent]: [JSONPathComponent]] = [:]
     private let decoder = JSONDecoder()
 
-    init(data: Data, maxDepth: Int, deadline: UInt64? = nil) {
+    init(data: Data, maxDepth: Int, deadline: UInt64? = nil, captureRanges: Bool = false) {
         bytes = Array(data)
         self.maxDepth = maxDepth
         self.deadline = deadline
+        self.captureRanges = captureRanges
     }
 
     mutating func parse() throws -> JSONValue {
@@ -218,25 +218,41 @@ struct StrictJSON {
         try checkDeadline(deadline)
         try whitespace()
         guard offset < bytes.count else { throw BridgeError.invalidMessage }
+        let startOfValue = offset
+        defer {
+            if captureRanges { ranges[path] = startOfValue..<offset }
+        }
         if bytes[offset] == 34 { return .string(try text()) }
         if try consume(123) {
             guard depth < maxDepth else { throw BridgeError.invalidMessage }
+            if captureRanges { childMembers[path] = [] }
             var fields: [String: JSONValue] = [:]
             if try consume(125) { return .object(fields) }
             repeat {
                 let key = try text()
                 guard fields[key] == nil, try consume(58) else { throw BridgeError.invalidMessage }
+                if captureRanges {
+                    childMembers[path, default: []].append(.key(key))
+                    path.append(.key(key))
+                }
                 fields[key] = try value(depth: depth + 1)
+                if captureRanges { path.removeLast() }
                 if try consume(125) { return .object(fields) }
             } while try consume(44)
             throw BridgeError.invalidMessage
         }
         if try consume(91) {
             guard depth < maxDepth else { throw BridgeError.invalidMessage }
+            if captureRanges { childMembers[path] = [] }
             var values: [JSONValue] = []
             if try consume(93) { return .array(values) }
             repeat {
+                if captureRanges {
+                    childMembers[path, default: []].append(.index(values.count))
+                    path.append(.index(values.count))
+                }
                 values.append(try value(depth: depth + 1))
+                if captureRanges { path.removeLast() }
                 if try consume(93) { return .array(values) }
             } while try consume(44)
             throw BridgeError.invalidMessage
