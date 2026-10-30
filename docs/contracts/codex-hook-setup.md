@@ -270,8 +270,8 @@ enablement. No agent process, configuration probe, or schema-generation command 
 
 Lossless parsing, ownership comparison, durable file updates and recovery need separate steps.
 Propose retaining I3b/I3c as parent tasks, with reviewed implementation steps for JSON scanning,
-planning/matching, guarded file operations, and recovery. Each step must meet the existing
-three-file, three-function and five-test limits. Keep the five frozen planner tests and five frozen
+planning/matching, guarded file operations, and recovery. Each step must be finished and
+verified in one session. Keep the five frozen planner tests and five frozen
 installer tests parameterized across the required cases. No task-list split is accepted yet.
 The eight-task split in [codex-setup](../specs/sessions/codex-setup.md#tasks) was subsequently approved on 2026-10-30.
 

@@ -108,18 +108,21 @@ These are future verification requirements. No runtime verification ran while wr
   The current menu exposes Show Pet, Pet Settings, and Quit. The health controller is private and has no menu action.
 - Label removal as Remove hooks so it does not define the separately planned Disconnect behavior.
   Exact wording and health presentation receive interface review in I6a.
-- Use eight approved session-sized tasks. Keep each task within the existing three-file, three-function, and five-test limits, including required records.
+- Use session-sized tasks. Each task must be finished and verified in one session.
   Review exact files, interfaces, and checks per task. Split any oversized task with user approval before coding.
+  The user removed the earlier three-file, three-function, and five-test limits on 2026-10-31. They duplicated this size check.
 - R1–R6 come from the [2026-10-30 review](../../reports/2026-10-30-session-state-and-architecture-review.md), which the user accepted in full on 2026-10-30.
   R1–R3 come before I3b2, because the scanner and planner need the new `Integration` module and typed hook names. R4–R6 can run in any order.
-  R2 moves more than three files. Split it or get an explicit exception to the three-file limit when planning it.
-- Preserve the source checklist until shared Codex/Claude checks have complete destinations. This spec's tasks refine that work; they are not extra source requirements.
+- The user added R7 and R8 on 2026-10-31, after the R1 review of two external Swift skills. Both skills assume `@Observable`, which needs macOS 14.
+  No record explains the original macOS 13 target. R8 follows R7. The user authorized builds and tests for R7 and R8.- Preserve the source checklist until shared Codex/Claude checks have complete destinations. This spec's tasks refine that work; they are not extra source requirements.
   Do not add source and refinement counts as independent work estimates.
 
 ## Tasks
 
 - [x] I3b1: Review prerequisite evidence and settle the Codex version/enablement gate, timeout, ownership schema, recovery states, and concurrent-writer guarantees using the contract's fictional cases; record accepted choices before coding.
-- [ ] R1: Write `docs/SWIFT-PRACTICES.md` from the conventions and accepted findings in the 2026-10-30 review, and link it from `AGENTS.md`.
+- [x] R1: Write `docs/SWIFT-PRACTICES.md` from the conventions and accepted findings in the 2026-10-30 review, and link it from `AGENTS.md`.
+- [ ] R7: Raise the deployment target to macOS 14 in `Package.swift`, `Info.plist`, `README.md`, and `ARCHITECTURE.md`; replace the two deprecated `onChange(of:perform:)` calls; record the decision; build passes with no new warnings.
+- [ ] R8: Move the five `ObservableObject` classes and their views to `@Observable`; no behavior change, full suite passes.
 - [ ] R2: Split `SessionState` into `SessionState`, `Usage`, and `Integration` targets, and move the executable and configuration-directory locator out of the app target; no behavior change, full suite passes.
 - [ ] R3: Add typed `Agent` and `HookEvent` enums at the bridge boundary; remove the duplicated hook-name sets, the `default: .sessionEnded` branch, and the force unwraps they make unnecessary; wire format unchanged.
 - [ ] R4: Update `ARCHITECTURE.md` to describe stores, pure presentation functions, AppKit controllers, and D3's view-model rule.
