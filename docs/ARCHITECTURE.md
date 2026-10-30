@@ -107,7 +107,7 @@ Pet-first setup requires no coding agent or hook configuration. Pet-only startup
 After approved agent setup, received sessions will trigger agent presentation without a manual mode switch for each session.
 Missing events will not prove that a session ended. Unknown state and unresolved notices will retain their existing meanings.
 The user approved separate standalone pet and agent-reaction features. Their implementation task lists still need approval.
-The independent pet remains accepted. [D2](DECISIONS.md#d2-collect-and-inspect-telemetry-locally-with-an-optional-background-process) now adds an optional collector and history; no second app or repository split is planned.
+The independent pet remains accepted. [D3](DECISIONS.md#d3-record-skill-history-before-extracting-live-monitoring) adds local skill history first and keeps live collector extraction for later.
 
 ## Proposed compatible pet input
 
@@ -123,16 +123,17 @@ Low idle energy use is an accepted release requirement: see [D1](DECISIONS.md#d1
 The [resource-efficiency spec](specs/notch/resource-efficiency.md) proposes concrete runtime checks, profiling tasks, and initial budgets.
 Native implementation alone is not evidence of low CPU, memory, or battery cost.
 
-The user confirmed one optional local collector, local SQLite history, and three pilot skills under [D2](DECISIONS.md#d2-collect-and-inspect-telemetry-locally-with-an-optional-background-process).
-The [telemetry area](specs/telemetry/area.md) separates background collection, local history, and skill instrumentation.
-The collector will own live session evidence; the app will consume bounded snapshots. Persistent history cannot establish live working state.
-Usage refresh and interactive action channels retain their current owners. The independent pet does not import telemetry or start a collector.
+[D3](DECISIONS.md#d3-record-skill-history-before-extracting-live-monitoring) replaces the collector-first telemetry plan.
+A short-lived emitter writes one immutable record per ready file. The app or local import command commits it to SQLite before removing the file.
+No app or collector needs to run during recording. Start with debug-issue, then a history view, then next-task and checkpoint.
+The [local-history spec](specs/telemetry/local-history.md) contains the record examples and publication/import rules.
 
-Observation hooks retain bounded one-way delivery. Durable telemetry uses a separate reviewed acknowledgement/retry contract with stable record IDs.
-Data stays on this Mac; no hosted backend, synchronization, transcripts, or credentials are included.
-Existing app-owned collection remains the implemented foundation until the proposed extraction tasks are approved and verified.
+Live session truth stays in the current app during this pilot. History cannot restore working state or resolve an input request.
+The existing one-way observation socket is unchanged. Telemetry-specific adapters pass selected fields directly to the emitter.
+Usage refresh and interactive actions keep their current owners. The independent pet does not start telemetry services.
+A later [collector feature](specs/telemetry/background-collection.md) will define live-state ownership, IPC, registration, and stop controls before extraction.
 
-## Data without a database
+## Storage
 
 | Data | Storage | Reason |
 |---|---|---|
@@ -141,9 +142,10 @@ Existing app-owned collection remains the implemented foundation until the propo
 | Imported pets and manifests | Application Support files | Images already use files |
 | Optional later usage cache | Small JSON file in Application Support | Must retain receipt time, source measurement time if supplied, and a stale label |
 | Credentials | Existing provider-managed authentication | The app does not copy tokens |
+| Planned skill history | Ready record files, then local SQLite | Records survive interface closure without a daemon |
 
 Do not persist a session as still working after the app restarts without fresh evidence.
-D2 now accepts SQLite for local telemetry history. The current memory/preferences/files layout remains the foundation until that feature is implemented.
+D3 accepts SQLite for imported skill history. Live state, preferences, and pet assets retain their existing storage.
 Adding quota display alone does not require a database.
 Keep runtime files, imported packs, and captured session data outside this repository.
 
@@ -152,17 +154,18 @@ Keep runtime files, imported packs, and captured session data outside this repos
 | Choice | Accepted approach | Alternative and tradeoff |
 |---|---|---|
 | Presentation structure | MVVM plus services and shared stores | View-owned state is quicker initially, but duplicates session state |
-| Persistence | Memory, preferences, and files | SQLite supports history queries, but adds schemas and migrations |
+| Persistence | Memory/preferences/files for current state, with planned SQLite skill history under D3 | History adds import, schemas, and retention |
 | Event source | Official agent hooks | Transcript reading catches other details, but depends on changing formats |
 | Local event delivery | Unix-domain socket and small helper | Localhost HTTP is easier to inspect, but needs port management |
 | Custom pet format | JSON manifest and transparent PNG frame sequences | Sprite atlases reduce file count, but are harder to author |
 | Usage source | Provider-supported interfaces | Private endpoints may expose more data, but add authentication and compatibility work |
 | Local interactions | Accepted scope; response mechanisms and action contract require compatibility verification | Otty-only handling is simpler but requires switching away from the app for every decision or reply |
 
-No dependency-injection framework, external event broker, hosted backend, or web account is needed. D2 adds one optional local collector.
+No dependency-injection framework, external event broker, hosted backend, or web account is needed. The first telemetry version has no daemon.
 Pass service dependencies explicitly. Keep the first version small.
 
-The current app-owned delivery can lose events while the app is closed. The planned collector removes that UI dependency without making the one-way helper durable. Do not replay unverified activity as live state after restart.
+The current live observation path can lose events while the app is closed. Skill ready files are separate from that path.
+Later collector work addresses live observation while the interface is closed. Never replay historical skill records as live state.
 The [version-1 event contract](contracts/agent-events-v1.md) defines message fields, bounds, and ordering before bridge implementation.
 [Decision 0008](decisions/0008-define-event-ordering.md) records conservative ordering without persistent helper state.
 

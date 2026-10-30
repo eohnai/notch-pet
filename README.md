@@ -11,11 +11,12 @@ The working name is `notch-pet`; the user has not chosen a product name.
 
 ## Planned local telemetry
 
-The user confirmed an optional background collector, local SQLite history, and telemetry for next-task, debug-issue, and checkpoint.
-Collection will continue while the interface is closed, with no hosted backend or cross-device sync.
-Pet-only use will require no collector. Battery and resource requirements apply to all owned processes.
-See the [telemetry plan](docs/specs/telemetry/area.md) and [resource requirements](docs/specs/notch/resource-efficiency.md).
-The three feature task lists are proposed; no collector service or history database is implemented or installed by this plan.
+First record skills with a short-lived emitter, then import the files into local SQLite when the app or a local command runs.
+The app can stay closed during recording. Start with debug-issue, add a small history view, then extend to next-task and checkpoint.
+An optional background collector comes later for live monitoring with the interface closed.
+Data stays on this Mac. Pet-only use requires no telemetry setup or collector.
+See the [telemetry plan](docs/specs/telemetry/area.md) and [battery requirements](docs/specs/notch/resource-efficiency.md).
+These are proposed implementation tasks. This documentation does not install hooks, change permissions, or start services.
 
 ## Run locally
 

@@ -1,71 +1,64 @@
-# Skill telemetry
+# First skill pilot
 
 Needs: local-history
 
 ## Goal
 
-Learn which skills run, where their workflows stop, and which verification checks execute.
-Pilot `next-task`, `debug-issue`, and `checkpoint` from `~/projects/agent-skills`, with the local collector as their destination.
-See the [telemetry area](area.md). Proposed branch in both repositories: `feat/telemetry-skill-telemetry`.
+Record a real debug-issue invocation without requiring the Notch Pet interface or a collector.
+Verify the automatic signal first, then add only the end report and step-7 check evidence.
+See the [telemetry area](area.md). Branch in both repositories: `feat/telemetry-skill-telemetry`.
 
 ## Done when
 
-- Each invocation has its own run ID and optional parent invocation ID, separate from its source agent session.
-- One session can contain repeated and nested skill invocations without merging their runs.
-- Records carry skill name, actual SKILL.md content hash, producer/agent version when available, project identity, and evidence source.
-- Content hashes reflect the linked skill's actual bytes, including uncommitted edits; an absent value is unknown rather than invented.
-- Milestones distinguish started, checkpointed steps, checks executed, blocked, failed, and completed. Missing closure stays unknown.
-- Reading a skill is separate from invoking it. Agent-reported milestones remain labeled as reports, not runtime proof of compliance.
-- Deterministic verification records identify an allowlisted check and its exit result. They do not capture raw commands or command output.
-- A stop event, a passing check, or successful emitter delivery cannot alone establish that the user's goal succeeded.
-- Running an instrumented skill with the interface closed creates a run inspectable after reopening the app.
-- The three pilots work under the verified installed Codex and Claude combinations, or expose a specific unsupported boundary that remains an acceptance gap.
-- Collector absence, pause, or telemetry failure does not fail the skill's actual work. Coverage gaps remain visible.
-- Summaries show observed usage, known completion/check outcomes, duration coverage, recurring failure categories, and skill-version filters without claiming causal improvement.
+- S1 captures real payloads for the installed agents and distinguishes an attempted Skill call from a confirmed skill load.
+- At least one verified agent records debug-issue start, reported end, and its step-7 verification result through the local emitter.
+- The app stays closed throughout the pilot. A later local import shows the correct invocation and skill-folder version.
+- End/check records join the exact invocation. Repeated or nested invocations in one session do not merge.
+- If stable correlation is unavailable, the adapter reports that limitation instead of guessing a parent or current invocation.
+- Telemetry failure or a declined emitter permission does not block the debugging work. The resulting coverage gap is explicit.
+
+## Signals and permissions
+
+S1 checks PreToolUse and PostToolUse for Skill using isolated configuration and fictional, nonsecret inputs.
+It also checks UserPromptExpansion for typed slash commands, needed by the later manual-only next-task pilot.
+These are [documented hook candidates](https://code.claude.com/docs/en/hooks#userpromptexpansion), not verified installed-version behavior.
+A pre-event records an attempt. Use loaded only after S1 establishes the corresponding successful signal.
+
+The telemetry adapter selects skill name and available invocation identity from that payload.
+It calls the local emitter directly. It does not widen or bypass the accepted version-1 socket envelope.
+A source supplying raw input to the adapter is not permission to store that raw input.
+
+For the pilot, accept normal permission prompts for agent-issued emitter calls.
+Existing approved rules may already cover a call. Do not add or broaden an allowlist silently.
+Show any proposed hook installation diff before applying it and preserve unrelated agent settings.
+If prompting makes the pilot unusable, stop to review a narrowly scoped emitter setup rule before expanding instrumentation.
 
 ## Out of scope
 
-- Instrumenting every skill, detecting every implicit invocation, transcript analysis, automatic quality scoring, or estimating time saved.
-- Token usage, subscription allowance, and costs without an independently verified source.
-- Rewriting skill behavior unrelated to instrumentation, changing automatic invocation policy, or installing new hooks without a reviewed setup step.
-
-## Constraints
-
-- The runtime, producer client, and report/query support belong in notch-pet. Only pilot instruction changes belong in agent-skills.
-- Use the local-history producer contract and outbox. Do not add independent collectors or network destinations to individual skills.
-- Preserve existing symlink setup and both tools' configurations. No new global telemetry instructions are silently installed.
-- First inspect supported hook/runtime signals for actual installed versions. A hypothetical event name is not a verified instrumentation point.
-- If instructions ask the agent to call the emitter, label that evidence self-reported even when the emitter reliably stores it.
-- Record completion and verification separately; error categories use an allowlist rather than raw exception messages.
-- Follow existing user confirmation, verification, and checkpoint requirements in each pilot. Instrumentation cannot bypass them.
-- Emitter calls use bounded local work. Replay/backfill reaches history only and cannot mutate live session state.
+- Instrumenting next-task or checkpoint, every intermediate step, app history UI, a collector, and inferred task success.
+- Transcript scanning or pretending that a file read establishes an invocation.
 
 ## Verify
 
-- Seam: actual instrumented invocation in each supported agent, recorded by the background collector and inspected in app history.
-- Runtime build and checks: `bash scripts/run.sh --build-only`, `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build`, and `git diff --check`.
-- Pilot documentation: inspect the exact diffs in agent-skills, preserve frontmatter and linking, and run its applicable existing skill checks after identifying their commands in S1.
-- Use one real invocation per pilot and supported agent, plus bounded cases for nested/repeated runs, a failed check, a blocked run, and missing closure.
-- Keep the interface closed during at least one real run. Reopen it and verify skill hash, run identity, evidence source, and outcome.
-- Disable or stop collection during a run and verify normal skill work continues with an honest gap.
-- Do not claim fictional event fixtures establish real-agent hook compatibility or complete invocation coverage.
+- Seam: an actual debug-issue invocation, ready files, local import, and query output while the app is closed.
+- Use the local-history build/Swift checks for runtime changes, plus `git diff --check` in both repositories.
+- S1 identifies existing agent-skills validation commands before editing its pilot instructions.
+- Exercise a loaded start, a denied attempt, a reported end, an actual failed/passing check, missing closure, and declined emitter permission.
+- Retain only selected field examples and agent versions from the hook investigation. Do not save prompts or raw tool input.
+- Temporary capture files stay outside repositories and use only the isolated fictional inputs.
 
 ## Decisions
 
-- The three pilot skills and local-only collection are confirmed in D2.
+- Pilot debug-issue before a history interface or live collector. See [D3](../../DECISIONS.md#d3-record-skill-history-before-extracting-live-monitoring).
 
 ## My calls
 
-- Prefer explicit opt-in producer calls for a small pilot where supported runtime signals cannot establish skill invocation.
-- S1 compares supported automatic signals with explicit calls: automatic signals reduce instruction dependence but may omit identity; explicit calls provide milestones but can be skipped.
-- Reuse structured history queries for version comparisons. Usage frequency and elapsed time are diagnostics, not proof of skill quality.
-- No owner or deadline is assigned because none was supplied.
+- Keep the existing S1 identity for the hook investigation. The later S2/S3 definitions replace the earlier unstarted multi-skill tasks.
+- Accept normal permission prompts during this pilot rather than changing user permissions. Review this call before S2 setup.
+- A second agent's unsupported signals remain a named coverage gap. Do not delay the first verified pilot solely for parity.
 
 ## Tasks
 
-- [ ] S1: Verify installed-agent signal coverage and existing skill validation commands; review evidence labels and the instrumentation seam for each pilot without changing installed configuration.
-- [ ] S2: Add invocation-aware emitter/report support with actual skill hashes; check repeated/nested invocation IDs and separation of reported outcomes from executed-check evidence.
-- [ ] S3: Instrument next-task's invocation and existing workflow milestones while preserving its approvals and task boundaries; verify one real recorded run.
-- [ ] S4: Instrument debug-issue's invocation and existing investigation/check outcomes without capturing command contents; verify one real recorded run.
-- [ ] S5: Instrument checkpoint's invocation and record-writing outcome without storing document bodies; verify one real recorded run.
-- [ ] S6: Verify the supported two-agent pilot matrix, closed-interface collection, failure/gap cases, and version-filtered summaries; record resource costs and remaining coverage gaps.
+- [ ] S1: Capture real installed-agent hook payloads and validate start/load/correlation fields, including slash-command expansion, using isolated configuration and sanitized examples.
+- [ ] S2: Add the verified telemetry start adapter for debug-issue, reviewing its setup diff and checking a real closed-interface record with emitter-owned version metadata.
+- [ ] S3: Add debug-issue's reported end and step-7 check evidence, checking exact-run correlation, permission refusal, and a real imported run.

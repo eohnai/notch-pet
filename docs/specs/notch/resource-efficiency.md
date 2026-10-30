@@ -36,7 +36,9 @@ The tasks and numerical targets below are proposals. No efficiency measurement h
 - For confirmed local history, use indexed paginated reads, bounded batches, retention, and a size limit outside the repository.
 - Keep history independent of live-state evidence. Never replay approvals, replies, or stale working events as current actions or state.
 - Maintenance and optional upload must be cancellable and discretionary. Do not wake a sleeping Mac for telemetry.
-- D2 accepts local history and an optional collector. Their task lists and runtime contracts need review before implementation.
+- D3 starts with short-lived emitter calls and explicit import. A background collector is later live-monitoring work.
+- Hash a skill folder once per invocation. Do not poll it or recompute its hash for each check/end record.
+- Measure emitter latency and import batches. With the app closed, telemetry schedules no ongoing background work.
 
 ## Initial targets
 
@@ -79,7 +81,7 @@ Implementation requires task-list approval under the repository instructions. No
 
 This spec adds cross-cutting resource acceptance. It does not migrate R4/R5, BP6, or usage U4, and does not count their work twice.
 Their owning features implement behavior; E1/E5 own the combined measurements and E2-E4 check gaps at those boundaries.
-The confirmed [telemetry area](../telemetry/area.md) supplies collector/history/skill specs. Contracts and task lists need review before implementation.
+The [telemetry area](../telemetry/area.md) now starts with record files/import and the first skill pilot. Collector profiling applies only when that later feature is planned.
 Do not resume existing goals or modify installed hooks as part of this plan.
 
 ## Sources

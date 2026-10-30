@@ -25,7 +25,7 @@ This decision does not install a service, add a database, change the hook contra
 
 ## D2: Collect and inspect telemetry locally with an optional background process
 
-- Status: accepted
+- Status: superseded by D3
 - Date: 2026-10-30
 
 **Context.** The user confirmed a telemetry plan separate from battery work, including collection while the interface is closed.
@@ -48,3 +48,29 @@ This updates decision 0013's app-owned service boundary for telemetry and decisi
 Their independent pet, preferences/assets, and fresh live-evidence requirements remain intact. Earlier implementation evidence is not rewritten.
 D1's measured resource requirements apply to every new process. Exact registration, IPC, schemas, and limits receive task-level review.
 This accepts scope and storage direction, not implementation tasks, service installation, hook edits, or goal resumption.
+
+## D3: Record skill history before extracting live monitoring
+
+- Status: accepted
+- Date: 2026-10-30
+
+**Context.** The user requested a revision after reviewing the collector-first plan.
+Skill records must survive interface closure. That requires durable local writes, not a running collector.
+Live monitoring with the interface closed remains a separate later requirement.
+
+**Options.**
+- **Collector-first ingestion:** centralizes live state and history, but delays the first skill measurement behind service and IPC work.
+- **Direct SQLite writes from every producer:** avoids import, but makes short-lived hooks contend on the database.
+- **Ready files and later SQLite import:** records with the app closed and keeps hooks short, but requires atomic publication and commit-before-removal import.
+
+**Decision.** Start with immutable run_start, run_end, and check files, then import them into local SQLite.
+Verify real hook signals and pilot debug-issue first. Follow with a minimal history view, then next-task and checkpoint.
+Keep the optional live collector last, in the same repository/release. Pet rendering, usage refresh, and actions retain their existing boundaries.
+
+**Reasoning.** The user asked to apply the reviewed simpler order and concrete record rules before building background infrastructure.
+
+**Consequences.** [Telemetry specs](specs/telemetry/area.md) now separate those five results.
+The emitter owns skill-folder version hashing. Starts distinguish attempts from confirmed loads, and end reports stay separate from executed checks.
+Project labels remain readable locally. No hosted service, sync, transcript bodies, or credentials are introduced.
+The pilot proposes normal emitter permission prompts. Any allowlist change needs its own review.
+D1's measured battery requirements remain in force. Task lists are proposals, not implementation or setup approval.
