@@ -121,3 +121,23 @@ It is the only option that changes neither behavior nor the store's public API.
 **Consequences.** Observers see only the final value of each main-actor turn, so tests can no longer count assignments within one call.
 The user accepted replacing the store's publication-count check with a check of the first value observers read.
 Revisit when the target reaches macOS 26, where `Observations` can replace `ObservationLoop`.
+
+## D6: Show allowance as percent left, not percent used
+
+- Status: accepted
+- Date: 2026-10-31
+
+**Context.** The usage area and [codex-allowance](specs/usage/codex-allowance.md) label allowance percentages as used, copied from the source spec approved on 2026-10-29.
+The notch layout reference the user supplied on 2026-10-31 shows a compact allowance strip, planned in [allowance-strip](specs/notch/allowance-strip.md).
+
+**Options.**
+- **Percent used:** matches the providers' reported `usedPercent`; the reader must subtract to see what remains.
+- **Percent left (`100 − used`):** shows directly how much work remains before the limit; the app derives the number instead of showing the reported one.
+
+**Decision.** The notch shows percent left for both Codex and Claude Code. The usage store keeps the reported used value unchanged.
+
+**Reasoning.** The user chose percent left on 2026-10-31 while answering layout questions.
+It shows what remains before the limit without arithmetic. ^[inferred]
+
+**Consequences.** codex-allowance's "Percentages are labelled used" check is replaced for the notch. Its other U5 checks stand.
+Percent left is rounded down, so the notch never shows more allowance than is reported.
