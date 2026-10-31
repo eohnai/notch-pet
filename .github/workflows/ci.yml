@@ -70,6 +70,8 @@ jobs:
     name: Build
     runs-on: macos-26
     timeout-minutes: 15
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
     steps:
@@ -87,6 +89,27 @@ jobs:
           xcodebuild -version
           swift --version
           python3 --version
+      - name: Prepare independent build identity
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          swift = subprocess.run(["/usr/bin/xcrun", "swift", "--version"],
+                                 capture_output=True, text=True, check=True, timeout=10)
+          identity = {
+              "commit": os.environ["GITHUB_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "platform": "macos", "architecture": "arm64", "configuration": "debug",
+              "xcode_build": "17F42", "swift_version": swift.stdout.strip(),
+          }
+          path = Path(os.environ["RUNNER_TEMP"]) / "notch-pet-ci/identity.json"
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(identity, indent=2) + "\n")
+          PY
       - name: Package app and helper without launching
         env:
           TMPDIR: ${{ runner.temp }}/notch-pet-ci/package
@@ -98,6 +121,89 @@ jobs:
           test -d "$ci_app/Contents/Resources/NotchPet_Pet.bundle"
           /usr/bin/plutil -lint "$ci_app/Contents/Info.plist"
           printf 'Packaged %s\n' "$ci_app"
+      - name: Archive and verify build
+        run: |
+          python3 scripts/ci/bundle.py \
+            --app "$RUNNER_TEMP/notch-pet-ci/package/notch-pet-dev/Notch Pet.app" \
+            --output "$RUNNER_TEMP/notch-pet-ci/bundle" \
+            --identity "$RUNNER_TEMP/notch-pet-ci/identity.json"
+          python3 scripts/ci/bundle.py \
+            --verify "$RUNNER_TEMP/notch-pet-ci/bundle" \
+            --identity "$RUNNER_TEMP/notch-pet-ci/identity.json"
+      - name: Upload exact build
+        id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: notch-pet-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/notch-pet-ci/bundle
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          overwrite: false
+
+  helper:
+    name: Helper
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 10
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify selected toolchain and record versions
+        run: |
+          test -d "$DEVELOPER_DIR"
+          test "$(uname -m)" = arm64
+          test "$(xcodebuild -version)" = $'Xcode 26.5\nBuild version 17F42'
+          printf 'selected_macos=macos-26\nselected_xcode=%s\n' "$DEVELOPER_DIR"
+          sw_vers
+          uname -m
+          xcodebuild -version
+          swift --version
+          python3 --version
+      - name: Prepare independent helper identity
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          swift = subprocess.run(["/usr/bin/xcrun", "swift", "--version"],
+                                 capture_output=True, text=True, check=True, timeout=10)
+          identity = {
+              "commit": os.environ["GITHUB_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "platform": "macos", "architecture": "arm64", "configuration": "debug",
+              "xcode_build": "17F42", "swift_version": swift.stdout.strip(),
+          }
+          path = Path(os.environ["RUNNER_TEMP"]) / "notch-pet-ci/identity.json"
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(identity, indent=2) + "\n")
+          PY
+      - name: Require Build artifact ID
+        env:
+          BUILD_ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+        run: '[[ "$BUILD_ARTIFACT_ID" =~ ^[0-9]+$ ]]'
+      - name: Download exact build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          path: ${{ runner.temp }}/notch-pet-ci/bundle
+          digest-mismatch: error
+      - name: Verify and extract downloaded build
+        run: |
+          python3 scripts/ci/bundle.py \
+            --verify "$RUNNER_TEMP/notch-pet-ci/bundle" \
+            --identity "$RUNNER_TEMP/notch-pet-ci/identity.json" \
+            --extract-to "$RUNNER_TEMP/notch-pet-ci/extracted"
+      - name: Check downloaded helper without rebuilding
+        run: |
+          python3 scripts/check-event-bridge.py \
+            --helper "$RUNNER_TEMP/notch-pet-ci/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"
 
   contract:
     name: Contract

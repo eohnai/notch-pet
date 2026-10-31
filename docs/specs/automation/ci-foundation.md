@@ -178,7 +178,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F1: Add `.github/workflows/ci.yml` with a qualified macOS/Xcode selection, existing Swift/build/contract checks, pinned workflow validation, bounded jobs, and PR supersession cancellation; validate syntax and the local baseline.
 - [x] F2: Add an explicit packaged-helper path option to `scripts/check-event-bridge.py`, preserving the default path, socket protections, and existing assertions; verify both invocation modes with fictional input.
 - [x] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
-- [ ] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
+- [x] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
 - [ ] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
 - [ ] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
 - [ ] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
@@ -365,3 +365,75 @@ On creation failure, check the selected toolchain, source app layout/modes and r
 On verification failure, preserve the failed artifact and inspect the bounded error category before regenerating it.
 Do not replace expected identity with the manifest's identity or execute its helper to diagnose a rejected archive.
 On an existing destination error, select a new disposable destination instead of overwriting existing files.
+
+## F4 workflow contract
+
+Keep `build`/Build stable and add `helper`/Helper with `needs: build`.
+Build exposes `artifact-id` from its upload step. Helper requires a nonempty decimal ID before downloading,
+so an empty output cannot fall back to downloading every artifact.
+Upload name: `notch-pet-<commit>-<run_id>-<run_attempt>`; retention: one day.
+Download that single ID within the current run, with digest mismatch set to `error` and no cross-run token.
+The uploaded directory contains F3's archive and manifest only.
+
+Both jobs independently write `notch-pet-ci/identity.json` under runner temporary storage.
+Use `GITHUB_SHA`, `GITHUB_RUN_ID`, integer `GITHUB_RUN_ATTEMPT`, fixed macOS/arm64/debug,
+selected Xcode build `17F42`, and actual selected Swift stdout.
+Build creates and verifies the bundle before upload.
+Helper verifies and extracts it before running the unchanged F2 checker against the extracted executable.
+Helper contains no build or test command and does not launch the app.
+
+Use verified immutable pins: upload-artifact v7.0.2 at `cf430e030ddbb5b0abf93d22962f4752f3646cd9`,
+download-artifact v8.0.2 at `9000827ccba6bdab643e8b6fd33ac0654aef8333`.
+Both tag targets were verified with `git ls-remote`.
+Their [upload inputs](https://github.com/actions/upload-artifact/blob/cf430e030ddbb5b0abf93d22962f4752f3646cd9/action.yml)
+and [download inputs](https://github.com/actions/download-artifact/blob/9000827ccba6bdab643e8b6fd33ac0654aef8333/action.yml)
+define these bindings. Hosted action execution remains F8.
+
+Local verification: run the actual YAML shell steps with fictional workflow identity and separate Build/Helper roots,
+copy the archive and manifest between them to model transfer, verify identical archive checksums,
+and run the extracted helper. Confirm no build directory appears in Helper's root.
+Reject missing/modified artifacts before invoking the helper. Run pinned actionlint and `git diff --check`.
+The local copy does not establish GitHub service upload/download behavior.
+
+### F4 verification
+
+`python3 /private/tmp/notch-pet-ci/f4/check-roundtrip.py` exited 0:
+`F4 local artifact round trip passed`.
+The harness used installed PyYAML to select the actual YAML shell blocks; no project dependency was added.
+It executed those blocks with separate temporary Build and Helper roots and fictional workflow context.
+Local `DEVELOPER_DIR` used `/Applications/Xcode.app/Contents/Developer`, whose version/build matches the selected
+hosted Xcode 26.5/17F42. The hosted installation path itself still needs F8.
+
+- Fresh packaging and archive verification exited 0: five files, 1,955,965 archive bytes.
+- Both jobs independently generated identical expected identity from commit `2b12972`, fictional run `10404`,
+  attempt 1, and their selected toolchain. No expected identity was read from the copied artifact.
+- The copied archive and manifest retained exactly the original SHA-256 values.
+  Verification and extraction exited 0 after the copy.
+- The actual extracted helper passed every F2 process assertion and printed `Bridge process checks passed`.
+  It handled 15 fictional hook projections; invocation times were 6–606 ms and open-stdin checks were 71–72 ms.
+  Its bytes and mode matched Build's helper. Helper's root contained no build directory.
+  Static review also found no build/test/run.sh command in Helper's shell steps.
+- A decimal artifact ID passed. Empty, nonnumeric and multiple-ID inputs failed the pre-download guard.
+- Missing, modified and wrong-attempt artifacts each failed verification with exit 1.
+  None published an extraction directory or reached the helper-execution step.
+- Pinned actionlint 1.7.12 and `git diff --check` exited 0.
+  No Swift source or tests changed, so the full suite was not repeated.
+
+Evidence: `/private/tmp/notch-pet-ci/reports/f4-roundtrip.log` and the per-step logs under
+`/private/tmp/notch-pet-ci/f4/roundtrip-i5udl7ek`.
+This is local file-transfer and workflow-shell evidence. No GitHub upload, download, dispatch or push was performed.
+
+For a direct local reproduction using the existing verified F3 output, choose a new temporary root:
+
+```bash
+ci_transfer_root=/private/tmp/notch-pet-ci/manual-transfer-1
+mkdir -p "$ci_transfer_root"
+cp -R /private/tmp/notch-pet-ci/bundle "$ci_transfer_root/downloaded"
+python3 scripts/ci/bundle.py --verify "$ci_transfer_root/downloaded" --identity /private/tmp/notch-pet-ci/identity.json --extract-to "$ci_transfer_root/extracted"
+python3 scripts/check-event-bridge.py --helper "$ci_transfer_root/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"
+```
+
+Use a fresh root on each run. If the normal socket exists, stop and leave it intact.
+For a missing artifact ID or download failure, inspect Build's upload result before rerunning anything.
+For identity/checksum rejection, retain the failed files and compare the expected context with the Build run/attempt.
+Never rebuild in Helper, switch to another artifact, or copy expected identity out of its manifest to obtain a pass.

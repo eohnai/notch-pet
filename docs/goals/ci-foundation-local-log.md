@@ -15,11 +15,12 @@
 | 4 | 2026-10-31 23:15 +08 | F1 verified, 1/7 CI tasks; goal criteria remain partial | I2d committed as 7cb67f2. Fixed the workflow's runner context placement. actionlint and diff checks exited 0. Separate-root packaging exited 0 with app/helper executables, valid plist and Pet resources. Reused the unchanged 132-test passing baseline and contract evidence. User approved committing F1 and instructed "just commit". F2–F7 and hosted F8 remain open. |
 | 5 | 2026-10-31 | F2 verified, 2/7 CI tasks; criterion 3 partial | F1 committed as 5bf0a6c. Added --helper PATH with regular/executable-file validation and unchanged default lookup/assertions. Both real modes exited 0 with Bridge process checks passed. Four invalid paths rejected with exit 2; both modes preserved an owned fictional listener. Initial sandbox bind denied; approved socket access passed. Found instrumented default helper writing default.profraw; routed all child profiles to an owned temporary directory, removed the generated checkout profile, and reran both modes plus six fixture checks successfully. No Swift changes or unrelated test reruns. Preparing per-task commit as requested. |
 | 6 | 2026-10-31 23:42 +08 | F3 verified, 3/7 CI tasks; criterion 4 passes | F2 committed as 5464292. Added the one-file bundle CLI with independently supplied identity, bounded manifest/archive inputs, per-file and archive SHA-256, app/resource/arm64 validation, and private staged extraction. Actual five-file archive created and verified (1,955,809 bytes). All 28 acceptance checks passed, including internally consistent tampered content, escaping paths/links, wrong identity/architecture and existing-destination preservation. A malformed plist fixture exposed an uncaught XML parser error; the bounded error handler fixed it and the same fixture passed. Syntax/diff checks passed. No app/helper execution or unrelated suite reruns. Preparing the requested per-task commit. |
+| 7 | 2026-10-31 23:55 +08 | F4 verified, 4/7 CI tasks; criteria 3/4 pass | F3 committed as 2b12972. Pinned upload v7.0.2 and download v8.0.2 by verified full SHA. Build exposes its uploaded artifact ID; Helper rejects empty/invalid IDs, downloads that exact ID, prepares independent identity, verifies/extracts, then checks the packaged helper without rebuilding. Actual YAML shell steps passed with separate local roots and a fresh five-file build (1,955,965 archive bytes). Native helper checks passed (6–606 ms). Missing/modified/wrong-attempt inputs stopped before extraction/execution. actionlint/diff checks passed. GitHub service behavior remains unverified in F8. |
 
 ## Final result
 
 Run active again after the separately approved and verified I2d repair.
-F1/F2 are committed; F3 is locally verified. F4–F8 remain open. Per-task commits are authorized by the user.
+F1–F3 are committed; F4 is locally verified. F5–F8 remain open. Per-task commits are authorized by the user.
 The original baseline failure and its diagnostic evidence remain below.
 
 `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --enable-code-coverage`
@@ -39,5 +40,6 @@ No further CI implementation followed the baseline failure until the user approv
 F1 later moved TMPDIR to step-level env and actionlint exited 0.
 
 Contract reference checks, F1 packaging and both F2 helper modes passed.
-F3 archive/identity/path rejection fixtures passed. Downloaded-artifact helper verification and coverage export remain pending.
+F3 archive/identity/path rejection fixtures and F4's local transferred-artifact helper verification passed.
+Coverage export and hosted artifact-transfer acceptance remain pending.
 F8 hosted acceptance remains outside this goal.
