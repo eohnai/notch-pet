@@ -180,7 +180,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
 - [x] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
 - [x] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
-- [ ] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
+- [x] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
 - [ ] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [ ] F8: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run.
 
@@ -523,3 +523,54 @@ Missing input means the test build/coverage flag or scratch root is wrong; do no
 For native tool failure, retain `coverage-tool.log` and confirm the selected toolchain matches the instrumented build.
 For missing source coverage, confirm both the test runner and instrumented helper are present from that same build.
 Do not use the uninstrumented artifact from Build as the coverage mapping input.
+
+## F6 result-checker contract
+
+`python3 scripts/ci/required-result.py` reads one bounded JSON object from `CI_JOB_RESULTS`.
+Its exact keys are the stable job IDs `workflow`, `tests`, `build`, `contract`, and `helper`.
+Every value must be the string `success`. F7 will bind each ID directly to its corresponding `needs.<id>.result`.
+The display names printed by the tool remain Workflow, Tests, Build, Contract and Helper.
+Nested `toJSON(needs)` records are not this input shape and must fail.
+
+```python
+def required_result(raw: str | None) -> tuple[bool, list[str]]: ...
+def main() -> int: ...
+```
+
+Caller example:
+
+```bash
+CI_JOB_RESULTS='{"workflow":"success","tests":"success","build":"success","contract":"success","helper":"success"}' python3 scripts/ci/required-result.py
+```
+
+Pass means exit 0 and `Required: success`. Every invalid fixture must exit 1 with `Required: failure`.
+Accept no extra/missing/duplicate job, non-string/nested result, unknown state, oversized input or malformed JSON.
+Limit input to 16 KiB. Print only the fixed job display names and bounded labels:
+success, failure, cancelled, skipped, unknown, malformed or missing. Never print raw keys, values or parser errors.
+Use exactly five fixture groups: all-success; non-success states; missing/extra jobs; malformed input; empty input.
+
+### F6 verification, 2026-11-01
+
+The all-success caller example exited 0 and printed all five job names plus `Required: success`.
+The unset-input command exited 1 with five missing labels and `Required: failure`.
+`python3 /private/tmp/notch-pet-ci/f6/check-required.py` exited 0:
+`F6 Required acceptance passed: 5 groups, 90 CLI cases; invalid input never printed`.
+
+| Group | Cases | Expected result |
+|---|---:|---|
+| All-success | 3 | Exit 0 for valid JSON order/whitespace variants |
+| Non-success states/types | 65 | Exit 1 for every failure/cancel/skip/unknown/non-string value in each job |
+| Missing/extra jobs | 8 | Exit 1 for any missing job, extra key, display-name key or empty object |
+| Malformed input | 10 | Exit 1 for malformed/non-object/duplicate/deeply nested/oversized/invalid-encoding input |
+| Empty input | 4 | Exit 1 for unset, empty and whitespace-only input |
+
+The duplicate-key case placed failure before success to prove that a later value cannot overwrite failure.
+The oversized case used otherwise valid successful results plus padding, proving the byte bound is enforced.
+Every output stayed below 1 KiB and printed no synthetic private key/value marker or parser traceback.
+No Swift tests, builds, configuration probes, helper processes or hosted actions ran for F6.
+`git diff --check` exited 0. Evidence: `/private/tmp/notch-pet-ci/reports/f6-required-checks.log`.
+
+For a local failure reproduction, change only `tests` to `cancelled` in the caller example above.
+The script must exit 1 and show `Tests: cancelled` plus `Required: failure`.
+If the job set is unexpected, compare the five stable workflow IDs with the explicit input object.
+Do not remove a failed/missing job from that object or map a non-success state to success.
