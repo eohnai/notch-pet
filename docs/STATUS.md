@@ -7,11 +7,15 @@ R7 is committed (`5034dfd`). The user allowed app launches on 2026-10-31. Config
 
 ## Next
 
-1. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
-2. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization and a design review.
-3. Do R5 and R6. R6 needs a user decision on the 128-session limit before any code change.
-4. Review integration-health evidence and session-island acceptance before I3b2. Start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`.
-5. Plan I3b2 in `docs/specs/sessions/codex-setup.md` after R1–R6. Codex 0.164.0 still needs isolated qualification.
+1. Run `/plan-feature` for a notch layout spec, based on the reference in `docs/specs/notch/area.md` (compact allowance strip above session cards). User answers from 2026-10-31:
+   - Allowance strip shows percent left (`100 − used`) for both Codex and Claude Code. This replaces the usage area's "Retain used-percentage labels" note; record it as a decision in the new spec.
+   - Session rows show a prompt timer from `UserPromptSubmit`; it stops at its final duration when the response is ready. The store must keep the turn start time.
+   - Keep the contract's omission rule (`docs/contracts/agent-events-v1.md:76`): rows show the tool name, not prompt or command text. Showing that text is a separate later decision and a contract v2.
+   - Out of the layout spec: terminal "go to" actions (pane-navigation), per-row pet icons (pets/agent-reactions), and toolbar icons.
+2. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
+3. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization and a design review.
+4. Do R5 and R6. R6 needs a user decision on the 128-session limit before any code change.
+5. Before I3b2, review integration-health evidence and session-island acceptance (start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`), then plan I3b2. Codex 0.164.0 still needs isolated qualification.
 
 ## Blockers
 
