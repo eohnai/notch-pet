@@ -6,8 +6,9 @@ Give each pull request a reproducible build-and-test result, useful reports, and
 Exercise the packaged helper from that build before reporting success.
 This is the first feature in the approved [automation roadmap](area.md), ahead of session-cards C2.
 
-The user approved the roadmap on 2026-10-31. The eight tasks below are proposed and need approval before implementation.
-No workflow, tooling, build, test, helper injection, or repository settings change is authorized by this document.
+The user approved the roadmap on 2026-10-31 and activated the F1–F7 local implementation goal later that day.
+That activation authorizes those tasks and their bounded local checks. The user also permits per-task commits,
+subject to AGENTS.md's commit-plan approval procedure. F8 hosted work and repository settings changes remain unauthorized.
 
 ## Done when
 
@@ -174,7 +175,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 
 ## Tasks
 
-- [ ] F1: Add `.github/workflows/ci.yml` with a qualified macOS/Xcode selection, existing Swift/build/contract checks, pinned workflow validation, bounded jobs, and PR supersession cancellation; validate syntax and the local baseline.
+- [x] F1: Add `.github/workflows/ci.yml` with a qualified macOS/Xcode selection, existing Swift/build/contract checks, pinned workflow validation, bounded jobs, and PR supersession cancellation; validate syntax and the local baseline.
 - [ ] F2: Add an explicit packaged-helper path option to `scripts/check-event-bridge.py`, preserving the default path, socket protections, and existing assertions; verify both invocation modes with fictional input.
 - [ ] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
 - [ ] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
@@ -182,3 +183,62 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [ ] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
 - [ ] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [ ] F8: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run.
+
+## F1 partial evidence, 2026-10-31
+
+- A four-job workflow draft exists. It is not accepted or verified.
+- Selected Xcode 26.5 build 17F42 to match the local toolchain and an installed version in GitHub's
+  [macOS 26 Apple Silicon image inventory](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md).
+  Hosted availability and execution remain unverified. The candidate uses `/Applications/Xcode_26.5.app/Contents/Developer`.
+- Verified checkout v7.0.1 as `3d3c42e5aac5ba805825da76410c181273ba90b1` using `git ls-remote`.
+  Verified actionlint 1.7.12 asset digests against its release metadata:
+  Darwin arm64 `aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f`,
+  Linux amd64 `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`.
+- `python3 scripts/check-event-contract.py` exited 0: 68 message cases, 37 sequences/122 steps, four memory boundaries.
+  Its existing SessionStore evidence limit remains unchanged.
+- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --enable-code-coverage`
+  exited 1: 132 tests in 24 suites, four issues in `IntegrationHealthProbeTests`.
+  Both provider cases of `versionProbeBoundsItsProcessAndOutput(agent:)` and
+  `diagnosticsDiscardUnrelatedFictionalValues(agent:)` returned `.unavailable(.timedOut)` instead of their expected results.
+  Log: `/private/tmp/notch-pet-ci/reports/f1-swift-test.log`. This is an unrelated baseline failure, so the goal stopped.
+- `/private/tmp/notch-pet-ci/tools/actionlint .github/workflows/ci.yml` exited 1:
+  `.github/workflows/ci.yml:75:19: context "runner" is not allowed here`.
+  The partial Build job uses `runner.temp` in job-level `env`, where that context is unavailable.
+  This introduced syntax error remains pending with the unverified workflow draft.
+- Packaging and all subsequent F2–F7 checks have not run. No tasks were ticked and no commits were made.
+- The user then authorized a separate diagnosis, recorded in
+  [integration-health](../sessions/integration-health.md#probe-timeout-diagnosis-2026-10-31).
+  A temporary instrumented source copy reproduced four issues.
+  Serializing only its probe suite passed all 132 tests without changing assertions or the production timeout.
+  The user approved a separate repair task. The repository's probe suite now uses `@Suite(.serialized)`.
+  Its isolated five-test suite and full 132-test coverage-enabled suite both passed without changing assertions or product code.
+  The original failure remains recorded above. F1 can resume; its workflow syntax check and packaging remain pending.
+
+## F1 verified local baseline, 2026-10-31
+
+The separate I2d repair is committed as `7cb67f2`. F1's local requirements are now verified.
+Hosted qualification remains F8 and is not established by the published image inventory or local checks.
+
+- `/private/tmp/notch-pet-ci/tools/actionlint .github/workflows/ci.yml` exited 0 with actionlint 1.7.12.
+  Build's `TMPDIR` now uses step-level `env`, where `runner.temp` is available.
+- `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --enable-code-coverage`
+  exited 0 after I2d: 132 tests, 24 suites, zero issues.
+- `env TMPDIR=/private/tmp/notch-pet-ci/package DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only`
+  exited 0, yielding `/private/tmp/notch-pet-ci/package/notch-pet-dev/Notch Pet.app`.
+  Both packaged executables are regular executable files. Info.plist parses and passes plutil.
+  `Contents/Resources/NotchPet_Pet.bundle` contains packaged resource files.
+- `python3 scripts/check-event-contract.py` exited 0: 68 messages, 37 sequences/122 steps, four memory boundaries.
+- `git diff --check` exited 0.
+
+Packaging uses a separate scratch root so it cannot replace the instrumented test build.
+The workflow uses the same separation through runner-temporary `test-build` and `package` paths.
+No app was launched. No cache, repository settings, or installed integration configuration changed.
+
+The four stable F1 job names are Workflow, Tests, Build and Contract.
+Every eligible PR, main push and manual run schedules all four without path filters.
+Only PR runs share a cancelling concurrency group. Main and manual runs use their run ID.
+All checkout calls use the verified immutable pin with persisted credentials disabled.
+F4 will add Helper, and F7 will add Required and reports. This intermediate workflow is not full-spec acceptance.
+
+Evidence: `/private/tmp/notch-pet-ci/reports/repair-full-suite.log` and
+`/private/tmp/notch-pet-ci/reports/f1-build.log`.

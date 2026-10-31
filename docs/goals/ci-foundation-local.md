@@ -1,7 +1,7 @@
 # CI foundation: local implementation goal
 
 The user activated this goal on 2026-10-31 and authorized a commit after each verified task.
-Commit plans still require approval under AGENTS.md. The separately approved I2d repair is verified; CI tasks remain open.
+The separately approved I2d repair is committed. F1 is locally verified and the user explicitly approved committing it.
 F8 and completion of the whole specification remain separate hosted acceptance work.
 
 ## Paste after `/goal`
@@ -11,11 +11,11 @@ GOAL: Implement and locally verify ci-foundation F1-F7 on feat/automation-ci-fou
 
 Activation approves F1-F7, local builds/tests, fictional helper checks and routine CLI details within the spec. Read docs/goals/ci-foundation-local.md first. Other goals stay paused.
 
-Set ci_root=/private/tmp/notch-pet-ci, ci_build=/private/tmp/notch-pet-dev/build, ci_app='/private/tmp/notch-pet-dev/Notch Pet.app'; export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer. Put verified pinned actionlint on PATH.
+Set ci_root=/private/tmp/notch-pet-ci, ci_build=/private/tmp/notch-pet-dev/build, ci_app="$ci_root/package/notch-pet-dev/Notch Pet.app"; export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer. Put verified pinned actionlint on PATH.
 
 DONE WHEN all hold, with command outputs and exit codes printed here:
-1. `actionlint .github/workflows/ci.yml` and `git diff --check` exit 0. Review Workflow/Tests/Build/Contract/Helper/Required: PR-to-main/main-push/manual triggers, no path filters, PR-only cancellation, explicit macos-26/Xcode, verified pins, minimal permissions, timeouts, exact-run artifact reuse without rebuilds, failure reports, and always() Required checking all five jobs. Document runner selection; hosted qualification stays open.
-2. `swift test --scratch-path "$ci_build" --enable-code-coverage` exits 0 with 0 failures; native machine-readable results preserve identity/failure/skip status. `env TMPDIR=/private/tmp bash scripts/run.sh --build-only` exits 0 with both executables, Info.plist and Pet resources. Uploaded builds stay uninstrumented, separate from coverage builds.
+1. `actionlint .github/workflows/ci.yml` and `git diff --check` exit 0. Review Workflow/Tests/Build/Contract/Helper/Required: PR-to-main/main-push/manual triggers, no path filters, PR-only cancellation, explicit macos-26/Xcode, verified pins, minimal permissions, timeouts, exact-run artifact reuse without rebuilds, failure reports, and always() Required checking all five jobs. Hosted qualification stays open.
+2. `swift test --scratch-path "$ci_build" --enable-code-coverage` exits 0 with 0 failures; native machine-readable results preserve identity/failure/skip status. `env TMPDIR="$ci_root/package" bash scripts/run.sh --build-only` exits 0 with both executables, Info.plist and Pet resources. Uploaded builds stay uninstrumented, separate from coverage builds.
 3. `python3 scripts/check-event-contract.py` exits 0. `python3 scripts/check-event-bridge.py` and its `--helper "$ci_root/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"` form exit 0 with 'Bridge process checks passed'; preserve assertions/socket protections.
 4. `python3 scripts/ci/bundle.py --app "$ci_app" --output "$ci_root/bundle"` and `python3 scripts/ci/bundle.py --verify "$ci_root/bundle"` exit 0; extract safely for criterion 3. Print rejection-fixture outputs: missing resources, altered content, mismatched independently expected identity, and escaping archive paths all fail before execution.
 5. `python3 scripts/ci/coverage.py --build-root "$ci_build" --output "$ci_root/reports"` exits 0 with real production-source HTML, JSON and module summaries. Print missing/malformed-input fixture outputs: both fail. No thresholds or fabricated results.
@@ -35,7 +35,7 @@ ON FINISH OR STOP: set log Status done/stopped/blocked and Final result; use che
 - The eight-spec automation roadmap is accepted. Seven entries still have no specification file.
 - The user activated ci-foundation F1–F7 and their listed local checks on 2026-10-31.
 - The user permits a commit after every completed task. Follow AGENTS.md's commit-plan approval procedure.
-  No CI task has completed yet. The separate I2d repair commit plan is approved.
+  I2d is committed as `7cb67f2`. F1 is verified, and its exact commit plan is approved.
 - After the initial baseline failure, the user separately approved I2d: serialize `IntegrationHealthProbeTests`,
   update its integration-health spec and goal records, verify isolated/full suites, then resume CI.
   That one-file test repair is verified. This explicit exception does not authorize other unrelated repairs.

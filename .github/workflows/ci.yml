@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A run ID keeps main pushes and manual runs independent.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  workflow:
+    name: Workflow
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate workflow with actionlint 1.7.12
+        env:
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          ci_tools="$RUNNER_TEMP/notch-pet-ci/tools"
+          mkdir -p "$ci_tools"
+          curl --fail --silent --show-error --location --max-time 60 \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            --output "$ci_tools/actionlint.tar.gz"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$ci_tools/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$ci_tools/actionlint.tar.gz" -C "$ci_tools" actionlint
+          "$ci_tools/actionlint" -version
+          "$ci_tools/actionlint" .github/workflows/ci.yml
+
+  tests:
+    name: Tests
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify selected toolchain and record versions
+        run: |
+          test -d "$DEVELOPER_DIR"
+          test "$(uname -m)" = arm64
+          test "$(xcodebuild -version)" = $'Xcode 26.5\nBuild version 17F42'
+          printf 'selected_macos=macos-26\nselected_xcode=%s\n' "$DEVELOPER_DIR"
+          sw_vers
+          uname -m
+          xcodebuild -version
+          swift --version
+          python3 --version
+      - name: Run complete Swift suite with coverage
+        run: swift test --scratch-path "$RUNNER_TEMP/notch-pet-ci/test-build" --enable-code-coverage
+
+  build:
+    name: Build
+    runs-on: macos-26
+    timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify selected toolchain and record versions
+        run: |
+          test -d "$DEVELOPER_DIR"
+          test "$(uname -m)" = arm64
+          test "$(xcodebuild -version)" = $'Xcode 26.5\nBuild version 17F42'
+          printf 'selected_macos=macos-26\nselected_xcode=%s\n' "$DEVELOPER_DIR"
+          sw_vers
+          uname -m
+          xcodebuild -version
+          swift --version
+          python3 --version
+      - name: Package app and helper without launching
+        env:
+          TMPDIR: ${{ runner.temp }}/notch-pet-ci/package
+        run: |
+          mkdir -p "$TMPDIR"
+          ci_app="$(bash scripts/run.sh --build-only)"
+          test -x "$ci_app/Contents/MacOS/NotchPet"
+          test -x "$ci_app/Contents/MacOS/NotchPetHook"
+          test -d "$ci_app/Contents/Resources/NotchPet_Pet.bundle"
+          /usr/bin/plutil -lint "$ci_app/Contents/Info.plist"
+          printf 'Packaged %s\n' "$ci_app"
+
+  contract:
+    name: Contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check reference contract
+        # This reference still differs from SessionStore's unseen-turn rule.
+        run: |
+          python3 --version
+          python3 scripts/check-event-contract.py
