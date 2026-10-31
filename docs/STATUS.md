@@ -3,13 +3,15 @@
 ## Now
 
 On `feat/automation-ci-foundation`, created from `origin/main` at `7735ec6` with the user's approval.
-The comprehensive automation roadmap, ci-foundation spec, and formatting/linting decisions are written.
+The user activated the 30-turn F1–F7 CI goal and authorized commits after verified tasks.
+The user approved the separate I2d probe-fixture scheduling repair after diagnosis. I2d is verified and its commit plan is approved.
+CI F1 is resuming with its four-job workflow draft; syntax and packaging verification remain pending.
 Session-cards C1 remains on `feat/notch-session-cards` as `1f30a3c`; its implementation is not on this branch.
-CI is not implemented. Its task list still needs approval. Configuration changes and older goals stay paused.
+No CI task is complete or committed. Installed configuration changes and older goals stay paused.
 
 ## Next
 
-1. Review and approve the eight tasks in `docs/specs/automation/ci-foundation.md`, then plan F1 on the current branch with renewed test/build authorization.
+1. Commit the approved I2d repair, then complete ci-foundation F1's workflow syntax and packaging checks. Continue F2–F7 on the same branch. Per-task commits require the AGENTS.md commit-plan review; F8 still needs the user's push.
 2. Complete ci-foundation before session-cards C2. Plan automation/quality-gates next when its baseline exists; the other seven automation entries remain roadmaps.
 3. Resume session-cards on its branch, retaining C1 in `1f30a3c`, then plan C2–C5 and allowance-strip A1–A5 with task-specific test authorization. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
 4. Do codex-setup R4 (architecture docs), then plan R2 (target split) and R3 (typed identities) with design review and renewed test authorization. Follow with R5/R6; R6 needs a user decision on the 128-session limit.
@@ -17,9 +19,9 @@ CI is not implemented. Its task list still needs approval. Configuration changes
 
 ## Blockers
 
-- Existing no-testing instruction remains in force for tests, builds, captures, helper injections, and test-only instrumentation: do not start them unless requested. Task-specific authorization covered R7, R8, and session-cards C1; all are done. The user allowed app launches on 2026-10-31, and one fictional helper injection for the R8 check. C1 authorization does not extend to later tasks or runtime acceptance.
-- Automation approval covers the eight-spec roadmap and the future formatting/linting direction, not implementation or runtime verification. The branch inspection found no existing CI configuration or plan before these records were written. Hosted acceptance requires the user to commit/push approved changes; account-specific security capabilities and additional runner combinations remain unqualified.
-- Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
+- The F1–F7 goal authorizes its bounded local builds/tests and fictional helper checks. The user separately approved the I2d scheduling repair and CI resumption after verification. Broader testing, captures, app launches, installed configuration changes and other unrelated repairs remain outside authorization.
+- Failed draft workflow check: `/private/tmp/notch-pet-ci/tools/actionlint .github/workflows/ci.yml` exited 1 at line 75: `context "runner" is not allowed here`. Build's job-level `TMPDIR` uses unavailable `runner.temp`. F1 remains open with a partial draft.
+- Automation's F1–F7 implementation and local verification are approved. Hosted acceptance still requires the user's push; account-specific security capabilities and additional runner combinations remain unqualified. No task is complete, so no commit plan has been submitted or executed.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
 - Capture reproduction command: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/check-standalone-pet.py --app "/private/var/folders/t3/6n_zw1rn5nn6vv7ccx9r6s240000gn/T/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-completion/evidence/standalone` failed with `could not create image from window` / screencapture exit 1. The native preflight returned screenCaptureAuthorized=false; the user explicitly prohibited further captures and later all further testing. Do not request that permission or retry the failing capture.
