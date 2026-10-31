@@ -13,11 +13,12 @@
 | 2 | 2026-10-31 23:07 +08 | 0/6 complete; separate diagnosis progressed | User authorized diagnosis. Isolated probe suite: 5 tests passed. Temporary full-suite trace reproduced 4 issues in 132 tests. Launch returned in 0–1 ms; child output/exit consumed the deadline. Four-script invocation comparison: direct scripts 228–1024 ms to output, explicit /bin/sh 5–6 ms. Changing only the temporary probe suite to serialized yielded 132/132 passing tests. No repository source/test edits. Proposed one-file scheduling repair awaits task-list approval. Evidence and exact commands: docs/specs/sessions/integration-health.md. |
 | 3 | 2026-10-31 | 0/6 complete; Swift baseline now passes | User approved the separate I2d repair and CI resumption. Added only a suite serialization trait and reason comment to the test file. Isolated suite exited 0: 5 tests, 6.045 s. Full coverage-enabled suite exited 0: 132 tests, 24 suites, 6.319 s, zero issues. I2d verified; CI F1 still awaits syntax and packaging checks. User approved the exact repair commit plan. |
 | 4 | 2026-10-31 23:15 +08 | F1 verified, 1/7 CI tasks; goal criteria remain partial | I2d committed as 7cb67f2. Fixed the workflow's runner context placement. actionlint and diff checks exited 0. Separate-root packaging exited 0 with app/helper executables, valid plist and Pet resources. Reused the unchanged 132-test passing baseline and contract evidence. User approved committing F1 and instructed "just commit". F2–F7 and hosted F8 remain open. |
+| 5 | 2026-10-31 | F2 verified, 2/7 CI tasks; criterion 3 partial | F1 committed as 5bf0a6c. Added --helper PATH with regular/executable-file validation and unchanged default lookup/assertions. Both real modes exited 0 with Bridge process checks passed. Four invalid paths rejected with exit 2; both modes preserved an owned fictional listener. Initial sandbox bind denied; approved socket access passed. Found instrumented default helper writing default.profraw; routed all child profiles to an owned temporary directory, removed the generated checkout profile, and reran both modes plus six fixture checks successfully. No Swift changes or unrelated test reruns. Preparing per-task commit as requested. |
 
 ## Final result
 
 Run active again after the separately approved and verified I2d repair.
-F1 is locally verified. F2–F8 remain open. The user approved the F1 commit.
+F1 is committed; F2 is verified. F3–F8 remain open. Per-task commits are authorized by the user.
 The original baseline failure and its diagnostic evidence remain below.
 
 `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --enable-code-coverage`
@@ -36,5 +37,6 @@ The original partial draft failed actionlint 1.7.12 at `.github/workflows/ci.yml
 No further CI implementation followed the baseline failure until the user approved the separate repair and CI resumption.
 F1 later moved TMPDIR to step-level env and actionlint exited 0.
 
-Contract reference checks and F1 packaging passed. Helper checks, coverage exporter, and artifact fixtures have not run.
+Contract reference checks, F1 packaging and both F2 helper modes passed.
+Downloaded-artifact helper verification, coverage exporter and artifact fixtures remain pending.
 F8 hosted acceptance remains outside this goal.

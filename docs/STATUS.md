@@ -5,13 +5,13 @@
 On `feat/automation-ci-foundation`, created from `origin/main` at `7735ec6` with the user's approval.
 The user activated the 30-turn F1–F7 CI goal and authorized commits after verified tasks.
 The separate I2d probe-fixture scheduling repair is committed as `7cb67f2`.
-CI F1 is verified locally. The user approved its commit and instructed the agent to commit it now.
+CI F1 is committed as `5bf0a6c`. F2's default and explicit packaged-helper checks are verified.
 Session-cards C1 remains on `feat/notch-session-cards` as `1f30a3c`; its implementation is not on this branch.
 Installed configuration changes and older goals stay paused. Hosted F8 acceptance remains open.
 
 ## Next
 
-1. Commit the approved F1 change, then continue ci-foundation F2–F7 on the same branch. F2 adds an explicit packaged-helper path while preserving socket protections and assertions. F8 still needs the user's push.
+1. Commit verified F2, then implement ci-foundation F3's bundle archive and independent identity/checksum verification on the same branch. Continue F4–F7 afterward. F8 still needs the user's push.
 2. Complete ci-foundation before session-cards C2. Plan automation/quality-gates next when its baseline exists; the other seven automation entries remain roadmaps.
 3. Resume session-cards on its branch, retaining C1 in `1f30a3c`, then plan C2–C5 and allowance-strip A1–A5 with task-specific test authorization. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
 4. Do codex-setup R4 (architecture docs), then plan R2 (target split) and R3 (typed identities) with design review and renewed test authorization. Follow with R5/R6; R6 needs a user decision on the 128-session limit.

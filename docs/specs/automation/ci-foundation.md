@@ -176,7 +176,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 ## Tasks
 
 - [x] F1: Add `.github/workflows/ci.yml` with a qualified macOS/Xcode selection, existing Swift/build/contract checks, pinned workflow validation, bounded jobs, and PR supersession cancellation; validate syntax and the local baseline.
-- [ ] F2: Add an explicit packaged-helper path option to `scripts/check-event-bridge.py`, preserving the default path, socket protections, and existing assertions; verify both invocation modes with fictional input.
+- [x] F2: Add an explicit packaged-helper path option to `scripts/check-event-bridge.py`, preserving the default path, socket protections, and existing assertions; verify both invocation modes with fictional input.
 - [ ] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
 - [ ] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
 - [ ] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
@@ -242,3 +242,48 @@ F4 will add Helper, and F7 will add Required and reports. This intermediate work
 
 Evidence: `/private/tmp/notch-pet-ci/reports/repair-full-suite.log` and
 `/private/tmp/notch-pet-ci/reports/f1-build.log`.
+
+## F2 CLI sketch
+
+Keep `main() -> None` and all existing process assertions.
+Add standard-library argparse parsing with one optional `--helper PATH` argument.
+Without that argument, retain the existing single-helper lookup under `$TMPDIR/notch-pet-dev/build`.
+With it, require an existing executable regular file and use its absolute path without searching the build directory.
+Reject an invalid explicit path before creating or locking any runtime endpoint.
+
+Caller examples:
+
+```bash
+env TMPDIR=/private/tmp python3 scripts/check-event-bridge.py
+python3 scripts/check-event-bridge.py --helper "/private/tmp/notch-pet-ci/package/notch-pet-dev/Notch Pet.app/Contents/MacOS/NotchPetHook"
+```
+
+Verify both real invocation modes serially with fictional input.
+Each must exit 0 with `Bridge process checks passed` and retain every original assertion.
+Verify missing/non-executable explicit paths fail, and a pre-existing owned fictional listener is refused without replacement.
+Do not remove or stop any pre-existing user endpoint or app to run these checks.
+
+### F2 verification
+
+Both invocation examples exited 0 with `Bridge process checks passed`.
+Each retained all original assertions and verified 15 fictional hook projections, maximum input size,
+invalid-input omission, silent zero exits, open-stdin deadlines and busy-socket behavior.
+The final default mode measured 4–13 ms per invocation. Packaged mode measured 4–20 ms.
+Open-stdin checks completed in 71–76 ms across both modes and providers.
+
+`python3 /private/tmp/notch-pet-ci/diagnosis/check-f2-cli.py` exited 0.
+It checked missing, non-executable, directory and symlink paths, each rejected with exit 2.
+It created and owned a fictional listener at the normal endpoint, then verified both modes refused it with exit 1
+and preserved its inode. The harness removed only its own listener after verifying identity.
+No existing user endpoint or app was removed or stopped.
+
+The initial sandboxed default run could not bind a Unix socket (`Operation not permitted`).
+Running with approved socket access completed the actual checks. This was an environment permission failure.
+Logs: `/private/tmp/notch-pet-ci/reports/f2-default-helper.log` and
+`/private/tmp/notch-pet-ci/reports/f2-packaged-helper.log`.
+`git diff --check` exited 0. No Swift source changed, so the full suite was not repeated.
+
+The first default run used a coverage-instrumented local helper and created `default.profraw` in the checkout.
+F2 now routes `LLVM_PROFILE_FILE` for every child into a checker-owned temporary directory and cleans it on exit.
+The generated checkout file was removed. Both real invocation modes and all six rejection/preservation checks
+passed again on the final script. No repository profile was created by those final checks.
