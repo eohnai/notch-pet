@@ -168,7 +168,7 @@ The [version-1 event contract](contracts/agent-events-v1.md) defines message fie
 
 ## Local app shell
 
-The first executable is a dependency-free Swift package targeting macOS 13 or later with Swift 6 tools.
+The first executable is a dependency-free Swift package targeting macOS 14 or later with Swift 6 tools.
 `NotchPetApp` owns the SwiftUI `MenuBarExtra` scene. Its private `CompanionMenu` presents status and Quit.
 Quit calls AppKit's application termination action. The bundle's `LSUIElement` flag keeps it out of the Dock.
 `bash scripts/run.sh` builds and launches a development app bundle under the user's temporary directory.

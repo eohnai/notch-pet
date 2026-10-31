@@ -169,8 +169,8 @@ The existing I3 setup design remains separate and is not an entry gate for notch
 Installed configuration changes require an explicit reversible plan and user approval; isolated fixtures do not.
 
 Execution order: N3, N4, N5, U1, U2, U3, U4, U5, U6. Each implementation task still needs a
-concrete size check: at most three files, three added production functions and five new tests.
-Split a task before coding when it cannot fit. Do not hide extra files/functions in giant methods.
+concrete size check: it must be finished and verified in one session.
+Split a task before coding when it cannot fit.
 The initial goal groups these into eight reviewable stages; their source-of-truth checkboxes stay here.
 
 ## Behavior to adapt
@@ -325,7 +325,7 @@ The user accepted adding local approvals and replies, with SSH/cloud support rec
 The revised remaining tasks below are proposed for review; the earlier approval is not approval of every added task or open design choice.
 The user activated the bounded G1/G2 goal on 2026-10-28, approving those two tasks and their parser/verification plan only; other revised tasks remain subject to review.
 The user approved I1's three-file implementation plan on 2026-10-28, initially deferred testing, subsequently authorized verification, then requested skipping the remaining checks. A later renewed verification passed the isolated build and 48-test Swift suite; the user then stopped further checks and explicitly requested committing and pushing the current work. Do not run further builds, tests, or UI checks without a renewed request. I1 remains unchecked because running-menu verification is incomplete. I2 is the agreed next goal candidate after I1; its goal is prepared but inactive, and its implementation has not started. (Superseded: I2 code was written later, with verification deferred. See [integration-health](sessions/integration-health.md).) The user authorized separate task commits and pushing the current work; incomplete verification must remain documented.
-Each task includes its relevant configuration, documentation, and verification. Limit each implementation task to at most three files, with at most three added functions or five added test cases; split it before starting if that cannot fit.
+Each task includes its relevant configuration, documentation, and verification. Each implementation task must be finished and verified in one session. Split it before starting if that cannot fit. The user removed the earlier three-file, three-function and five-test limits on 2026-10-31.
 The user subsequently approved starting I2, deferring I1 verification, and keeping all checks paused. This authorizes the prepared I2a/I2b/I2c implementation split and separate implementation commits under the earlier per-task commit instruction. Write tests but do not run tests, builds, probes, helper injections, or UI checks. Implementation commits do not complete the unchecked verification requirements.
 The user approved splitting I3 into documentation, configuration planning, and installation tasks, and starting only I3a's three-file documentation plan on 2026-10-28. The setup contract remains proposed; this approval selects neither an ownership mechanism nor an interruption-recovery algorithm. I3b/I3c implementation, runtime verification, commits, and pushes are not authorized by this documentation approval. The recorded I2 goal remains incomplete; no new goal is active in this chat.
 Completed tasks and their evidence remain intact. Historical task numbers in the coverage record refer to the pre-2026-10-28 list.

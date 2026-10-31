@@ -48,3 +48,96 @@ This updates decision 0013's app-owned service boundary for telemetry and decisi
 Their independent pet, preferences/assets, and fresh live-evidence requirements remain intact. Earlier implementation evidence is not rewritten.
 D1's measured resource requirements apply to every new process. Exact registration, IPC, schemas, and limits receive task-level review.
 This accepts scope and storage direction, not implementation tasks, service installation, hook edits, or goal resumption.
+
+## D3: Add view models only where a view owns state
+
+- Status: accepted (its `ObservableObject` line is replaced by D4)
+- Date: 2026-10-30
+
+**Context.** Decision 0002 and `ARCHITECTURE.md` describe MVVM, but the code has no view models.
+Read-only views observe stores directly. Pure functions such as `NotchPresentation` and `PetPresentation` prepare their state.
+`AgentUsageController` and `PetSettingsController` already publish status and handle actions.
+The [2026-10-30 review](reports/2026-10-30-session-state-and-architecture-review.md) (M4) raised the mismatch.
+
+**Options.**
+- **A view model for every view:** one uniform structure; most would pass store properties through, and cached derived state can become a stale copy of session truth.
+- **No view models:** least code now; async action state would move into views or AppKit controllers once Codex setup actions and Settings arrive.
+- **View models only where a view owns state:** read-only views stay thin and testable through pure functions; needs a stated rule for when to add one.
+
+**Decision.** Read-only views observe stores directly and use pure presentation functions.
+A view gets a view model when it owns state the store does not hold: actions with async results, in-progress flags, drafts, or validation.
+Use `ObservableObject`, because `@Observable` needs macOS 14 and the package targets macOS 13.
+
+**Reasoning.** The user accepted this on 2026-10-30. Pure functions already do the view-model job for read-only views and are easier to test.
+The views that need action state either already have a controller for it or are still planned.
+
+**Consequences.** This updates the view-model consequence of decision 0002. Services, shared stores, and explicit dependencies remain as accepted.
+Codex setup menu actions (I6a), the Settings window, and the reply composer are expected to get view models.
+Existing `…Controller` types that act as view models keep their names until a task touches them.
+Revisit if read-only views start to duplicate derivation logic, or when the deployment target reaches macOS 14.
+
+## D4: Target macOS 14 so stores and controllers can use `@Observable`
+
+- Status: accepted
+- Date: 2026-10-31
+
+**Context.** The package targeted macOS 13, and no record explains why.
+D3 kept `ObservableObject` because `@Observable` needs macOS 14.
+The R1 review of two external Swift skills found that both assume `@Observable`. `docs/SWIFT-PRACTICES.md` adopts it as the rule.
+
+**Options.**
+- **Stay on macOS 13 with `ObservableObject`:** supports one more macOS release, but the practices guide and both skills would describe a model the code cannot use.
+- **Raise the target to macOS 14 and move to `@Observable`:** code matches the practices guide; drops macOS 13 users and replaces APIs deprecated in macOS 14.
+
+**Decision.** Target macOS 14 in `Package.swift` and `Info.plist`. Move the five `ObservableObject` classes to `@Observable` in codex-setup R8.
+This replaces D3's `ObservableObject` line. The rest of D3 stands.
+
+**Reasoning.** The user chose this on 2026-10-31, so the code can follow the practices guide and the Swift skills it is reviewed against.
+The development Mac runs macOS 26, and no record names a macOS 13 user. ^[inferred]
+
+**Consequences.** R7 replaced two `onChange(of:perform:)` calls and `activate(ignoringOtherApps:)` with their macOS 14 forms.
+`activate()` asks for focus instead of forcing it. Pet Settings opens from a menu click, so it should still come to the front, but this is unverified in the running app.
+R8 can now move the stores and controllers to `@Observable`. Revisit if a supported user needs macOS 13.
+
+## D5: Observe stores from controllers with `withObservationTracking`
+
+- Status: accepted
+- Date: 2026-10-31
+
+**Context.** R8 moves stores and controllers to `@Observable`, which has no Combine publisher.
+`AgentUsageController` subscribed to `SessionStore.$sessions` to start and stop Codex usage polling, and one store test counted publications through `$sessions`.
+
+**Options.**
+- **`withObservationTracking`, wrapped in one helper:** no store API change and no behavior change; the one-shot callback must be re-armed, and Swift 6 needs a main-actor hop that delays the reaction by one turn.
+- **A stream or callback on `SessionStore`:** exact values in order; adds public API and a second observation path to a module R2 is about to split.
+- **`.task(id:)` in the view:** least code; polling would follow what is on screen instead of whether a Codex session is active.
+- **`Observations`:** Apple's async sequence without re-arming; the SDK marks it macOS 26, above the D4 target.
+
+**Decision.** Controllers observe stores with `withObservationTracking`. `ObservationLoop` in the app target holds the re-arm logic, so it is written and tested once.
+
+**Reasoning.** The user chose this on 2026-10-31 as Apple's documented way to observe `@Observable` outside SwiftUI on macOS 14.
+It is the only option that changes neither behavior nor the store's public API.
+
+**Consequences.** Observers see only the final value of each main-actor turn, so tests can no longer count assignments within one call.
+The user accepted replacing the store's publication-count check with a check of the first value observers read.
+Revisit when the target reaches macOS 26, where `Observations` can replace `ObservationLoop`.
+
+## D6: Show allowance as percent left, not percent used
+
+- Status: accepted
+- Date: 2026-10-31
+
+**Context.** The usage area and [codex-allowance](specs/usage/codex-allowance.md) label allowance percentages as used, copied from the source spec approved on 2026-10-29.
+The notch layout reference the user supplied on 2026-10-31 shows a compact allowance strip, planned in [allowance-strip](specs/notch/allowance-strip.md).
+
+**Options.**
+- **Percent used:** matches the providers' reported `usedPercent`; the reader must subtract to see what remains.
+- **Percent left (`100 − used`):** shows directly how much work remains before the limit; the app derives the number instead of showing the reported one.
+
+**Decision.** The notch shows percent left for both Codex and Claude Code. The usage store keeps the reported used value unchanged.
+
+**Reasoning.** The user chose percent left on 2026-10-31 while answering layout questions.
+It shows what remains before the limit without arithmetic. ^[inferred]
+
+**Consequences.** codex-allowance's "Percentages are labelled used" check is replaced for the notch. Its other U5 checks stand.
+Percent left is rounded down, so the notch never shows more allowance than is reported.

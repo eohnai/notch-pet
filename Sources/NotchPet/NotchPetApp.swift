@@ -1,6 +1,7 @@
 import AppKit
 import Darwin
 import EventBridge
+import Observation
 import SessionState
 import SwiftUI
 
@@ -18,8 +19,9 @@ struct NotchPetApp: App {
 
 /// App-owned health evidence. Probes run only when an explicit future Check action calls refresh.
 @MainActor
-private final class IntegrationHealthController: ObservableObject {
-    @Published private(set) var evidence: [IntegrationAgent: IntegrationHealthEvidence] =
+@Observable
+private final class IntegrationHealthController {
+    private(set) var evidence: [IntegrationAgent: IntegrationHealthEvidence] =
         Dictionary(uniqueKeysWithValues: IntegrationAgent.allCases.map {
             ($0, IntegrationHealthEvidence(agent: $0))
         })

@@ -1,5 +1,5 @@
-import Combine
 import Foundation
+import Observation
 
 public enum UsageFailure: String, Codable, Sendable {
     case awaitingSource, signedOut, unsupportedAccount, sourceUnavailable, malformed, timedOut
@@ -29,8 +29,9 @@ public struct UsageSnapshot: Equatable, Sendable {
 }
 
 @MainActor
-public final class UsageStore: ObservableObject {
-    @Published public private(set) var observations: [UsageObservation] = []
+@Observable
+public final class UsageStore {
+    public private(set) var observations: [UsageObservation] = []
 
     public init() { }
 

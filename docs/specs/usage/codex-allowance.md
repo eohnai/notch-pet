@@ -18,7 +18,7 @@ These checks come from "Feature 2: see the limits of agents in use" in the sourc
 - Only providers with a non-ended observed session appear. Codex-only hides Claude, both active shows both, and no sessions shows an empty state.
   Cached allowance alone never makes an inactive provider appear.
 - Real Codex allowance reaches the actual notch through the read-only App Server.
-- Percentages are labelled used. Each window shows its reset time when supplied, plus freshness and source/account confidence.
+- Percentages are labelled used. Each window shows its reset time when supplied, plus freshness and source/account confidence. (replaced 2026-10-31: the notch shows percent left under D6; reset time, freshness, and confidence move to the [allowance strip](../notch/allowance-strip.md) and its tooltip)
 - Window labels follow the reported duration: 300 minutes is 5-hour and 10080 minutes is weekly. Other durations keep honest labels.
 - Either window can be missing on its own. A missing window shows unavailable with a bounded reason, not a made-up percentage.
 - Stale, disconnected, and signed-out states explain missing values. A passed reset never shows zero usage.
@@ -58,6 +58,7 @@ These are reproduction commands. This retrospective spec ran documentation check
 - [0007: Read usage through supported interfaces](../../decisions/0007-read-supported-usage-data.md).
 - [0011: Organize records by area and feature](../../decisions/0011-organize-records-by-feature.md).
 - [0012: Support terminal-independent operation](../../decisions/0012-support-terminal-independent-operation.md).
+- [D6: Show allowance as percent left, not percent used](../../DECISIONS.md#d6-show-allowance-as-percent-left-not-percent-used), 2026-10-31. The notch's allowance display moves to [notch/allowance-strip](../notch/allowance-strip.md). U5 keeps its provider filtering, duration, missing-window, and live-data checks.
 
 ## Code that differs from a decision
 

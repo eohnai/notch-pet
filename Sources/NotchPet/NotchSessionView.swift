@@ -2,7 +2,7 @@ import SessionState
 import SwiftUI
 
 struct NotchSessionView: View {
-    @ObservedObject var sessionStore: SessionStore
+    let sessionStore: SessionStore
     let usageStore: UsageStore
     let headerHeight: CGFloat
     let notchWidth: CGFloat
@@ -71,7 +71,7 @@ struct NotchSessionView: View {
         .onAppear {
             selection = NotchPresentation.selection(selection, sessions: sessionStore.sessions)
         }
-        .onChange(of: sessionStore.sessions) { sessions in
+        .onChange(of: sessionStore.sessions) { _, sessions in
             selection = NotchPresentation.selection(selection, sessions: sessions)
         }
     }

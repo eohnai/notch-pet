@@ -1,12 +1,13 @@
-import Combine
 import CryptoKit
 import EventBridge
 import Foundation
+import Observation
 
 /// One in-memory authority. Main-actor isolation serializes changes and publication.
 @MainActor
-public final class SessionStore: ObservableObject {
-    @Published public private(set) var sessions: [SessionSnapshot] = []
+@Observable
+public final class SessionStore {
+    public private(set) var sessions: [SessionSnapshot] = []
 
     public static let sessionLimit = 128
     public static let eventIDLimit = 4096

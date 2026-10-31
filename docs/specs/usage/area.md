@@ -15,7 +15,7 @@ Code: usage services in `Sources/SessionState/`, `Sources/NotchPet/AgentUsageCon
 - Codex leads because its read-only quota path already exists. Claude follows with its separate status-line forwarding requirements.
 - Preserve provider-specific values and active-session filtering. Session count must not multiply an account's allowance.
 - Coordinate explicit monitoring pause/resume/disconnect with sessions/monitoring-controls. This roadmap does not settle their detailed semantics.
-- The approved session-panel reference places compact provider allowance values above request details. Retain used-percentage labels, actual window durations, reset times, freshness, and account confidence.
+- The approved session-panel reference places compact provider allowance values above request details. Retain actual window durations, reset times, freshness, and account confidence. The notch shows percent left, under [D6](../../DECISIONS.md#d6-show-allowance-as-percent-left-not-percent-used); the [allowance strip](../notch/allowance-strip.md) owns that display.
 - Historical activity and token charts belong to telemetry/activity-statistics and telemetry/token-statistics. Keep their totals separate from subscription allowance.
 - [Record layout decision](../../decisions/0011-organize-records-by-feature.md).
 - [Source specification](../notch-companion.md): preserve the completed usage-source investigation and U1–U6 tasks and evidence.

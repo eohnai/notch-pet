@@ -1,12 +1,14 @@
 import AppKit
 import Combine
+import Observation
 import SwiftUI
 
 /// Native lifecycle belongs to the app; PetView receives only playback inputs.
 @MainActor
-final class PetWindowPlaybackState: ObservableObject {
-    @Published private(set) var isVisible: Bool
-    @Published private(set) var isSleeping = false
+@Observable
+final class PetWindowPlaybackState {
+    private(set) var isVisible: Bool
+    private(set) var isSleeping = false
     private var subscriptions: Set<AnyCancellable> = []
 
     init(window: NSWindow, windowNotifications: NotificationCenter = .default,
@@ -47,16 +49,16 @@ final class PetWindowPlaybackState: ObservableObject {
 
 @MainActor
 struct PetWindowPlayback<Content: View>: View {
-    @StateObject private var state: PetWindowPlaybackState
+    @State private var state: PetWindowPlaybackState
     private let content: (Bool, Bool) -> Content
 
     init(window: NSWindow, @ViewBuilder content: @escaping (Bool, Bool) -> Content) {
-        // Construct outside StateObject's escaping autoclosure so it cannot retain
-        // the window through its initializer and form a hosting-view/window cycle.
+        // State takes a built value, not a stored closure, so nothing here can retain
+        // the window and form a hosting-view/window cycle.
         let state = PetWindowPlaybackState(window: window, readVisibility: {
             $0.isVisible && !$0.isMiniaturized && $0.occlusionState.contains(.visible)
         })
-        _state = StateObject(wrappedValue: state)
+        _state = State(initialValue: state)
         self.content = content
     }
 

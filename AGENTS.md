@@ -2,6 +2,7 @@
 
 - Read `docs/STATUS.md` before working on this project.
 - Read the active specification and relevant decision records before changing code.
+- Read `docs/SWIFT-PRACTICES.md` before writing or reviewing Swift code.
 - Keep proposed decisions distinct from accepted decisions.
 - The repository contains a native app shell and project records.
 - Do not start implementation until the user approves the task list.

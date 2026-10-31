@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "NotchPet",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     products: [
         .executable(name: "NotchPet", targets: ["NotchPet"]),
         .executable(name: "NotchPetHook", targets: ["NotchPetHook"])

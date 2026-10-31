@@ -17,7 +17,8 @@ Code: `Sources/EventBridge/`, session and integration-health services in `Source
 ## Shared context
 
 - Roadmap approved on 2026-10-30: prioritize Sessions, Notch, and Usage. First deliver optional Codex setup, a visible real session, and real Codex limits.
-- Plan `codex-setup` next. Its first feature path includes explicit connection controls, owned setup, real helper delivery, and a visible session.
+- The user approved the [codex-setup](codex-setup.md) scope, menu-first controls, and eight-task list on 2026-10-30.
+  Start with I3b1's design review. Open design choices, prerequisite closure, and renewed runtime checks remain separate gates.
 - Resolve existing session-state closure and integration-health acceptance before dependent implementation. Roadmap approval does not complete those features.
 - Setup features own configuration changes and removal logic. Monitoring controls own runtime behavior and reuse that removal logic.
 - `monitoring-controls` initially depends on Codex setup. Extend it to Claude when Claude setup exists; Codex does not wait for Claude setup.
@@ -32,7 +33,8 @@ Code: `Sources/EventBridge/`, session and integration-health services in `Source
 - [Source specification](../notch-companion.md): unmigrated tasks and evidence remain authoritative until their feature migration.
 - Implemented: native app shell, bounded event bridge, both agent adapters, session store, and inbox. Preserve completed foundation tasks and G1–G2 evidence.
 - Implemented but awaiting verification: I2a–I2c integration-health code. I3a setup proposal is completed documentation, not an implemented installer.
-- Migrate I3b–I3c and the Codex portion of I5–I6 into codex-setup. Migrate I4 and the Claude portion into claude-setup.
+- Codex setup maps I3b–I3c and the Codex portion of I5–I6 to approved smaller tasks.
+  Keep the original source checklist until shared acceptance has complete destinations. Migrate I4 and the Claude portion into claude-setup.
 - Keep original source lines and checkbox states during that migration. Defining feature ownership does not move or complete those tasks.
 - N1–N2 own exact-pane navigation. Live event coverage includes N6 and R6–R7. R8 owns final first-use acceptance.
 - Preserve those Otty-specific checks. N7 defines general navigation capabilities; N8 adds live checks for both agents in another local terminal.
