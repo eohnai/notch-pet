@@ -179,7 +179,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F2: Add an explicit packaged-helper path option to `scripts/check-event-bridge.py`, preserving the default path, socket protections, and existing assertions; verify both invocation modes with fictional input.
 - [x] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
 - [x] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
-- [ ] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
+- [x] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
 - [ ] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
 - [ ] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [ ] F8: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run.
@@ -437,3 +437,89 @@ Use a fresh root on each run. If the normal socket exists, stop and leave it int
 For a missing artifact ID or download failure, inspect Build's upload result before rerunning anything.
 For identity/checksum rejection, retain the failed files and compare the expected context with the Build run/attempt.
 Never rebuild in Helper, switch to another artifact, or copy expected identity out of its manifest to obtain a pass.
+
+## F5 coverage contract
+
+CLI: `coverage.py --build-root PATH --output REPORT_ROOT`.
+Discover exactly one debug test runner, its sibling instrumented `NotchPetHook`, and the same build's
+`codecov/default.profdata`. Require all three. The exporter does not build or execute them.
+The caller must first establish a successful complete test run. F7 will enforce that sequencing.
+Existing profile data alone is not proof of test success.
+
+```python
+def normalize_report(report: dict, sources: set[Path]) -> tuple[dict, dict]: ...
+def export_coverage(build_root: Path, output: Path) -> None: ...
+def main() -> int: ...
+```
+
+Use the selected toolchain's native `llvm-cov export` and `show` commands, with a real profile and both binaries.
+Do not use `--empty-profile`, estimated values or a synthetic zero for a missing source.
+Add the helper mapping because SwiftPM's default test-runner-only export omits that production module.
+LLVM itself reports zero executed lines for the helper when its counters are absent from the successful test profile.
+
+Scope is every current `Sources/**/*.swift` file, grouped by its first directory below Sources.
+Exclude Tests and generated sources outside that tree by explicitly passing the complete production inventory to LLVM.
+Use `--skip-functions --skip-expansions` for JSON: otherwise this toolchain exports unrelated function records even
+when its file table is filtered. Keep native per-file segments, summaries and totals, with repository-relative filenames.
+Require exactly the expected source set, valid nonnegative integer counts, consistent percentages and matching totals.
+Any missing module/file or malformed report fails. A genuine measured zero is valid, and no threshold is enforced.
+
+Publish only a fully validated `REPORT_ROOT/coverage/` directory, without replacing existing coverage output.
+It contains native normalized `coverage.json`, `summary.json`, `summary.md`, input/tool metadata and portable `html/index.html`.
+Normalize HTML source titles and links to `coverage/Sources/...`, preserving official LLVM source-line rendering.
+Verify every local HTML asset/page link before publication.
+Keep bounded tool diagnostics in REPORT_ROOT even after a native tool failure.
+All outputs and temporary fixtures remain outside the checkout.
+
+Verification: export the actual passing 132-test baseline, check all five modules and 38 production files,
+validate HTML links and source rows, then reject missing/corrupt profiles, missing/uninstrumented binaries,
+malformed counters/source tables and an existing output directory. No Swift implementation changes are planned.
+
+### F5 verification, 2026-11-01
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/ci/coverage.py --build-root /private/tmp/notch-pet-dev/build --output /private/tmp/notch-pet-ci/reports
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 /private/tmp/notch-pet-ci/f5/check-coverage.py
+```
+
+Both commands exited 0. The exporter used the actual passing 132-test baseline's instrumented binaries and profile.
+Apple LLVM 21.0.0 produced coverage JSON schema 3.0.1. No tests or builds were rerun for this task.
+Production Swift source and tests are unchanged since that passing baseline.
+The output covers all 38 production Swift files and five modules:
+
+| Module | Files | Covered lines | Percent |
+|---|---:|---:|---:|
+| EventBridge | 6 | 534/578 | 92.39% |
+| NotchPet | 15 | 109/1561 | 6.98% |
+| NotchPetHook | 1 | 0/7 | 0.00% |
+| Pet | 4 | 90/152 | 59.21% |
+| SessionState | 12 | 1215/1259 | 96.51% |
+
+This profile measures the Swift suite. The separate uninstrumented Helper job's process checks do not add coverage to it.
+The helper's real instrumented mapping, not an invented placeholder, supplies its seven executable lines and zero hits.
+No module is omitted for a low percentage, and no threshold is enforced.
+
+The acceptance harness reported `F5 coverage acceptance passed: 22 checks; no test/build command executed`.
+It verified complete production scope, native counts, five module summaries, all 39 HTML pages, portable paths,
+and exact main-table source rows for every source file.
+It rejected missing build/profile/test-runner/helper inputs, corrupt/empty profiles, an uninstrumented helper,
+ambiguous profiles, unknown schemas, missing/duplicate/nonproduction files, invalid integer/percentage/segment data,
+missing metrics and unfiltered function records. It also preserved existing valid coverage output.
+Corrupt-profile tool diagnostics remained available in a bounded log without a published coverage directory.
+
+The initial acceptance reader counted LLVM's nested instantiation tables as extra source lines.
+Its table-depth tracking was corrected to compare the main source table strictly. The exporter did not change for that correction.
+All main source rows then matched the original source text, including Unicode and escaped characters.
+`git diff --check` exited 0; no generated files appeared in the checkout.
+
+Artifacts are under `/private/tmp/notch-pet-ci/reports/coverage`:
+`coverage.json`, `summary.json`, `summary.md`, `metadata.json`, and `html/index.html` with its source pages/assets.
+`metadata.json` records actual LLVM/export versions and SHA-256 hashes of the input profile and both binaries.
+Evidence logs: `/private/tmp/notch-pet-ci/reports/f5-coverage.log`, `f5-coverage-checks.log`, and `coverage-tool.log`.
+
+For reproduction, first run the complete instrumented suite successfully, then export into a fresh report root.
+An existing `coverage/` directory or `coverage-tool.log` is preserved rather than overwritten.
+Missing input means the test build/coverage flag or scratch root is wrong; do not substitute zero coverage.
+For native tool failure, retain `coverage-tool.log` and confirm the selected toolchain matches the instrumented build.
+For missing source coverage, confirm both the test runner and instrumented helper are present from that same build.
+Do not use the uninstrumented artifact from Build as the coverage mapping input.
