@@ -54,7 +54,7 @@ The allowance strip above the cards is a separate spec, `allowance-strip`. See t
 - **Rows keep the contract's omission rule, 2026-10-31.** The user chose tool names only, over showing prompt and command text as in the reference.
   Showing that text needs its own decision and a contract v2.
 - **Time each prompt from `UserPromptSubmit` until `Stop`, 2026-10-31.** The user asked for the timer to stop at its final duration when the response is ready.
-  The store must therefore keep the turn's start time. It does not keep that time today.
+  The store must therefore keep the turn's start time. At planning time, the store did not keep it.
 - [0002: Use services and shared stores](../../decisions/0002-use-mvvm-with-services.md).
 - [0012: Support terminal-independent operation](../../decisions/0012-support-terminal-independent-operation.md).
 
@@ -63,6 +63,8 @@ The allowance strip above the cards is a separate spec, `allowance-strip`. See t
 - Expanded panel: 620 points wide (was 560) and 240 points below the header (was 280). The user asked for "a little shorter but a little wider".
 - Timer times come from the events' `observed_at_ms`, not the app's receipt times. A delayed delivery does not shorten the timer.
 - A new turn resets the timer. A repeated `Stop` does not change the final duration.
+- C1 exposes `turnStartedAtMs` and `responseReadyAtMs` on `SessionSnapshot`, using event capture times in Unix milliseconds.
+  A matching stop records its first time even when the session stays unknown. C2 owns hiding timers for unknown and ended sessions.
 - Timer format: `45s`, `2m03s`, `1h02m`.
 - An unknown session hides its timer, because the app cannot confirm the turn is still running. Waiting for approval or an answer keeps the timer running.
 - Short session ID: the last 6 characters. The first characters of time-ordered IDs can match for sessions started close together. ^[inferred]
@@ -72,7 +74,7 @@ The allowance strip above the cards is a separate spec, `allowance-strip`. See t
 
 ## Tasks
 
-- [ ] C1: Keep each turn's start and response-ready times in `SessionStore` and expose them on `SessionSnapshot`; store tests cover start, stop, repeated stop, and a new turn resetting both times.
+- [x] C1: Keep each turn's start and response-ready times in `SessionStore` and expose them on `SessionSnapshot`; store tests cover start, stop, repeated stop, and a new turn resetting both times.
 - [ ] C2: Add pure card presentation to `NotchPresentation`: folder name, short session ID only when another session shares the folder, and timer text that runs, stops, or hides by status; presentation tests cover each case.
 - [ ] C3: Make the expanded panel 620 points wide and 240 points below the header in `NotchPlacement`; update the placement tests.
 - [ ] C4: Replace `NotchSessionRow` with a session card (badge, folder · status, timer) and a request card (tool name, "Answer in the terminal"); tick timers once per second only while expanded with a running timer; build passes.

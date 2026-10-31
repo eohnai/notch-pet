@@ -5,7 +5,8 @@ struct NotchSelectionTests {
     private func snapshot(_ id: String, agent: String = "codex", status: SessionStatus = .working,
                           pending: [SessionRequest] = []) -> SessionSnapshot {
         SessionSnapshot(key: SessionKey(agent: agent, sessionID: id), status: status,
-                        reason: nil, currentTurnID: nil, pendingRequests: pending,
+                        reason: nil, currentTurnID: nil, turnStartedAtMs: nil,
+                        responseReadyAtMs: nil, pendingRequests: pending,
                         captureWatermarkMs: nil, receiptWallMs: nil, receiptMonotonicNs: nil,
                         expiryMonotonicNs: nil, projectPath: "/fictional/shared", paneSelector: nil,
                         hasTerminalRestriction: status == .ended)

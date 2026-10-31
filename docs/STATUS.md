@@ -2,24 +2,21 @@
 
 ## Now
 
-On `feat/sessions-codex-setup`. Codex-setup R8 is done and uncommitted: the five stores and controllers use `@Observable`, and decision D5 records how controllers observe stores.
-R7 is committed (`5034dfd`). The user allowed app launches on 2026-10-31. Configuration changes and older goals stay paused.
+On `feat/notch-session-cards`, stacked on `feat/sessions-codex-setup` at `bab79ad` with the user's approval.
+Session-cards C1 is done and uncommitted: snapshots retain the current turn's event capture times for submit and first matching stop.
+R8 and the two notch layout specs are committed. Configuration changes and older goals stay paused.
 
 ## Next
 
-1. Run `/plan-feature` for a notch layout spec, based on the reference in `docs/specs/notch/area.md` (compact allowance strip above session cards). User answers from 2026-10-31:
-   - Allowance strip shows percent left (`100 − used`) for both Codex and Claude Code. This replaces the usage area's "Retain used-percentage labels" note; record it as a decision in the new spec.
-   - Session rows show a prompt timer from `UserPromptSubmit`; it stops at its final duration when the response is ready. The store must keep the turn start time.
-   - Keep the contract's omission rule (`docs/contracts/agent-events-v1.md:76`): rows show the tool name, not prompt or command text. Showing that text is a separate later decision and a contract v2.
-   - Out of the layout spec: terminal "go to" actions (pane-navigation), per-row pet icons (pets/agent-reactions), and toolbar icons.
-2. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
-3. Plan R2 (split `SessionState` into `SessionState`, `Usage`, `Integration`), then R3 (typed `Agent` and `HookEvent`). Both need renewed test authorization and a design review.
-4. Do R5 and R6. R6 needs a user decision on the 128-session limit before any code change.
+1. Plan session-cards C2 in `docs/specs/notch/session-cards.md`: pure folder, session ID, and timer presentation. Ask for test authorization for C2.
+2. Continue session-cards C3–C5, then allowance-strip A1–A5. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
+3. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
+4. Plan codex-setup R2 (split targets), then R3 (typed agent/hook identities), with design review and renewed test authorization. Follow with R5 and R6; R6 needs a user decision on the 128-session limit.
 5. Before I3b2, review integration-health evidence and session-island acceptance (start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`), then plan I3b2. Codex 0.164.0 still needs isolated qualification.
 
 ## Blockers
 
-- Existing no-testing instruction remains in force for tests, builds, captures, helper injections, and test-only instrumentation: do not start them unless requested. The user authorized builds and tests for R7 and R8 only; both are done. The user allowed app launches on 2026-10-31, and one fictional helper injection for the R8 check. Documentation checks do not resume runtime acceptance.
+- Existing no-testing instruction remains in force for tests, builds, captures, helper injections, and test-only instrumentation: do not start them unless requested. Task-specific authorization covered R7, R8, and session-cards C1; all are done. The user allowed app launches on 2026-10-31, and one fictional helper injection for the R8 check. C1 authorization does not extend to later tasks or runtime acceptance.
 - Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
