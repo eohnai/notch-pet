@@ -1,15 +1,15 @@
 # CI foundation: local implementation goal
 
 The user activated this goal on 2026-10-31 and authorized a commit after each verified task.
-The separately approved I2d repair is committed. F1 is locally verified and the user explicitly approved committing it.
+The separately approved I2d repair and CI F1/F2 are committed. F3 is locally verified.
 F8 and completion of the whole specification remain separate hosted acceptance work.
 
 ## Paste after `/goal`
 
 ```text
-GOAL: Implement and locally verify ci-foundation F1-F7 on feat/automation-ci-foundation; hand off hosted F8.
+GOAL: Implement and verify ci-foundation F1-F7 on feat/automation-ci-foundation; hand off hosted F8.
 
-Activation approves F1-F7, local builds/tests, fictional helper checks and routine CLI details within the spec. Read docs/goals/ci-foundation-local.md first. Other goals stay paused.
+F1-F7 and their local checks are approved. Read docs/goals/ci-foundation-local.md first. Other goals stay paused.
 
 Set ci_root=/private/tmp/notch-pet-ci, ci_build=/private/tmp/notch-pet-dev/build, ci_app="$ci_root/package/notch-pet-dev/Notch Pet.app"; export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer. Put verified pinned actionlint on PATH.
 
@@ -17,7 +17,7 @@ DONE WHEN all hold, with command outputs and exit codes printed here:
 1. `actionlint .github/workflows/ci.yml` and `git diff --check` exit 0. Review Workflow/Tests/Build/Contract/Helper/Required: PR-to-main/main-push/manual triggers, no path filters, PR-only cancellation, explicit macos-26/Xcode, verified pins, minimal permissions, timeouts, exact-run artifact reuse without rebuilds, failure reports, and always() Required checking all five jobs. Hosted qualification stays open.
 2. `swift test --scratch-path "$ci_build" --enable-code-coverage` exits 0 with 0 failures; native machine-readable results preserve identity/failure/skip status. `env TMPDIR="$ci_root/package" bash scripts/run.sh --build-only` exits 0 with both executables, Info.plist and Pet resources. Uploaded builds stay uninstrumented, separate from coverage builds.
 3. `python3 scripts/check-event-contract.py` exits 0. `python3 scripts/check-event-bridge.py` and its `--helper "$ci_root/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"` form exit 0 with 'Bridge process checks passed'; preserve assertions/socket protections.
-4. `python3 scripts/ci/bundle.py --app "$ci_app" --output "$ci_root/bundle"` and `python3 scripts/ci/bundle.py --verify "$ci_root/bundle"` exit 0; extract safely for criterion 3. Print rejection-fixture outputs: missing resources, altered content, mismatched independently expected identity, and escaping archive paths all fail before execution.
+4. `python3 scripts/ci/bundle.py --app "$ci_app" --output "$ci_root/bundle" --identity "$ci_root/identity.json"` and `python3 scripts/ci/bundle.py --verify "$ci_root/bundle" --identity "$ci_root/identity.json"` exit 0; extract safely for criterion 3. Print rejection-fixture outputs: missing resources, altered content, mismatched independently expected identity, and escaping archive paths all fail before execution.
 5. `python3 scripts/ci/coverage.py --build-root "$ci_build" --output "$ci_root/reports"` exits 0 with real production-source HTML, JSON and module summaries. Print missing/malformed-input fixture outputs: both fail. No thresholds or fabricated results.
 6. `python3 scripts/ci/required-result.py` with CI_JOB_RESULTS: only the exact five successful jobs exit 0. Five fixture groups: success; failure/cancel/skip/unknown; missing/extra jobs; malformed input; empty input. All invalid cases exit nonzero. Print commands/counts/results. Record reproduction/troubleshooting commands and 7/7 verified F1-F7 evidence. Leave F8 and the spec open.
 
@@ -35,7 +35,7 @@ ON FINISH OR STOP: set log Status done/stopped/blocked and Final result; use che
 - The eight-spec automation roadmap is accepted. Seven entries still have no specification file.
 - The user activated ci-foundation F1–F7 and their listed local checks on 2026-10-31.
 - The user permits a commit after every completed task. Follow AGENTS.md's commit-plan approval procedure.
-  I2d is committed as `7cb67f2`. F1 is verified, and its exact commit plan is approved.
+  I2d, F1 and F2 are committed as `7cb67f2`, `5bf0a6c` and `5464292`. F3 is verified locally.
 - After the initial baseline failure, the user separately approved I2d: serialize `IntegrationHealthProbeTests`,
   update its integration-health spec and goal records, verify isolated/full suites, then resume CI.
   That one-file test repair is verified. This explicit exception does not authorize other unrelated repairs.
@@ -58,6 +58,9 @@ ON FINISH OR STOP: set log Status done/stopped/blocked and Final result; use che
   Qualify toolchain-supported result flags before use. Do not invent unsupported flags or report formats.
 - The manifest must verify independently supplied expected commit, run, attempt, platform, toolchain and configuration.
   Comparing a manifest to its own claims does not prove identity.
+- F3 finalized `--identity PATH` as required for both create and verify commands.
+  Use the spec's fixed identity shape and supply it independently from workflow context in Build and Helper.
+  Verification can add `--extract-to PATH`; it rejects any existing destination and publishes only after full validation.
 - Use distinct scratch paths for instrumented Tests and uninstrumented Build jobs.
   Local packaging may use the existing script's build directory, but coverage export must retain its valid instrumented inputs.
 - Negative fixtures are disposable files outside the repository. Preserve the fixed rejection requirements.

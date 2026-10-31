@@ -124,8 +124,8 @@ Proposed foundation CLI commands, to implement and finalize in their owning task
 
 ```bash
 actionlint .github/workflows/ci.yml
-python3 scripts/ci/bundle.py --app "/private/tmp/notch-pet-dev/Notch Pet.app" --output /private/tmp/notch-pet-ci/bundle
-python3 scripts/ci/bundle.py --verify /private/tmp/notch-pet-ci/bundle
+python3 scripts/ci/bundle.py --app "/private/tmp/notch-pet-ci/package/notch-pet-dev/Notch Pet.app" --output /private/tmp/notch-pet-ci/bundle --identity /private/tmp/notch-pet-ci/identity.json
+python3 scripts/ci/bundle.py --verify /private/tmp/notch-pet-ci/bundle --identity /private/tmp/notch-pet-ci/identity.json
 python3 scripts/check-event-bridge.py --helper "/private/tmp/notch-pet-ci/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"
 env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/ci/coverage.py --build-root /private/tmp/notch-pet-dev/build --output /private/tmp/notch-pet-ci/reports
 python3 scripts/ci/required-result.py
@@ -177,7 +177,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 
 - [x] F1: Add `.github/workflows/ci.yml` with a qualified macOS/Xcode selection, existing Swift/build/contract checks, pinned workflow validation, bounded jobs, and PR supersession cancellation; validate syntax and the local baseline.
 - [x] F2: Add an explicit packaged-helper path option to `scripts/check-event-bridge.py`, preserving the default path, socket protections, and existing assertions; verify both invocation modes with fictional input.
-- [ ] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
+- [x] F3: Add `scripts/ci/bundle.py` to validate and archive the actual app bundle with its identity/checksum manifest; verify a valid bundle and bounded rejection cases.
 - [ ] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
 - [ ] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
 - [ ] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
@@ -287,3 +287,81 @@ The first default run used a coverage-instrumented local helper and created `def
 F2 now routes `LLVM_PROFILE_FILE` for every child into a checker-owned temporary directory and cleans it on exit.
 The generated checkout file was removed. Both real invocation modes and all six rejection/preservation checks
 passed again on the final script. No repository profile was created by those final checks.
+
+## F3 CLI and manifest contract
+
+Later tasks use this CLI surface, not an imported Python API:
+
+```bash
+python3 scripts/ci/bundle.py --app "/private/tmp/notch-pet-ci/package/notch-pet-dev/Notch Pet.app" --output /private/tmp/notch-pet-ci/bundle --identity /private/tmp/notch-pet-ci/identity.json
+python3 scripts/ci/bundle.py --verify /private/tmp/notch-pet-ci/bundle --identity /private/tmp/notch-pet-ci/identity.json --extract-to /private/tmp/notch-pet-ci/extracted
+```
+
+The required `--identity` file is independently supplied to both jobs from trusted workflow context and selected toolchain metadata.
+It has exactly these fields: `commit` (40 lowercase hex characters), `run_id` (bounded identifier),
+`run_attempt` (positive integer), `platform` (`macos`), `architecture` (`arm64`), `configuration` (`debug`),
+`xcode_build` (bounded identifier), and `swift_version` (bounded version output).
+Creation checks actual host architecture and toolchain against that input.
+Verification compares all identity fields before extraction. It never takes expected identity from the manifest itself.
+The manifest also records actual macOS and Python versions through an explicit allowlist.
+
+Implementation sketch:
+
+```python
+def create_bundle(app: Path, output: Path, identity: dict) -> None: ...
+def verify_bundle(bundle: Path, identity: dict, extract_to: Path | None = None) -> None: ...
+def main() -> int: ...
+```
+
+The output directory contains only `app.tar.gz` and `manifest.json`.
+Manifest schema 1 stores identity, allowed version metadata, archive checksum/size and every entry's type/mode.
+Regular files also have size and SHA-256. Entries live beneath the exact `Notch Pet.app` root.
+Validate the two executable files, the app plist and its executable/package identity, and the Pet bundle's manifest/artwork.
+Accept only normal directories and regular files. Reject links, special files, duplicate/escaping/noncanonical paths,
+unsafe mode bits, oversized input, and any mismatch between archive entries and the manifest.
+Limits: 4096 entries, 240 UTF-8 bytes per path, 4 MiB manifest, 64 MiB per file and 256 MiB total/archive.
+These bounds comfortably contain the inspected five-file, 3.75 MB debug app.
+
+Outputs and extraction destinations must be outside the checkout and must not exist already.
+Validate the entire archive and payload before creating an extraction destination.
+Extract manually into a new private temporary directory, preserve approved modes, then publish it at `--extract-to`.
+Never execute either bundled binary from this tool. The Helper job runs F2 only after verification.
+Checksums detect changes and do not provide signed provenance.
+
+F3 verification will use the actual F1 bundle plus disposable missing-resource, modified-content,
+independent-identity, unsafe-path/link, malformed-manifest and extraction-preservation cases outside the repository.
+
+### F3 verification
+
+The real F1 app produced a five-file archive of 1,955,809 bytes.
+Its independently supplied identity names the original build commit `7cb67f2`, fictional run `local-f3`,
+attempt 1, macOS/arm64/debug, Xcode build `17F42` and stdout from the explicitly selected Swift toolchain.
+Creation validates actual host/toolchain values against that input. F4 will construct the same shape from workflow context.
+
+Both CLI examples above exited 0. The verifier reproduced all source file bytes and permission modes after extraction.
+`env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 /private/tmp/notch-pet-ci/f3/check-bundle.py`
+exited 0: `F3 bundle acceptance passed: 28 checks; no bundled binary executed`.
+
+The checks cover actual creation/extraction, source and archived missing artwork, changed archive bytes,
+changed file content with an updated outer checksum, five independently expected identity mismatches,
+boolean/integer identity confusion, malformed/duplicate/unknown-schema/oversized metadata,
+an oversized file declaration, escaping/absolute/backslash paths, duplicate and case-colliding entries,
+symbolic/hard links, FIFO, setuid mode, wrong binary architecture despite consistent checksums,
+malformed plist despite consistent checksums, and preservation of existing output/extraction destinations.
+Every invalid verification case failed before publishing an extraction destination.
+
+The added malformed-plist fixture initially exposed an uncaught `xml.parsers.expat.ExpatError`.
+The final tool categorizes that parser exception without a traceback or raw decoder details.
+The same fixture then passed with the other checks. No requirement or assertion was weakened.
+
+Python syntax validation and `git diff --check` exited 0.
+No Swift source, app configuration, or existing test changed. Swift tests and packaging were not repeated.
+Evidence: `/private/tmp/notch-pet-ci/reports/f3-bundle-checks.log`.
+The independent input is `/private/tmp/notch-pet-ci/identity.json`, the archive is under
+`/private/tmp/notch-pet-ci/bundle`, and verified extraction is under `/private/tmp/notch-pet-ci/extracted`.
+The expected identity must come from outside the downloaded artifact. A missing `--identity` is a CLI error.
+
+On creation failure, check the selected toolchain, source app layout/modes and resource references.
+On verification failure, preserve the failed artifact and inspect the bounded error category before regenerating it.
+Do not replace expected identity with the manifest's identity or execute its helper to diagnose a rejected archive.
+On an existing destination error, select a new disposable destination instead of overwriting existing files.
