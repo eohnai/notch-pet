@@ -96,8 +96,8 @@ public enum NotchPlacement {
             .allSatisfy({ $0.isFinite }), screen.width > 24, screen.height > 44,
               safeTop >= 0, notchWidth >= 0, safeTop <= screen.height - 12 else { return nil }
         let header = max(32, safeTop)
-        let width = min(expanded ? 560 : max(220, notchWidth + 48), screen.width - 24)
-        let height = min(header + (expanded ? 280 : 0), screen.height - 12)
+        let width = min(expanded ? 620 : max(220, notchWidth + 48), screen.width - 24)
+        let height = min(header + (expanded ? 240 : 0), screen.height - 12)
         return CGRect(x: screen.midX - width / 2, y: screen.maxY - height,
                       width: width, height: height)
     }

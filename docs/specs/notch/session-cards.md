@@ -174,10 +174,36 @@ fixed stopped durations, delayed updates, millisecond rounding, and second/minut
 No full-suite run, app launch, helper injection, or capture ran for C2.
 Logs remain outside the repository at `/private/tmp/notch-pet-c2-red.log` and `/private/tmp/notch-pet-c2-green.log`.
 
+## C3 verification, 2026-11-01
+
+The user approved C3's task list and focused placement tests on 2026-11-01.
+Implemented on `feat/notch-session-cards`, preserving C1 `1f30a3c` and committed C2 `c25c699`.
+`NotchPlacement.frame` now requests 620 points wide and 240 points below the header when expanded.
+Its API, collapsed dimensions, screen bounds, centering, and top alignment remain unchanged.
+
+Approved focused verification:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-c3/build \
+  --filter NotchPresentationTests
+git diff --check
+```
+
+The sandbox initially denied access to Swift's compiler cache. The approved elevated run reached the tests.
+Before implementation, the focused command exited 1 with five expectation failures for the old expanded dimensions.
+After implementation, it exited 0: six tests in `NotchPresentationTests` passed, including both parameterized header cases.
+`git diff --check` also exited 0.
+
+The tests cover expanded sizes with and without a physical notch, narrow-screen width bounds,
+small-screen height bounds, screen coordinates, collapsed sizes, and invalid geometry.
+No full-suite run, standalone app build, app launch, helper injection, or capture ran for C3.
+Logs remain outside the repository at `/private/tmp/notch-pet-c3-red.log` and `/private/tmp/notch-pet-c3-green.log`.
+
 ## Tasks
 
 - [x] C1: Keep each turn's start and response-ready times in `SessionStore` and expose them on `SessionSnapshot`; store tests cover start, stop, repeated stop, and a new turn resetting both times.
 - [x] C2: Add pure card presentation to `NotchPresentation`: folder name, short session ID for a shared folder, numeric running/stopped timer states, elapsed-time calculation, and separate display formatting. Presentation tests cover each case.
-- [ ] C3: Make the expanded panel 620 points wide and 240 points below the header in `NotchPlacement`; update the placement tests.
+- [x] C3: Make the expanded panel 620 points wide and 240 points below the header in `NotchPlacement`; update the placement tests.
 - [ ] C4: Replace `NotchSessionRow` with a session card (badge, folder · status, timer) and a request card (tool name, "Answer in the terminal"); recalculate elapsed time once per second only while expanded with a running timer; build passes.
 - [ ] C5: Verify the cards in the real app with fictional events through the bundled helper: same-folder sessions, running and stopped timers, a request card, and an unknown session; one batched visual review by the user.
