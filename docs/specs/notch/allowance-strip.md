@@ -63,12 +63,16 @@ This takes over the display part of usage/codex-allowance U5. See the [notch are
 - **Prefer the matching `codex/` bucket, 2026-11-01.** The user approved this over choosing the bucket with the lowest allowance.
   Within the selected duration, use a sole matching window when no `codex/` window exists. Multiple remaining matches show unavailable.
   This avoids presenting an arbitrary bucket's quota as the provider's allowance.
+- **Use the user-supplied LobeHub variants, 2026-11-02.** The user identified LobeHub as the source and approved resource packaging.
+  This replaces the official-brand-page sourcing call below. These are third-party copies, not verified official provider downloads.
 
 ## My calls
 
 - The strip waits for session-cards, because it fits in the 620-point panel width that session-cards C3 sets.
-- The user supplies the two logo files (SVG or PDF) from each company's official brand page. The task records where each file came from.
+- The user supplies the two logo files (SVG or PDF) from each company's official brand page. The task records where each file came from. (replaced 2026-11-02)
 - Logos go in the app's resources, with the pet resources as the pattern. A missing logo falls back to the provider name in text.
+- Keep the two supplied SVGs in the repository and bundle them locally. This avoids runtime or build-time network fetches.
+  Updates require an explicit asset change. Automatic fetching adds machinery for only two small files.
 - The strip shows one entry per provider. If one provider has several sources, the entry uses the newest fresh reading, and the tooltip lists every source.
 - A passed reset counts as stale, as the usage store already decides.
 
@@ -239,10 +243,73 @@ Logs stay outside the repository at `/private/tmp/notch-pet-a2-red.log` and `/pr
 No full-suite run, standalone app build, app launch, helper injection, or capture ran for A2.
 A4 still owns rendering and the expanded-only refresh schedule. A5/C5 still own the batched runtime and visual review.
 
+## A3 asset preparation, 2026-11-02
+
+The user supplied two SVG files and requested their placement and renaming.
+Both files were copied unchanged, with the Downloads originals retained:
+
+| Supplied file | Repository path |
+|---|---|
+| `/Users/ianhoe/Downloads/codex-color.svg` | `Sources/NotchPet/Resources/Logos/codex.svg` |
+| `/Users/ianhoe/Downloads/claudecode-color.svg` | `Sources/NotchPet/Resources/Logos/claude-code.svg` |
+
+Both files parse as SVG with a `0 0 24 24` view box.
+Neither file has download-source metadata. The user later identified `lobehub.com` as the source and approved packaging.
+The verified upstream file pages are:
+
+- [Codex color SVG](https://github.com/lobehub/lobe-icons/blob/master/packages/static-svg/icons/codex-color.svg).
+- [Claude Code color SVG](https://github.com/lobehub/lobe-icons/blob/master/packages/static-svg/icons/claudecode-color.svg).
+
+`Sources/NotchPet/Resources/Logos/SOURCES.md` records the source links, original names, and bundled-file SHA-256 values.
+`LobeIcons-LICENSE.txt` preserves the collection's MIT license. Both notices are packaged with the logos.
+These files are third-party LobeHub variants. No official-provider download or upstream commit identity is claimed.
+
+## A3 verification, 2026-11-02
+
+The user approved resource registration, app packaging, and the build check on `feat/notch-allowance-strip`.
+`Package.swift` now processes the app target's `Resources` directory.
+`scripts/run.sh` copies `NotchPet_NotchPet.bundle` into the app's `Contents/Resources` directory.
+No custom types or functions were added.
+
+A pre-change assertion failed because the app target had no resource declaration.
+The approved build command was:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  TMPDIR=/private/tmp bash scripts/run.sh --build-only
+```
+
+The sandboxed attempt failed on compiler-cache access with `Operation not permitted`.
+The same command passed outside the sandbox, with `Build complete!` and `Info.plist: OK`.
+The packaged app is `/private/tmp/notch-pet-dev/Notch Pet.app`.
+
+```bash
+cmp Sources/NotchPet/Resources/Logos/codex.svg \
+  "/private/tmp/notch-pet-dev/Notch Pet.app/Contents/Resources/NotchPet_NotchPet.bundle/codex.svg"
+cmp Sources/NotchPet/Resources/Logos/claude-code.svg \
+  "/private/tmp/notch-pet-dev/Notch Pet.app/Contents/Resources/NotchPet_NotchPet.bundle/claude-code.svg"
+cmp Sources/NotchPet/Resources/Logos/SOURCES.md \
+  "/private/tmp/notch-pet-dev/Notch Pet.app/Contents/Resources/NotchPet_NotchPet.bundle/SOURCES.md"
+cmp Sources/NotchPet/Resources/Logos/LobeIcons-LICENSE.txt \
+  "/private/tmp/notch-pet-dev/Notch Pet.app/Contents/Resources/NotchPet_NotchPet.bundle/LobeIcons-LICENSE.txt"
+git diff --check
+```
+
+All comparisons and the whitespace check exited 0.
+No Swift tests, app launch, helper injection, or capture ran for A3.
+
+**A4 lookup requirement:** the generated `Bundle.module` accessor searches
+`Bundle.main.bundleURL/NotchPet_NotchPet.bundle`, then the absolute build directory.
+The app packages its bundle under `Contents/Resources` instead.
+The planning example using `Bundle.module` alone therefore does not establish packaged-app lookup.
+A4 must resolve the packaged resource bundle explicitly and retain the provider-name fallback.
+The pet's generated accessor has the same pattern. Its separate lookup behavior was not changed or verified here.
+Rendering and actual-app resource loading remain unverified until their owning tasks run.
+
 ## Tasks
 
 - [x] A1: Add pure strip presentation: pick the 5-hour window or the weekly fallback per provider, percent left rounded down, its color level, and the stale, missing, and unverified states; presentation tests cover each case.
 - [x] A2: Add countdown text (`3h45m`, `4d22h`) and tooltip text listing every window, reset time, freshness, account confidence, and source status; presentation tests cover each case.
-- [ ] A3: Add the Claude and Codex logo files to the app's resources with their sources recorded; the build passes and the packaged app contains both files.
+- [x] A3: Add the Claude and Codex logo files to the app's resources with their sources recorded; the build passes and the packaged app contains both files.
 - [ ] A4: Show the strip left of the notch in the expanded top row with logos and tooltips, keep the collapsed paw and count, and remove the old limits sections; the build passes.
 - [ ] A5: Verify the strip in the real app with a real Codex reading and Claude's empty state, including a tooltip on hover; the user reviews it with session-cards C5.

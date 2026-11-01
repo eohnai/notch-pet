@@ -3,13 +3,14 @@
 ## Now
 
 On `feat/notch-allowance-strip`, stacked on `feat/notch-session-cards` at C4 `a2a2ede`.
-C1–C4 and allowance-strip A1 `9a94fec` are committed. A2 is implemented and uncommitted, with evidence in its spec.
+C1–C4, allowance-strip A1 `9a94fec`, and A2 `bcbf6e4` are committed.
+A3 is complete: the supplied SVGs, LobeHub source records, license, resource declaration, and packaging.
 Earlier CI cleanup and the plan remain in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`.
 No main merge ran. Existing agent configuration and older goals remain paused.
 
 ## Next
 
-1. Review and commit A2 on `feat/notch-allowance-strip`. Supply the two official logo files and their source URLs, then plan A3. Preserve session-cards C5 for the single batched C5/A5 visual review, with separate helper-injection and runtime-verification approval.
+1. Plan A4 on `feat/notch-allowance-strip` with explicit packaged-resource lookup and provider-name fallback. Preserve session-cards C5 for the single batched C5/A5 visual review, with separate helper-injection and runtime-verification approval.
 2. Restore the CI cleanup on `feat/automation-ci-foundation` from stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`. Preserve completed C1–C4 when integrating its session-cards plan. Bring in latest main separately before PR review. Further automation work stays deferred while features take priority.
 3. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
 4. Plan codex-setup R2 (split targets), then R3 (typed agent/hook identities), with design review and renewed test authorization. Follow with R5 and R6; R6 needs a user decision on the 128-session limit.
@@ -17,10 +18,10 @@ No main merge ran. Existing agent configuration and older goals remain paused.
 
 ## Blockers
 
-- A3 requires user-supplied Claude and Codex logo files and their official source URLs. Neither logo is in the repository. A4 depends on A3.
+- A4 must resolve `NotchPet_NotchPet.bundle` from the packaged app's `Contents/Resources`. The generated `Bundle.module` accessor searches the app root, then the absolute build directory. The pet accessor has the same pattern. Runtime resource lookup remains unverified; see A3's evidence in the allowance-strip spec. The supplied logos are third-party LobeHub variants, not verified official-provider downloads.
 - Actual timer scheduling, card layout, focus, and allowance-strip runtime behavior remain unverified. Later tests, builds, helper injections, and runtime acceptance need their own task approval. The capture prohibition remains in force.
 - The earlier CI cleanup and C2 plan are saved in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`, named `preserve ci cleanup and c2 plan before feature work`. A patch backup is `/private/tmp/notch-pet-c2-documentation-before-switch.patch`. The saved cleanup drops F8b's remaining hosted acceptance work and records F10's passing PR/main baseline. Restore it on its owning CI branch. The temporary worktree was removed.
-- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. C2–C4 and A1–A2 ran only their approved focused suites; C4 also built the app bundle.
+- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. C2–C4 and A1–A2 ran only their approved focused suites; C4 and A3 also built the app bundle.
 - Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
