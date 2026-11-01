@@ -186,7 +186,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [x] F8a: Diagnose the failed hosted baseline using saved reports, a focused local test, and a disposable scheduling probe; record confirmed findings and evidence limits without changing the receiver or repository tests.
 - [x] F8r: Repair `receiverDeadlineDoesNotResetForEachByte()` so a paused sender retries instead of failing, while a per-byte deadline reset still fails; verify with disposable pause and reset probes and the full local suite.
-- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: the user commits and pushes F8r, then authorizes the hosted drills)
+- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: diagnose and repair main run 41281493943's invalid-frame callback failure, then authorize the remaining hosted drills)
 
 ## F1 partial evidence, 2026-10-31
 
@@ -881,4 +881,135 @@ The probe was a disposable package outside the checkout with byte-identical Even
 It added only a `DIAG_DELAY` switch (`none`, `first`, `every`) that replaces one 15 ms sleep with 150 ms,
 and an attempt-result print. The reset probe added `end = deadline(after: 100)` after each read in `readBounded`.
 Commands used `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --filter receiverDeadlineDoesNotResetForEachByte`
-with `--package-path` and `--scratch-path` outside the checkout. Hosted behavior remains unverified until F8b.
+with `--package-path` and `--scratch-path` outside the checkout. The subsequent hosted observations follow below.
+
+## PR #9 merge verification, 2026-11-01
+
+The user requested merging PR #9 and checking main before the proposed workflow extraction.
+The repair is committed as `4f0226a` and its records as `90254a2`.
+The workflow and CI scripts were unchanged by those commits.
+
+- [PR #9](https://github.com/eohnai/notch-pet/pull/9) at head `90254a26464b1551807264b8878fc081b3942351`
+  passed all six jobs in [run 41281269127](https://github.com/eohnai/notch-pet/actions/runs/41281269127).
+- After checking all six results and the three changed paths, the PR merged with an exact-head guard.
+  Its merge commit is `bf12b51bd670d730b5d7ebb45d691824dedd1c43`.
+- The automatic [main run 41281493943](https://github.com/eohnai/notch-pet/actions/runs/41281493943), attempt 1,
+  failed. Its native summary records 131 passed functions and one failed function.
+  `receiverDeadlineDoesNotResetForEachByte()` passed. The sole failure was
+  `invalidFramesNeverReachCallback()` at `Tests/EventBridgeTests/ContractAndSocketTests.swift:151`:
+  `Expectation failed: (observations.count → 2) == 1`.
+- Workflow, Build, Contract, and Helper passed. Tests and Required failed.
+  The uploaded report preserved the native stream, summary, log, original exit status, metadata, and incomplete inventory.
+  The failing input is not identified by the test's aggregate count assertion.
+  Its maximum-frame buffering assumption is already a known limitation, but its role in this failure is unconfirmed.
+- The main failure was inspected with `gh run view 41281493943` and its saved test report was downloaded.
+  Evidence is outside the checkout at `/private/tmp/notch-pet-pr9-main-failure/`.
+  `gh run watch 41281493943 --interval 20 --exit-status` exited 1.
+  No run was repeated, and no additional local tests or repairs ran.
+
+The workflow extraction remains proposed. Establish a passing main baseline before starting it.
+Plan a separate diagnosis that identifies the extra callback's input, then review any resulting repair.
+The remaining F8b acceptance drills are still open.
+
+## Invalid-frame callback diagnosis, 2026-11-01
+
+The user invoked `debug-issue` to explain main run `41281493943`'s failure.
+This diagnosis used the saved reports, one focused repository test, and disposable probes.
+No repository Swift code changed. No full suite, hosted rerun, or repair ran.
+
+### Cause and evidence limit
+
+`invalidFramesNeverReachCallback()` constructs `padded` at `ContractAndSocketTests.swift:139`:
+
+```swift
+let padded = Data(valid.dropLast()) + Data(repeating: 32, count: 16_384 - valid.count) + Data([10, 32])
+```
+
+Its first 16,384 bytes are valid JSON, trailing JSON whitespace, and LF.
+Only its last byte, an extra space at position 16,385, makes the complete input exceed the frame limit.
+The fixture therefore contains a valid complete frame before that extra byte.
+
+The [accepted transport contract](../../contracts/agent-events-v1.md#socket-lifecycle-and-failure-behavior) requires rejection only
+when extra bytes are already buffered after LF. It permits one bounded frame followed by connection closure.
+`SocketSupport.readBounded` implements that rule with a nonblocking peek after LF at `SocketSupport.swift:146`.
+It returns the valid frame if no extra byte is queued then.
+`writeAll` can need multiple socket writes. Sending the complete fixture does not establish that its final byte
+was available when the receiver checked.
+
+Hypothesis: the test expects the final space to be available before the receiver returns the valid prefix.
+A different delivery schedule can produce one allowed callback for that prefix and one for the final valid message.
+The resulting count is two, while the test always expects one.
+
+Two disposable cases confirmed that assumption against byte-identical copies of all six EventBridge source files:
+
+| Case | Observation | Result |
+|---|---|---|
+| Queue all 16,385 bytes before calling the production reader | A peek confirmed all bytes were available. `readBounded` threw `BridgeError.invalidMessage`. | Control passed. |
+| Send the fixture's 16,384-byte prefix to the actual server and hold the suffix until its callback | `HookEnvelopeV1.decode` accepted the prefix. The server delivered one callback before the suffix. The final valid message raised the count to two. | The original `observations.count == 1` assertion failed with the exact hosted error. |
+
+The queued control used a socket pair with a 65,536-byte send buffer so all bytes could be queued first.
+The delayed case used the unchanged server and an isolated listener, without changing receiver deadlines.
+A separate local socket-pair observation reported an 8,192-byte default send buffer.
+One nonblocking write requested 16,385 bytes and returned 8,192, demonstrating an actual short write on this Mac.
+That observation does not establish the hosted socket's buffer size.
+
+The test's buffering assumption is confirmed as a reproducible defect. The receiver behavior in both probes matches the contract.
+The saved hosted report contains only the aggregate count failure, not per-input callbacks or socket traces.
+It cannot prove which fixture caused the original extra callback or its exact delivery schedule.
+The `valid + valid` fixture also contains a complete valid prefix and needs the same buffered-input distinction during repair review.
+
+### Executed commands
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-f8-frame-diagnosis/build \
+  --enable-code-coverage --filter invalidFramesNeverReachCallback
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --package-path /private/tmp/notch-pet-f8-frame-diagnosis/probe \
+  --scratch-path /private/tmp/notch-pet-f8-frame-diagnosis/probe-build
+```
+
+The unchanged repository test exited 0: one test passed in 0.014 seconds.
+The probe exited 1 as intended: its prequeued case passed and its delayed case reproduced
+`Expectation failed: (observations.count → 2) == 1`.
+Neither outcome replaces the failed hosted baseline.
+The logs are `/private/tmp/notch-pet-f8-frame-focused.log` and
+`/private/tmp/notch-pet-f8-frame-diagnosis/probe.log`. The probe source is beside its log, under `probe/`.
+
+To recreate the probe, use a fresh external Swift package with the production EventBridge target and a test target.
+Keep the production sources unchanged. Recreate `padded`, verify its LF-terminated prefix decodes,
+and send only that prefix through an isolated server connection. Wait for its callback before attempting the suffix.
+Then send a separate valid message and check the original count assertion.
+For the rejection control, prequeue the entire fixture in a sufficiently buffered socket pair.
+Confirm the queued byte count before calling `readBounded`. The result must be `invalidMessage`.
+Future execution still needs task-specific authorization.
+
+### Proposed repair
+
+Keep unconditionally invalid stream fixtures invalid before their terminating LF.
+Test extra-byte and second-frame rejection separately with explicitly prequeued input.
+Retain valid maximum-size input coverage and the subsequent valid-message check.
+Label cases so future failures identify the input. This is a proposed test repair, not an accepted implementation task.
+
+## Test-timing repair, 2026-11-01
+
+The user approved a repair of the invalid-frame test and other timing-sensitive socket tests.
+Only test files changed: `Tests/EventBridgeTests/ContractAndSocketTests.swift` and `Tests/SessionStateTests/UsageReceiverTests.swift`.
+
+- `invalidFramesNeverReachCallback`: the oversized fixture puts LF at byte 16,385, so every prefix is invalid.
+  `valid + valid` moved out because its first frame is a valid prefix. The test asserts that the only callback carries the final message's event ID.
+- `queuedExtraBytesAreRejected` (new): queues each input in a 64 KiB socket pair before `readBounded` runs.
+  It checks a valid maximum-size frame, a second frame, an extra byte, and a maximum-size frame plus one byte, each by name.
+- `fragmentedFrameAndPeerIdentity`: uses a socket pair instead of the server's 100 ms accept deadline.
+  The second write waits until `SO_NREAD` is 0, and the test asserts that the prefix had its own read.
+- `stopClosesStalledConnectionAndReleasesOwnership`: the bound is 1 s. A probe showed that the client sees end-of-file
+  whether or not the server accepted. The test therefore requires stop to end at least 100 ms after connect begins,
+  which shows a stalled accepted read. It retries a shorter attempt up to five times.
+- `malformedAndInvalidQuotaCannotReachCallback`: waits for a final valid observation and asserts that it is the only one.
+  `rawSend` now reports delivery. The 8,193-byte case cannot be delivered (see STATUS.md, usage datagram limit),
+  so it is a `withKnownIssue`. That check fails once the limit is fixed and the datagram is delivered.
+
+Verification, all local with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`:
+the two suites passed (20 tests, 1 known issue). The two suites also passed 30 of 30 runs with three `yes` processes loading the CPU.
+One full suite run passed (133 tests in 24 suites, 1 known issue). No hosted run was started.
+The receiver-deadline, write-backpressure, and stop tests still depend on timing, with wider margins.
