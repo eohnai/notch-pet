@@ -86,6 +86,32 @@ struct NotchCardPresentationTests {
         #expect(NotchPresentation.card(for: session, among: [session]).timer == nil)
     }
 
+    @Test(arguments: [SessionStatus.working, .questionNeeded, .approvalNeeded])
+    func promptTimerUpdatesRequireAnExpandedPanel(status: SessionStatus) {
+        let sessions = [snapshot(status: status)]
+        #expect(NotchPresentation.shouldTickPromptTimers(expanded: true, sessions: sessions))
+        #expect(!NotchPresentation.shouldTickPromptTimers(expanded: false, sessions: sessions))
+    }
+
+    @Test(arguments: [SessionStatus.idle, .responseReady, .unknown, .ended])
+    func stoppedOrHiddenTimersNeedNoUpdates(status: SessionStatus) {
+        let session = snapshot(status: status, stoppedAtMs: 124_999)
+        #expect(!NotchPresentation.shouldTickPromptTimers(expanded: true, sessions: [session]))
+    }
+
+    @Test func promptTimerUpdatesRequireAtLeastOneObservedRunningTurn() {
+        #expect(!NotchPresentation.shouldTickPromptTimers(expanded: true, sessions: []))
+        let missing = snapshot("missing", startedAtMs: nil)
+        let invalid = snapshot("invalid", startedAtMs: -1)
+        let stopped = snapshot("stopped", status: .responseReady, stoppedAtMs: 124_999)
+        let sessions = [missing, invalid, stopped]
+        #expect(!NotchPresentation.shouldTickPromptTimers(expanded: true, sessions: sessions))
+
+        let running = snapshot("running", agent: "claude")
+        #expect(NotchPresentation.shouldTickPromptTimers(expanded: true, sessions: sessions + [running]))
+        #expect(!NotchPresentation.shouldTickPromptTimers(expanded: false, sessions: sessions + [running]))
+    }
+
     @Test func runningDurationUsesTimestampsAndFloorsPartialSeconds() {
         let timer = PromptTimer.running(startedAtMs: 1_000)
         #expect(timer.elapsedSeconds(at: 1_000) == 0)

@@ -2,24 +2,24 @@
 
 ## Now
 
-On `feat/notch-session-cards`, preserving committed C1 `1f30a3c` and C2 `c25c699`. C3 is complete and uncommitted.
-The expanded panel now requests 620 points wide and 240 points below the header. C3 evidence is in the session-cards spec.
+On `feat/notch-session-cards`, preserving committed C1 `1f30a3c` and C2 `c25c699`. C3 and C4 are complete and uncommitted.
+The expanded panel has session/request cards and conditional one-second prompt-timer updates. C3/C4 evidence is in the session-cards spec.
 Earlier CI cleanup and the plan remain in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`.
 No main merge ran. Existing agent configuration and older goals remain paused.
 
 ## Next
 
-1. Review and commit C3, then plan session-cards C4's card UI and timer scheduling. C5 and allowance-strip A1–A5 follow separately. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
-2. Restore the CI cleanup on `feat/automation-ci-foundation` from stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`. Preserve completed C1–C3 when integrating its session-cards plan. Bring in latest main separately before PR review. Further automation work stays deferred while features take priority.
+1. Review and commit C3 and C4 separately. Plan allowance-strip A1 next while preserving session-cards C5 for the single batched C5/A5 visual review. The user supplies logo files for A3. C5 needs its own helper-injection and runtime-verification approval.
+2. Restore the CI cleanup on `feat/automation-ci-foundation` from stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`. Preserve completed C1–C4 when integrating its session-cards plan. Bring in latest main separately before PR review. Further automation work stays deferred while features take priority.
 3. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
 4. Plan codex-setup R2 (split targets), then R3 (typed agent/hook identities), with design review and renewed test authorization. Follow with R5 and R6; R6 needs a user decision on the 128-session limit.
 5. Before I3b2, review integration-health evidence and session-island acceptance (start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`), then plan I3b2. Codex 0.164.0 still needs isolated qualification.
 
 ## Blockers
 
-- C3's task list and focused placement tests were approved and are complete. Later tests, builds, helper injections, and runtime acceptance need their own task approval. The capture prohibition remains in force.
+- C4's task list, focused tests, and build-only check were approved and are complete. Actual timer scheduling, card layout, and focus remain unverified. Later tests, builds, helper injections, and runtime acceptance need their own task approval. The capture prohibition remains in force.
 - The earlier CI cleanup and C2 plan are saved in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`, named `preserve ci cleanup and c2 plan before feature work`. A patch backup is `/private/tmp/notch-pet-c2-documentation-before-switch.patch`. The saved cleanup drops F8b's remaining hosted acceptance work and records F10's passing PR/main baseline. Restore it on its owning CI branch. The temporary worktree was removed.
-- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. C2 and C3 ran only their approved focused suites.
+- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. C2–C4 ran only their approved focused suites; C4 also built the app bundle.
 - Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.

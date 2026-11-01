@@ -45,11 +45,13 @@ struct NotchSessionView: View {
                             if sessionStore.sessions.isEmpty {
                                 Text("No sessions observed yet.").foregroundStyle(.secondary)
                             }
-                            LazyVStack(spacing: 0) {
-                                ForEach(NotchPresentation.ordered(sessionStore.sessions)) { snapshot in
-                                    NotchSessionRow(snapshot: snapshot, selection: $selection)
-                                    Divider().overlay(.white.opacity(0.12))
+                            if NotchPresentation.shouldTickPromptTimers(expanded: expanded,
+                                                                      sessions: sessionStore.sessions) {
+                                TimelineView(.periodic(from: .now, by: 1)) { context in
+                                    sessionCards(at: Int64(context.date.timeIntervalSince1970 * 1000))
                                 }
+                            } else {
+                                sessionCards(at: Int64(Date.now.timeIntervalSince1970 * 1000))
                             }
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -73,6 +75,21 @@ struct NotchSessionView: View {
         }
         .onChange(of: sessionStore.sessions) { _, sessions in
             selection = NotchPresentation.selection(selection, sessions: sessions)
+        }
+    }
+
+    private func sessionCards(at nowMs: Int64) -> some View {
+        LazyVStack(spacing: 10) {
+            ForEach(NotchPresentation.ordered(sessionStore.sessions)) { snapshot in
+                VStack(spacing: 6) {
+                    NotchSessionCard(snapshot: snapshot,
+                                     presentation: NotchPresentation.card(for: snapshot, among: sessionStore.sessions),
+                                     nowMs: nowMs, selection: $selection)
+                    ForEach(snapshot.pendingRequests, id: \.eventID) { request in
+                        NotchRequestCard(request: request)
+                    }
+                }
+            }
         }
     }
 }

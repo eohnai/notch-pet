@@ -23,6 +23,13 @@ public struct NotchCardPresentation: Equatable, Sendable {
 }
 
 public enum NotchPresentation {
+    public static func shouldTickPromptTimers(expanded: Bool, sessions: [SessionSnapshot]) -> Bool {
+        expanded && sessions.contains { session in
+            if case .running = promptTimer(for: session) { return true }
+            return false
+        }
+    }
+
     public static func card(for session: SessionSnapshot,
                             among sessions: [SessionSnapshot]) -> NotchCardPresentation {
         let path = session.projectPath.flatMap { $0.isEmpty ? nil : $0 }

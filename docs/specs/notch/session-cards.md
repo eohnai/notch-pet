@@ -58,6 +58,8 @@ The allowance strip above the cards is a separate spec, `allowance-strip`. See t
   The store must therefore keep the turn's start time. At planning time, the store did not keep it.
 - **Calculate duration from numeric timestamps, 2026-11-01.** The user chose the existing `Int64` millisecond timestamps over parsing display strings or adding `Date` conversions.
   Subtract start from current or stop time, then format once for display. This avoids string parsing and counter drift after delayed updates.
+- **Use conditional SwiftUI `TimelineView` scheduling, 2026-11-01.** The user approved this over a custom `.task(id:)` loop.
+  It avoids custom clock state and cancellation code. Create the one-second timeline only while expanded with a running prompt timer.
 - [0002: Use services and shared stores](../../decisions/0002-use-mvvm-with-services.md).
 - [0012: Support terminal-independent operation](../../decisions/0012-support-terminal-independent-operation.md).
 
@@ -200,10 +202,73 @@ small-screen height bounds, screen coordinates, collapsed sizes, and invalid geo
 No full-suite run, standalone app build, app launch, helper injection, or capture ran for C3.
 Logs remain outside the repository at `/private/tmp/notch-pet-c3-red.log` and `/private/tmp/notch-pet-c3-green.log`.
 
+## C4 plan, 2026-11-01
+
+The user approved C4 implementation, the conditional `TimelineView` approach, the pure timer-update policy,
+focused tests, and the build-only check. Stay on `feat/notch-session-cards` and preserve C3's uncommitted changes.
+
+Files and order:
+
+1. Add failing update-policy cases in `Tests/SessionStateTests/NotchCardPresentationTests.swift`.
+2. Add `NotchPresentation.shouldTickPromptTimers(expanded: Bool, sessions: [SessionSnapshot]) -> Bool`.
+   Reuse the existing timer classification. Require expansion and at least one running timer.
+3. Replace `NotchSessionRow.swift` with `NotchSessionCard.swift` and add `NotchRequestCard.swift`.
+   Session-card inputs are `snapshot`, `presentation`, `nowMs`, and a `selection` binding.
+   Request-card input is `SessionRequest`. Show requests outside the session's expandable identity details.
+4. Wire cards and conditional one-second updates in `NotchSessionView.swift`.
+   Keep full identity details available when a card opens and retain unconfirmed request labels.
+5. Record verification here and checkpoint `docs/STATUS.md`. Tick C4 only after the checks pass.
+
+Approved verification:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-c4/build \
+  --filter 'NotchCardPresentationTests|NotchSelectionTests|NotchPresentationTests'
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  bash scripts/run.sh --build-only
+git diff --check
+```
+
+Run the focused tests before implementation and again afterward. Passing means exit 0 and no failed tests,
+a successful app bundle build, and no whitespace errors. Actual timer scheduling and appearance remain for C5/A5's
+single batched user review. No app launch, helper injection, or capture is part of C4.
+
+## C4 verification, 2026-11-01
+
+Implemented on `feat/notch-session-cards`, preserving committed C1 `1f30a3c`, C2 `c25c699`,
+and C3's uncommitted resize and placement tests.
+
+`NotchSessionCard` replaces `NotchSessionRow` with a provider badge, folder and status, shared-folder short ID,
+and numeric prompt duration. Opening the card shows the full project path and session ID, retained unknown-state
+guidance, and the last refresh time. Each pending request has a separate `NotchRequestCard` outside those details,
+with its tool name, pending/unconfirmed question or approval label, and "Answer in the terminal".
+No prompt, command, question, or tool-input content was added.
+
+`NotchPresentation.shouldTickPromptTimers` reuses the existing timer classification.
+`NotchSessionView` creates a one-second `TimelineView` only inside the expanded content and when this policy returns true.
+The timeline wraps the session cards, leaving allowance rendering on its existing schedule.
+Stopped durations stay fixed. Current time comes from the timeline date, with elapsed time calculated from event timestamps.
+The nonactivating AppKit panel remains unchanged.
+
+The approved focused test command initially failed because the sandbox denied Swift's compiler cache.
+The elevated retry exited 1 because `shouldTickPromptTimers` did not exist, establishing the failing cases.
+After implementation, the same focused command exited 0: 24 tests in three suites passed.
+The new policy cases cover expansion/collapse, working/question/approval states, stopped and hidden timers,
+missing/invalid starts, empty lists, and a mixed-provider list with one running timer.
+
+The approved build-only command exited 0 and produced the development app bundle with `Info.plist: OK`.
+The build included the final timer accessibility label, which contains the displayed duration.
+`git diff --check` exited 0. Logs remain outside the repository at `/private/tmp/notch-pet-c4-red.log`,
+`/private/tmp/notch-pet-c4-green.log`, and `/private/tmp/notch-pet-c4-build.log`.
+
+No full-suite run, app launch, helper injection, or capture ran for C4.
+Actual scheduler behavior, layout, focus, and fictional-event acceptance remain unverified for C5/A5's batched user review.
+
 ## Tasks
 
 - [x] C1: Keep each turn's start and response-ready times in `SessionStore` and expose them on `SessionSnapshot`; store tests cover start, stop, repeated stop, and a new turn resetting both times.
 - [x] C2: Add pure card presentation to `NotchPresentation`: folder name, short session ID for a shared folder, numeric running/stopped timer states, elapsed-time calculation, and separate display formatting. Presentation tests cover each case.
 - [x] C3: Make the expanded panel 620 points wide and 240 points below the header in `NotchPlacement`; update the placement tests.
-- [ ] C4: Replace `NotchSessionRow` with a session card (badge, folder · status, timer) and a request card (tool name, "Answer in the terminal"); recalculate elapsed time once per second only while expanded with a running timer; build passes.
+- [x] C4: Replace `NotchSessionRow` with a session card (badge, folder · status, timer) and a request card (tool name, "Answer in the terminal"); recalculate elapsed time once per second only while expanded with a running timer; build passes.
 - [ ] C5: Verify the cards in the real app with fictional events through the bundled helper: same-folder sessions, running and stopped timers, a request card, and an unknown session; one batched visual review by the user.
