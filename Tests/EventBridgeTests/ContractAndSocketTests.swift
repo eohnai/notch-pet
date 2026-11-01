@@ -14,6 +14,10 @@ private final class Observations: @unchecked Sendable {
     var count: Int { lock.withLock { values.count } }
 }
 
+private enum FragmentedInputResult: Equatable {
+    case closedDespiteInput, stayedOpen, inconclusive
+}
+
 struct ContractAndSocketTests {
     private func endpoint() -> BridgeEndpoint {
         BridgeEndpoint(directory: "/private/tmp/notch-pet-test-\(UUID().uuidString)")
@@ -153,33 +157,56 @@ struct ContractAndSocketTests {
         let server = EventBridgeServer(endpoint: endpoint)
         try server.start { observations.append($0) }
         defer { server.stop() }
+        // A paused test thread can leave a correct receiver no byte to time out against.
+        // Such an attempt proves nothing either way, so only it is retried.
+        var result = FragmentedInputResult.inconclusive
+        var attempts = 0
+        while result == .inconclusive && attempts < 5 {
+            attempts += 1
+            result = try sendFragmentedInput(endpoint)
+        }
+        #expect(result == .closedDespiteInput, "the deadline must expire despite ongoing fragmented input")
+        #expect(observations.count == 0)
+        try EventBridgeClient(endpoint: endpoint).send(envelope())
+        #expect(observations.signal.wait(timeout: .now() + 2) == .success)
+    }
+
+    /// Sends one byte every 15 ms until the receiver closes or 250 ms pass.
+    private func sendFragmentedInput(_ endpoint: BridgeEndpoint) throws -> FragmentedInputResult {
+        // Mirrors the per-connection read deadline in `EventBridgeServer.receiveLoop`.
+        let receiverDeadline: UInt64 = 100_000_000
+        let connectStart = monotonicNanoseconds()
         let fd = try connect(endpoint)
         defer { close(fd) }
-        // Keep sending while observing closure. A write after the correct deadline
-        // can fail; that failure must not prevent checking the receiver's timeout.
         let end = deadline(after: 250)
-        var closed = false, successfulWrites = 0
+        var lastSendStart: UInt64?
         while monotonicNanoseconds() < end {
+            // Timed before the write: a pause after the byte leaves must not shorten the gap.
+            let sendStart = monotonicNanoseconds()
             do {
                 try writeAll(fd, data: Data([32]), until: deadline(after: 50))
-                successfulWrites += 1
+                lastSendStart = sendStart
             } catch BridgeError.unavailable {
-                // The receiver may have closed between this loop's checks.
+                // The receiver closed. The read below observes that.
+            } catch BridgeError.timeout {
+                // Only a paused sender misses a 50 ms limit for one byte.
+                return .inconclusive
             }
             var byte: UInt8 = 0
             let count = recv(fd, &byte, 1, MSG_DONTWAIT)
             if count == 0 || (count < 0 && errno == ECONNRESET) {
-                closed = true
-                break
+                let closedAt = monotonicNanoseconds()
+                // A correct receiver never closes before its deadline, which starts after connect.
+                #expect(closedAt - connectStart >= receiverDeadline)
+                // A resetting receiver closes at least one deadline after the last byte.
+                // Closure seen sooner proves that byte did not reset it.
+                guard let lastSendStart, closedAt - lastSendStart < receiverDeadline else { return .inconclusive }
+                return .closedDespiteInput
             }
             #expect(count < 0 && [EAGAIN, EWOULDBLOCK].contains(errno))
             Thread.sleep(forTimeInterval: 0.015)
         }
-        #expect(successfulWrites >= 2)
-        #expect(closed, "the deadline must expire despite ongoing fragmented input")
-        #expect(observations.count == 0)
-        try EventBridgeClient(endpoint: endpoint).send(envelope())
-        #expect(observations.signal.wait(timeout: .now() + 2) == .success)
+        return .stayedOpen
     }
 
     @Test func refusesUnsafePathsAndKeepsUnrelatedFiles() throws {
