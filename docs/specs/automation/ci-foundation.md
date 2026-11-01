@@ -8,7 +8,9 @@ This is the first feature in the approved [automation roadmap](area.md), ahead o
 
 The user approved the roadmap on 2026-10-31 and activated the F1–F7 local implementation goal later that day.
 That activation authorizes those tasks and their bounded local checks. The user also permits per-task commits,
-subject to AGENTS.md's commit-plan approval procedure. F8 hosted work and repository settings changes remain unauthorized.
+subject to AGENTS.md's commit-plan approval procedure. On 2026-11-01, the user approved splitting F8 and doing
+F8a's read-only hosted inspection, focused local test, and disposable diagnostic probes. New hosted drills,
+repairs, and repository settings changes still require their own approval. The user handles commits and pushes.
 
 ## Done when
 
@@ -182,7 +184,9 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
 - [x] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
 - [x] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
-- [ ] F8: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run.
+- [x] F8a: Diagnose the failed hosted baseline using saved reports, a focused local test, and a disposable scheduling probe; record confirmed findings and evidence limits without changing the receiver or repository tests.
+- [x] F8r: Repair `receiverDeadlineDoesNotResetForEachByte()` so a paused sender retries instead of failing, while a per-byte deadline reset still fails; verify with disposable pause and reset probes and the full local suite.
+- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: the user commits and pushes F8r, then authorizes the hosted drills)
 
 ## F1 partial evidence, 2026-10-31
 
@@ -728,5 +732,153 @@ Binaries expire after one day. Reports expire after three days. Preserve needed 
 Inventories and available-report uploads use `!cancelled()`, while Required uses `always()`.
 A cancelled or unavailable run never becomes passing because reports are absent.
 
-F1–F7 are locally verified. F8 remains unchecked. After the user pushes, verify the hosted PR/failure/docs-only/artifact/cancellation drills.
-Record commit-linked run URLs and finish with a passing hosted run before marking this specification done.
+F1–F7 are locally verified. F8b remains unchecked. Complete its hosted PR/failure/docs-only/artifact/cancellation drills
+and finish with a passing hosted run before marking this specification done. F8a's results follow below.
+
+## F8a hosted baseline diagnosis, 2026-11-01
+
+The user approved this diagnostic task and the F8 split. No repair or new hosted execution ran.
+The merged local branch was preserved as `archive/automation-ci-foundation-f7` at `a45d0ae`.
+`feat/automation-ci-foundation` was recreated from fetched `origin/main` at `51d9b86`.
+
+### Hosted observations
+
+- [PR #8](https://github.com/eohnai/notch-pet/pull/8) merged on 2026-11-01 as
+  `51d9b86bfd4f63cd92ae19a944b7f4a711bc5f24`.
+  Its [PR run 41274351177](https://github.com/eohnai/notch-pet/actions/runs/41274351177) passed all six jobs.
+  The API reports head `a45d0ae01ab443bf9a46b6d3003bbebd3b9f1231`.
+  The report's tested checkout identity is `b56f2082969c4d758c9d352bc20bfd49a72eccdb`.
+  Keep both identities when reviewing PR evidence. The saved native summary records 132 passed functions and zero other outcomes.
+- [Main push run 41275848518](https://github.com/eohnai/notch-pet/actions/runs/41275848518) failed at
+  `51d9b86bfd4f63cd92ae19a944b7f4a711bc5f24`, attempt 1.
+  Tests recorded 131 passed functions and one failed function:
+  `receiverDeadlineDoesNotResetForEachByte()` at `Tests/EventBridgeTests/ContractAndSocketTests.swift:178`.
+  The only issue was `Expectation failed: (successfulWrites → 1) >= 2`.
+  The native stream places that issue about 179 ms after the test-start event.
+  It contains no trace of sender scheduling or individual socket operations.
+- Workflow, Build, Contract, and Helper passed on main. Required rejected the failed Tests job and its incomplete evidence.
+  The test log, original exit code 1, native stream, failed-test summary, metadata, and inventory were uploaded.
+  Coverage export was skipped after the failed test command. Inventory reported its coverage inputs as missing.
+  This observed failure does not substitute for the deliberate-failure drill in F8b.
+- `git diff --exit-code a45d0ae 51d9b86 -- .` exited 0. The branch head and final merge have identical trees.
+  This comparison does not independently compare the PR report's synthetic checkout tree.
+  Both reports select `macos-26`, arm64, Xcode 26.5 build `17F42`, and Swift 6.3.2.
+  The image changed from `20261021.0445.8` to `20261026.0455.2`. Python changed from 3.15.0 to 3.15.1.
+  These environment differences were observed, not established as causes.
+
+### Local observations and conclusion
+
+The planned focused command ran against unchanged repository code:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-f8-diagnosis/build \
+  --enable-code-coverage --filter receiverDeadlineDoesNotResetForEachByte
+```
+
+The first sandboxed attempt failed before testing because the compiler could not write its module cache:
+`error opening '/Users/ianhoe/.cache/clang/ModuleCache/Swift-5SCGS38H536W.swiftmodule' for output`.
+The approved escalated execution exited 0: one test passed in 0.128 seconds.
+This passing local run does not replace or clear the failed hosted baseline.
+
+Hypothesis: the test requires the sender to run twice before a receiver deadline that can correctly expire independently.
+`EventBridgeServer.receiveLoop` starts a 100 ms deadline after `accept` and passes the same deadline to every read.
+The test sleeps for 15 ms between writes and requires at least two successful writes.
+A sender pause can exceed 100 ms, so a correct receiver can close before the second write.
+
+A disposable package copied all six production EventBridge source files byte-for-byte.
+It retained the original test assertions and isolated endpoint, with timing prints and one controlled sleep selection.
+Only `DIAG_DELAY` differed between the two executions:
+
+| Execution | Result | Observed behavior |
+|---|---|---|
+| `DIAG_DELAY=0` | Exit 0, one test passed | Six writes. Closure observed at 113.6 ms. Zero delivered incomplete messages. |
+| `DIAG_DELAY=1` | Expected exit 1, only the original write-count assertion failed | One write. The requested 150 ms sleep lasted 155.0 ms. Closure observed at 155.3 ms. Zero delivered incomplete messages. |
+
+Both executions also passed the original check that a subsequent valid message reaches the callback.
+The receiver source and its production deadline were unchanged. The probe confirmed that a sender delay is sufficient
+to reproduce the exact failed assertion while the receiver rejects the incomplete message and remains available.
+It does not prove that the hosted sender experienced that exact delay. No receiver defect was demonstrated by this probe.
+
+The confirmed test defect is its assumption about sender scheduling within the production deadline.
+The proposed repair must preserve fragmented-input coverage, closure, omission, and subsequent-message checks.
+It must distinguish a fixed total deadline from an incorrectly reset deadline without requiring two scheduler turns within 100 ms.
+Simply dropping the write-count assertion would weaken that evidence. The repair design and verification need a separate task review.
+The existing maximum-frame buffering limitation is a different test issue and was not investigated or changed here.
+
+### Reproduce the diagnostic probe
+
+Session evidence is outside the checkout:
+
+- `/private/tmp/notch-pet-f8-diagnosis/probe-control.log` and `probe-delayed.log`.
+- `/private/tmp/notch-pet-f8-diagnosis/probe/` contains the instrumented test and unchanged receiver sources.
+- `/private/tmp/notch-pet-f8-diagnosis/pr-artifacts/` contains the passing PR's saved test reports.
+- `/private/tmp/notch-pet-f8-inspect-41275848518/` contains the failed main run's saved test reports.
+
+The two actual probe commands used this form, first with `DIAG_DELAY=0`, then `DIAG_DELAY=1`:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer DIAG_DELAY=1 \
+  swift test --package-path /private/tmp/notch-pet-f8-diagnosis/probe \
+  --scratch-path /private/tmp/notch-pet-f8-diagnosis/probe-build \
+  --enable-code-coverage --filter receiverDeadlineDoesNotResetForEachByte
+```
+
+If temporary evidence is gone, recreate the controlled change in a fresh external package containing
+`Sources/EventBridge`, `Tests/EventBridgeTests/ContractAndSocketTests.swift`, and a minimal Swift package manifest
+with only the EventBridge target and its test target. Keep the original assertions and production sources.
+Inside only `receiverDeadlineDoesNotResetForEachByte`, replace its sleep with:
+
+```swift
+let delayed = ProcessInfo.processInfo.environment["DIAG_DELAY"] == "1" && successfulWrites == 1
+Thread.sleep(forTimeInterval: delayed ? 0.150 : 0.015)
+```
+
+Run the same filtered command with `DIAG_DELAY=0` and `DIAG_DELAY=1`, using the fresh package and scratch paths.
+The delayed case should fail only `successfulWrites >= 2`, while closure, zero incomplete deliveries,
+and subsequent valid-message delivery still pass. Preserve an unexpected outcome instead of retrying to replace it.
+These commands require task-specific execution approval in a future session.
+
+## F8r deadline-test repair, 2026-11-01
+
+The user approved this repair, its focused test, disposable probes, and the full local suite.
+Only `Tests/EventBridgeTests/ContractAndSocketTests.swift` changed. Receiver sources are unchanged.
+
+### Change
+
+The old test required two successful writes before closure. That assumed the sender runs twice within the 100 ms receiver deadline.
+The new test judges each attempt by the gap between closure and the start of the last successful write:
+
+| Attempt result | Meaning | Test action |
+|---|---|---|
+| Closure seen less than 100 ms after the last write started | That byte did not reset the deadline | Pass |
+| Closure seen 100 ms or more after the last write started, or no write succeeded | Sender paused, so no evidence either way | Retry |
+| A one-byte write misses its 50 ms limit (`BridgeError.timeout`) | Sender paused | Retry |
+| No closure within 250 ms | Deadline resets per byte | Fail without retry |
+| Five attempts without evidence | Correctness unproven | Fail |
+
+The write start time is taken before `writeAll`. A pause after the byte leaves can then only make an attempt inconclusive.
+It cannot make a resetting receiver look correct. Each attempt also expects closure no sooner than 100 ms after connect.
+A correct receiver starts its deadline after `accept`, so this check cannot fail for a correct receiver.
+The old `timeout` path was a second scheduling hazard: a pause inside `writeAll` threw out of the test.
+The zero-delivery and subsequent-valid-message checks are unchanged.
+The new test hard-codes the receiver's 100 ms deadline in one local constant, with a comment naming its source.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Changed test alone, repository package | Passed in 0.127 s |
+| Probe, no pause | Attempt 1 conclusive, passed |
+| Probe, 150 ms pause in the first attempt only | Attempt 1 inconclusive, attempt 2 conclusive, passed |
+| Probe, 150 ms pause in every attempt | Five inconclusive attempts, failed as expected |
+| Probe with a receiver that resets its deadline per byte | Attempt 1 stayed open, failed as expected |
+| Resetting receiver, pause in the first attempt | Attempt 2 stayed open, failed as expected |
+| Resetting receiver, pause in every attempt | Five inconclusive attempts, failed as expected |
+| Full suite, repository package | 132 tests in 24 suites passed |
+
+The probe was a disposable package outside the checkout with byte-identical EventBridge sources and the changed test.
+It added only a `DIAG_DELAY` switch (`none`, `first`, `every`) that replaces one 15 ms sleep with 150 ms,
+and an attempt-result print. The reset probe added `end = deadline(after: 100)` after each read in `readBounded`.
+Commands used `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --filter receiverDeadlineDoesNotResetForEachByte`
+with `--package-path` and `--scratch-path` outside the checkout. Hosted behavior remains unverified until F8b.
