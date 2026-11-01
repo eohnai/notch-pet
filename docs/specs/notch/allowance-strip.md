@@ -306,10 +306,84 @@ A4 must resolve the packaged resource bundle explicitly and retain the provider-
 The pet's generated accessor has the same pattern. Its separate lookup behavior was not changed or verified here.
 Rendering and actual-app resource loading remain unverified until their owning tasks run.
 
+## A4 plan and verification, 2026-11-02
+
+The user approved A4, the focused tests, and the build-only check.
+Stay on `feat/notch-allowance-strip`, stacked on session-cards C4 `a2a2ede`.
+
+Files and order:
+
+1. Add failing packaged-resource, missing-resource, and invalid-image cases in
+   `Tests/NotchPetTests/ProviderLogoTests.swift`.
+2. Add `Sources/NotchPet/ProviderLogo.swift` with
+   `image(for provider: IntegrationAgent, appBundle: Bundle = .main) -> NSImage?`.
+   Resolve packaged resources explicitly. Cache the app's decoded logos once.
+3. Replace `NotchUsageView.swift` with `NotchAllowanceStrip.swift`.
+   Its inputs are `store: UsageStore` and `activeProviders: Set<IntegrationAgent>`.
+   Reuse A1/A2 for entries, countdowns, colors, and full tooltips.
+4. Update `NotchSessionView.swift` to place the strip in the expanded header's left side.
+   Keep the collapsed paw and count. Leave the expanded right side empty.
+5. Record evidence here and checkpoint `docs/STATUS.md`.
+
+`ProviderLogo` resolves `Contents/Resources/NotchPet_NotchPet.bundle` in an app bundle.
+A missing or invalid packaged logo returns `nil`, without consulting a build-machine copy.
+The strip then shows the provider name. Non-app development execution uses the SwiftPM resource bundle.
+Both supplied SVGs decode and rasterize in tests using synthetic app bundles outside the repository.
+
+The strip reads store snapshots and the controller's missing-source status.
+It renders each active provider once, with the selected window, percent left, countdown, and account marker.
+Missing allowance shows `5h —`. Each entry retains the A2 tooltip, including all sources and windows.
+Provider entries sit outside the header button label, with their own accessibility labels and tooltips.
+The header retains its expansion action and accessible button.
+Equal-width header sides reserve the physical notch's space, and the left side clips at its boundary.
+
+The parent creates the strip only while expanded.
+The strip creates a 30-second `TimelineView` only when active providers exist.
+The session-card timeline and usage read loop are unchanged.
+Actual scheduling, constrained-width appearance, tooltips, focus, and accessibility remain for A5/C5.
+
+Approved verification:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-a4/build \
+  --filter 'ProviderLogoTests|NotchAllowancePresentationTests|UsageStoreTests'
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  TMPDIR=/private/tmp bash scripts/run.sh --build-only
+git diff --check
+```
+
+The first sandboxed test attempt failed on compiler-cache access with `Operation not permitted`.
+The elevated baseline failed because `ProviderLogo` did not exist.
+The first implementation build found an unsupported `accessibilityHelp` modifier.
+Removing that call corrected compilation. The `.help` tooltip remains.
+The focused tests then passed. After the final header changes, the same command passed again:
+32 tests in three suites, comprising 4 logo tests, 23 presentation tests, and 5 store tests.
+Logo cases cover both supplied SVGs, missing bundles, missing provider files, and invalid image data.
+The invalid-image case emits an expected CoreSVG diagnostic.
+The existing `PetWindowPlaybackTests.swift:108` weak-variable warning remains outside A4.
+
+The sandboxed build also failed on compiler-cache access.
+The elevated build exited 0 with `Build complete!` and `Info.plist: OK`.
+Both packaged logos matched the source SVGs with `cmp`:
+
+```bash
+cmp Sources/NotchPet/Resources/Logos/codex.svg \
+  "/private/tmp/notch-pet-dev/Notch Pet.app/Contents/Resources/NotchPet_NotchPet.bundle/codex.svg"
+cmp Sources/NotchPet/Resources/Logos/claude-code.svg \
+  "/private/tmp/notch-pet-dev/Notch Pet.app/Contents/Resources/NotchPet_NotchPet.bundle/claude-code.svg"
+```
+
+Both comparisons and `git diff --check` exited 0.
+Logs remain outside the repository at `/private/tmp/notch-pet-a4-red.log`,
+`/private/tmp/notch-pet-a4-green.log`, and `/private/tmp/notch-pet-a4-build.log`.
+No full-suite run, app launch, helper injection, or capture ran for A4.
+A5 and session-cards C5 remain open for the single batched runtime and visual review.
+
 ## Tasks
 
 - [x] A1: Add pure strip presentation: pick the 5-hour window or the weekly fallback per provider, percent left rounded down, its color level, and the stale, missing, and unverified states; presentation tests cover each case.
 - [x] A2: Add countdown text (`3h45m`, `4d22h`) and tooltip text listing every window, reset time, freshness, account confidence, and source status; presentation tests cover each case.
 - [x] A3: Add the Claude and Codex logo files to the app's resources with their sources recorded; the build passes and the packaged app contains both files.
-- [ ] A4: Show the strip left of the notch in the expanded top row with logos and tooltips, keep the collapsed paw and count, and remove the old limits sections; the build passes.
+- [x] A4: Show the strip left of the notch in the expanded top row with logos and tooltips, keep the collapsed paw and count, and remove the old limits sections; the build passes.
 - [ ] A5: Verify the strip in the real app with a real Codex reading and Claude's empty state, including a tooltip on hover; the user reviews it with session-cards C5.
