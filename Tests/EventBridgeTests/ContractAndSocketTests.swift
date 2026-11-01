@@ -16,10 +16,6 @@ private final class Observations: @unchecked Sendable {
     var eventIDs: [String] { lock.withLock { values.map(\.envelope.eventID) } }
 }
 
-private enum FragmentedInputResult: Equatable {
-    case closedDespiteInput, stayedOpen, inconclusive
-}
-
 struct ContractAndSocketTests {
     private func endpoint() -> BridgeEndpoint {
         BridgeEndpoint(directory: "/private/tmp/notch-pet-test-\(UUID().uuidString)")
@@ -200,62 +196,42 @@ struct ContractAndSocketTests {
         #expect(observations.eventIDs == [final.eventID])
     }
 
-    @Test func receiverDeadlineDoesNotResetForEachByte() throws {
-        let endpoint = endpoint(), observations = Observations()
-        defer { try? FileManager.default.removeItem(atPath: endpoint.directory) }
-        let server = EventBridgeServer(endpoint: endpoint)
-        try server.start { observations.append($0) }
-        defer { server.stop() }
-        // A paused test thread can leave a correct receiver no byte to time out against.
-        // Such an attempt proves nothing either way, so only it is retried.
-        var result = FragmentedInputResult.inconclusive
-        var attempts = 0
-        while result == .inconclusive && attempts < 5 {
-            attempts += 1
-            result = try sendFragmentedInput(endpoint)
+    @Test func readerKeepsOriginalDeadlineAcrossFragments() throws {
+        var pair: [Int32] = [0, 0]
+        try #require(socketpair(AF_UNIX, SOCK_STREAM, 0, &pair) == 0)
+        defer { close(pair[0]); close(pair[1]) }
+        for fd in pair {
+            try #require(fcntl(fd, F_SETFL, O_NONBLOCK) == 0)
         }
-        #expect(result == .closedDespiteInput, "the deadline must expire despite ongoing fragmented input")
-        #expect(observations.count == 0)
-        try EventBridgeClient(endpoint: endpoint).send(envelope())
-        #expect(observations.signal.wait(timeout: .now() + 2) == .success)
-    }
 
-    /// Sends one byte every 15 ms until the receiver closes or 250 ms pass.
-    private func sendFragmentedInput(_ endpoint: BridgeEndpoint) throws -> FragmentedInputResult {
-        // Mirrors the per-connection read deadline in `EventBridgeServer.receiveLoop`.
-        let receiverDeadline: UInt64 = 100_000_000
-        let connectStart = monotonicNanoseconds()
-        let fd = try connect(endpoint)
-        defer { close(fd) }
-        let end = deadline(after: 250)
-        var lastSendStart: UInt64?
-        while monotonicNanoseconds() < end {
-            // Timed before the write: a pause after the byte leaves must not shorten the gap.
-            let sendStart = monotonicNanoseconds()
-            do {
-                try writeAll(fd, data: Data([32]), until: deadline(after: 50))
-                lastSendStart = sendStart
-            } catch BridgeError.unavailable {
-                // The receiver closed. The read below observes that.
-            } catch BridgeError.timeout {
-                // Only a paused sender misses a 50 ms limit for one byte.
-                return .inconclusive
+        var byte: UInt8 = 32
+        try #require(write(pair[0], &byte, 1) == 1)
+        let originalDeadline: UInt64 = 100_000_000
+        var virtualNow: UInt64 = 0
+        var observedDeadlines: [UInt64] = []
+        #expect(throws: BridgeError.timeout) {
+            try readBounded(pair[1], limit: HookEnvelopeV1.frameLimit, until: originalDeadline, framed: true) { fd, _, end in
+                observedDeadlines.append(end)
+                // Stop a reset-deadline mutation before it can keep this test waiting indefinitely.
+                try #require(end == originalDeadline)
+                if observedDeadlines.count > 1 {
+                    var queued: Int32 = 0
+                    var length = socklen_t(MemoryLayout<Int32>.size)
+                    try #require(getsockopt(fd, SOL_SOCKET, SO_NREAD, &queued, &length) == 0)
+                    try #require(queued == 0, "the previous fragment must be read before the next arrives")
+                    try #require(write(pair[0], &byte, 1) == 1)
+                }
+                virtualNow += 40_000_000
+                if virtualNow >= end { throw BridgeError.timeout }
             }
-            var byte: UInt8 = 0
-            let count = recv(fd, &byte, 1, MSG_DONTWAIT)
-            if count == 0 || (count < 0 && errno == ECONNRESET) {
-                let closedAt = monotonicNanoseconds()
-                // A correct receiver never closes before its deadline, which starts after connect.
-                #expect(closedAt - connectStart >= receiverDeadline)
-                // A resetting receiver closes at least one deadline after the last byte.
-                // Closure seen sooner proves that byte did not reset it.
-                guard let lastSendStart, closedAt - lastSendStart < receiverDeadline else { return .inconclusive }
-                return .closedDespiteInput
-            }
-            #expect(count < 0 && [EAGAIN, EWOULDBLOCK].contains(errno))
-            Thread.sleep(forTimeInterval: 0.015)
         }
-        return .stayedOpen
+        #expect(observedDeadlines == [originalDeadline, originalDeadline, originalDeadline])
+        #expect(virtualNow == 120_000_000)
+        // Two fragments were read. The third was queued before expiry and must remain unread.
+        var queued: Int32 = 0
+        var length = socklen_t(MemoryLayout<Int32>.size)
+        try #require(getsockopt(pair[1], SOL_SOCKET, SO_NREAD, &queued, &length) == 0)
+        #expect(queued == 1)
     }
 
     @Test func refusesUnsafePathsAndKeepsUnrelatedFiles() throws {

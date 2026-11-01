@@ -61,6 +61,7 @@ After PR #10's main run passed, the user approved F9's script extraction and its
 - Keep the eight implementation tasks within the plan-feature size limits, including spec/STATUS updates.
   Each task below changes at most one implementation file. Review signatures and any needed split in its next-task plan.
   F9 is an approved exception: extracting the blocks and changing their callers together touches six implementation files.
+  F10 is another approved exception: the internal wait seam and its replacement test touch two implementation files.
 
 ## Workflow contract
 
@@ -167,6 +168,9 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - **Report coverage before setting thresholds, 2026-10-31.** The user approved a measured baseline followed by enforcement in coverage-gates.
 - **Extract inline CI logic into focused Python scripts, 2026-11-01.** The user approved a shorter workflow over retaining embedded Python.
   Keep orchestration in YAML, reuse the existing result predicate, and expose each extracted phase as a directly runnable CLI.
+- **Use an internal wait hook for deterministic reader-deadline tests, 2026-11-01.** The user approved F10 with both reset mutations.
+  Virtual time and recorded deadlines catch resets after the first read, which an already-expired-deadline-only check misses.
+  Prefer this small seam to a wider clock abstraction. The removed server-level coverage is explicit in F10.
 
 ## My calls
 
@@ -192,8 +196,9 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [x] F8a: Diagnose the failed hosted baseline using saved reports, a focused local test, and a disposable scheduling probe; record confirmed findings and evidence limits without changing the receiver or repository tests.
 - [x] F8r: Repair `receiverDeadlineDoesNotResetForEachByte()` so a paused sender retries instead of failing, while a per-byte deadline reset still fails; verify with disposable pause and reset probes and the full local suite.
-- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: remaining hosted drills need authorization after the refactor is committed and pushed)
+- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: establish a passing hosted baseline for F10, then authorize the remaining hosted drills)
 - [x] F9: Extract inline CI metadata, bounded execution, native-result parsing, inventory, and Required reporting into Python scripts; preserve workflow behavior and verify old/new outputs with saved reports and fictional failure fixtures.
+- [x] F10: Replace the retry-based deadline test with virtual waits that record the original deadline across reads; reject resets before every wait and after the first read, run EventBridge and full-suite checks, and document the lost server-level coverage.
 
 ## F1 partial evidence, 2026-10-31
 
@@ -1105,4 +1110,172 @@ A preliminary harness run stopped on case-insensitive fixture-name collisions. D
 Evidence is `/private/tmp/notch-pet-ci-refactor-zbhfr15w/equivalence.log` and its `checks-4s92a1o6/` directory.
 The harness uses locally installed PyYAML only to compare expanded YAML. Runtime CI scripts add no dependency.
 If temporary evidence is gone, recreate the comparison from base `08cb137` and the CLI boundaries above.
-Hosted confirmation of the extracted workflow still requires the user's commit and push. F8b remains open.
+Subsequent hosted observations are recorded below. F8b remains open.
+
+## PR #11 merge checkpoint, 2026-11-01
+
+F9 is committed as `f8f9c6966d250bc983d2086fb9fb283f5f04e5ff`.
+[PR #11](https://github.com/eohnai/notch-pet/pull/11) passed all six jobs in
+[run 41288310649](https://github.com/eohnai/notch-pet/actions/runs/41288310649).
+It merged as `366eee3f8488bdfeeea3ce6dfb79577ba3c3d954`.
+
+The automatic [main run 41288722994](https://github.com/eohnai/notch-pet/actions/runs/41288722994) failed.
+Its saved native summary records 132 passed functions, one failed function, and one separate known usage datagram issue.
+The sole failed function is `receiverDeadlineDoesNotResetForEachByte()` at `ContractAndSocketTests.swift:217`:
+`Expectation failed: (result → .inconclusive) == .closedDespiteInput`.
+The test loop therefore ended after five inconclusive attempts. The report contains no per-attempt reason or socket trace.
+
+Workflow, Build, Contract, and Helper passed. The Tests command retained exit 1.
+The native summary retained the failed identity, inventory rejected the missing coverage evidence, and Required failed.
+The failing assertion is in unchanged Swift test code. These observations do not establish its underlying cause.
+
+The checkpoint inspected existing results with `gh run view 41288722994 --log-failed` and downloaded the test reports.
+Evidence is outside the checkout at `/private/tmp/notch-pet-pr11-main-failure/`.
+No local test, hosted rerun, dispatch, or implementation repair ran during the checkpoint.
+The user then invoked `debug-issue` to diagnose the deadline-test failure.
+
+## PR #11 deadline diagnosis, 2026-11-01
+
+The new `debug-issue` request authorized a focused reproduction and disposable diagnostic probes.
+The repository's Swift code, test assertions, and hosted workflow runs were unchanged during this diagnosis.
+
+### Observed mechanism
+
+The test returns `.inconclusive` if a write misses its 50 ms budget, no write succeeds before closure,
+or closure is observed at least 100 ms after the last successful write began.
+It retries at most five times, then expects `.closedDespiteInput`.
+The failure therefore proves that none of five attempts supplied the required timing evidence.
+It does not prove that the receiver reset its deadline or kept a connection open indefinitely.
+The native stream places the assertion about 965 ms after test start and test completion about 1.197 seconds after start.
+It contains no individual attempt trace, so the exact hosted inconclusive branches remain unknown.
+
+The F9 commit changed no Swift files. The receiver still passes one fixed absolute deadline from `accept` into `readBounded`.
+Hypothesis: a sender pause in every attempt can exhaust all retries while the receiver still closes every connection.
+More retries reduce the chance of this result but cannot guarantee a conclusive observation within a real 100 ms window.
+
+The focused unchanged test passed locally. A disposable package copied all six EventBridge source files byte-for-byte
+and retained the current test's assertions and five-attempt loop. It added attempt/reason prints and one controlled sleep switch.
+Only `DIAG_DELAY` differed between the two probe executions:
+
+| Execution | Result | Observation |
+|---|---|---|
+| `DIAG_DELAY=none` | Exit 0 | Attempt 1 was conclusive. Six writes succeeded. Closure was observed 18.9 ms after the last write began. |
+| `DIAG_DELAY=every` | Expected exit 1 | All five attempts were inconclusive. Each had one successful write and closure observed 151.9–155.3 ms later. The original assertion failed exactly as on main. |
+
+The delayed probe requested a 150 ms sleep after the first successful write of each attempt.
+It observed closure on every connection, zero delivered incomplete messages, and successful subsequent valid-message delivery.
+This confirms that the current retry strategy admits the reported false failure against unchanged receiver code.
+It does not establish that the hosted sender experienced precisely these injected delays.
+
+### Commands and evidence
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-pr11-deadline-diagnosis/build \
+  --enable-code-coverage --filter receiverDeadlineDoesNotResetForEachByte
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer DIAG_DELAY=none \
+  swift test --package-path /private/tmp/notch-pet-pr11-deadline-diagnosis/probe \
+  --scratch-path /private/tmp/notch-pet-pr11-deadline-diagnosis/probe-build \
+  --filter receiverDeadlineDoesNotResetForEachByte
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer DIAG_DELAY=every \
+  swift test --package-path /private/tmp/notch-pet-pr11-deadline-diagnosis/probe \
+  --scratch-path /private/tmp/notch-pet-pr11-deadline-diagnosis/probe-build \
+  --filter receiverDeadlineDoesNotResetForEachByte
+```
+
+The first two commands exited 0. The last exited 1 with
+`Expectation failed: (result → .inconclusive) == .closedDespiteInput`.
+Logs are `/private/tmp/notch-pet-pr11-deadline-focused.log` and the probe root's `control.log` and `delayed.log`.
+The instrumented test remains under `probe/`. The controlled failure does not replace the failed hosted baseline.
+
+### Deterministic repair proposal, approved for F10
+
+The user asked for a reliable, always-enabled test. A real-clock observation window cannot guarantee that a shared runner
+schedules the sender often enough. Removing that requirement needs a test that controls time.
+
+Proposed approach: add an internal wait-operation parameter to `readBounded`, defaulting to the current production `waitFor`.
+The test would use a prequeued socket pair and a virtual wait operation. It would verify that successive reads receive
+the original absolute deadline and throw when virtual time reaches it. No sender thread, sleep, or retry is needed for that assertion.
+Existing server delivery and socket tests remain separate coverage of real transport behavior.
+This replacement tests `readBounded` alone. Removing the current server-level slow-sender test removes its coverage
+that `EventBridgeServer.receiveLoop` creates the deadline once per accepted connection.
+The reader hook does not verify that caller behavior. Keep that coverage loss explicit during implementation and review.
+
+This changes one internal function signature and leaves the real wait as its default.
+A wider replaceable clock/transport abstraction is another option, but changes more production code than this deadline invariant needs.
+The user approved the minimal internal seam, the revised verification plan, and committing/pushing the result with a PR.
+Verification must include two failing mutations: reset the deadline before every wait, and reset it only after the first read.
+The fake wait must record every received deadline. The test must assert that all recorded values equal the original deadline,
+not only that execution eventually times out. Virtual time must permit reads before expiry so the after-first-read mutation is exercised.
+Also run the surrounding EventBridge tests and one full suite run.
+
+## F10 deterministic reader deadline, 2026-11-01
+
+The user approved the revised task list, both reset mutations, one full suite run, and committing/pushing the change with a PR.
+This task uses `feat/automation-ci-foundation` recreated from main `366eee3`.
+The previous local branch is preserved as `archive/automation-ci-foundation-pr11` at `f8f9c69`.
+
+### Implementation and coverage
+
+`readBounded` now accepts an internal wait operation with the existing function as its default:
+
+```swift
+func readBounded(_ fd: Int32, limit: Int, until end: UInt64, framed: Bool,
+                 wait: (Int32, Int16, UInt64) throws -> Void = waitFor) throws -> Data
+```
+
+All production callers omit the new argument and continue to use the real `waitFor`.
+The replacement test is `readerKeepsOriginalDeadlineAcrossFragments()`.
+It uses one nonblocking socket pair on one thread. The first byte is queued before the reader starts.
+The fake wait queues each following byte only after checking that the preceding fragment was consumed.
+Virtual time advances by 40 ms per wait, with one original 100 ms deadline.
+
+The test records every received deadline and requires `[original, original, original]`.
+Two real reads consume bytes at virtual times 40 ms and 80 ms.
+At virtual time 120 ms, another byte is queued, but the fake wait throws `BridgeError.timeout`.
+The final queue check proves that byte remains unread.
+The assertion uses no wall-clock interval, sender thread, sleep, or retry.
+A deadline mismatch throws immediately after recording it, so a deliberate reset cannot hang the test.
+The obsolete retry helper and result enum were removed.
+
+**Coverage removed:** this is a reader-level test. It no longer verifies that `EventBridgeServer.receiveLoop`
+creates a 100 ms deadline once per accepted connection. It also removes the old slow-sender case's server callback
+omission and subsequent-message assertions. Existing invalid-frame and delivery tests cover those behaviors for other inputs,
+but they do not replace that specific timeout-path integration coverage. The server itself is unchanged.
+
+### Verification
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-total-deadline-repair/build \
+  --enable-code-coverage --filter EventBridgeTests
+python3 /private/tmp/notch-pet-total-deadline-repair/check-reset-mutants.py
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-total-deadline-repair/build \
+  --enable-code-coverage \
+  --event-stream-output-path /private/tmp/notch-pet-total-deadline-repair/full-tests.jsonl \
+  --event-stream-version 6.3
+git diff --check
+```
+
+The EventBridge command exited 0: 32 tests in four suites passed.
+The full-suite command ran once and exited 0: 133 tests in 24 suites passed with the existing known usage datagram issue.
+The mutation harness exited 0 only after checking all four outcomes:
+
+| Disposable package | Required outcome | Observed outcome |
+|---|---|---|
+| Unmodified source and test | Exit 0 | Passed |
+| Unmodified source, with a 150 ms real pause inside each fake wait | Exit 0 | Passed in about 0.465 seconds |
+| Reset the deadline before every wait | Exit 1 from the new test | Failed on the first recorded deadline |
+| Preserve the first deadline, then reset once after the first successful read | Exit 1 from the new test | Failed on the second recorded deadline |
+
+Both mutations compiled and ran the intended test. Each failed its deadline invariant and recorded-deadline array assertions.
+The second mutation completed the first read, so the verification covers the case an already-expired-deadline-only test would miss.
+The paused control demonstrates that delaying the test thread beyond 100 real milliseconds does not affect the virtual-time assertion.
+
+Evidence is outside the checkout at `/private/tmp/notch-pet-total-deadline-repair/`:
+`mutations.log`, each named probe log, `full-suite.log`, and `full-tests.jsonl`.
+The EventBridge log is `/private/tmp/notch-pet-total-deadline-repair-eventbridge.log`.
+The disposable packages live under `probes/`. The reset variants change only the reader's deadline calculation.
+The paused variant changes only the test. No mutation or delay was added to repository code.
+Hosted PR confirmation follows the user's authorized push. F8b remains open until its remaining acceptance work is verified.
