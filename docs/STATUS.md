@@ -2,14 +2,14 @@
 
 ## Now
 
-PR #10 merged the test repairs as `08cb137`. Its PR and main CI runs passed, with the usage datagram issue still recorded.
-On `feat/automation-ci-foundation`, recreated from passing main `08cb137`. The former branch is archived at `293a4dd`.
-F9 extracted the workflow's inline Python into scripts and reduced YAML from 608 to 214 lines. Changes are uncommitted.
-F8b's hosted drills and older paused work remain open.
+F9 is committed as `f8f9c69` and merged in PR #11 as `366eee3`. All six PR checks passed.
+F10 replaces the failing retry-based deadline test with virtual waits and records its reduced server-level coverage.
+On `feat/automation-ci-foundation`, recreated from main `366eee3`. The user authorized the repair, commit, push, and PR.
+F8b's hosted drills, the usage datagram issue, and older paused work remain open.
 
 ## Next
 
-1. Review and commit F9's script extraction, then push and check its PR/main runs. Authorize F8b's remaining deliberate-failure/docs-only/artifact/cancellation drills before closing ci-foundation. Its spec records the CLIs and local equivalence evidence.
+1. Review F10's PR and confirm its six hosted checks. Merge only with authorization, then verify the automatic main run. Preserve the earlier failures. Authorize F8b's remaining hosted drills before closing ci-foundation. Its F10 section records the local evidence and coverage loss.
 2. Complete ci-foundation before session-cards C2. Plan automation/quality-gates next when its baseline exists; the other seven automation entries remain roadmaps.
 3. Resume session-cards on its branch, retaining C1 in `1f30a3c`, then plan C2–C5 and allowance-strip A1–A5 with task-specific test authorization. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
 4. Do codex-setup R4 (architecture docs), then plan R2 (target split) and R3 (typed identities) with design review and renewed test authorization. Follow with R5/R6; R6 needs a user decision on the 128-session limit.
@@ -17,7 +17,9 @@ F8b's hosted drills and older paused work remain open.
 
 ## Blockers
 
-- F9's local equivalence checks do not establish hosted execution of the extracted scripts. Check the user's pushed commit before completing hosted acceptance. Main run `41286560025` at `08cb137` is the pre-refactor baseline. Earlier main failures and their repairs remain in the spec as historical evidence.
+- Main still needs hosted confirmation after F10: `gh run view 41288722994 --log-failed` reports commit `366eee3` and `Expectation failed: (result → .inconclusive) == .closedDespiteInput` at `ContractAndSocketTests.swift:217`. F10 replaces that test. Preserve the failed run and saved reports at `/private/tmp/notch-pet-pr11-main-failure/`. The exact hosted per-attempt reason remains unknown.
+- F10's reader-only test removes the old server-level deadline-creation check and its slow-sender timeout-path callback/recovery assertions. Other frame/delivery tests remain, but do not replace that specific integration coverage. The decision and both reset-mutation results are recorded in the spec.
+- The user approved F10's internal wait seam, revised test, both reset mutations, EventBridge tests, one full suite run, commit, push, and PR. Additional repairs, unrelated runtime checks, captures, and installed configuration changes remain outside that scope. F8b's deliberate hosted drills still need authorization.
 - The user approved F9's previously proposed script extraction, multi-file exception, and local verification after PR #10 passed on main. Verification used saved CI reports and fictional commands. Further repairs, broader runtime tests, hosted drills, app launches, captures, and installed configuration changes need separate authorization. Account-specific security capabilities and additional runner combinations remain unqualified.
 - Stale: `docs/goals/ci-foundation-local-log.md` still says F7 awaits commit approval. F7 is committed as `a45d0ae` and merged in PR #8. Preserve that historical goal record until its owning update.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
