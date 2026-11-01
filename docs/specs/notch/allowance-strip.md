@@ -175,10 +175,74 @@ Logs remain outside the repository at `/private/tmp/notch-pet-a1-red.log` and `/
 No full-suite run, standalone app build, app launch, helper injection, or capture ran for A1.
 The app uses the existing limits view until A4. Runtime acceptance remains open for C5/A5.
 
+## A2 verification, 2026-11-01
+
+The user approved the chat task list and focused checks. No goal was activated.
+Implemented on `feat/notch-allowance-strip`, preserving A1 commit `9a94fec`.
+
+Files changed:
+
+- `Tests/SessionStateTests/NotchAllowancePresentationTests.swift`: nine new text tests, with per-provider cases.
+- `Sources/SessionState/NotchAllowancePresentation.swift`: pure countdown and tooltip methods.
+- This spec and `docs/STATUS.md`: verification evidence and checkpoint.
+
+The new public methods are:
+
+```swift
+public static func countdownText(for window: UsageWindow?, at nowMs: Int64) -> String
+public static func tooltipText(for provider: IntegrationAgent,
+                               snapshots: [UsageSnapshot],
+                               missingSourceStatus: String,
+                               locale: Locale,
+                               timeZone: TimeZone) -> String
+```
+
+`countdownText` subtracts numeric timestamps without signed overflow and floors remaining minutes.
+Its formats are `45m`, `3h45m`, and `4d22h`. Missing resets show `—`. Passed resets and less than one minute show `0m`.
+
+`tooltipText` filters to one provider and lists every source and window without combining allowance.
+Sources and windows sort by their IDs in UTF-8 order. Sources have ordinal labels instead of raw source IDs.
+Each window shows its bucket, actual duration, used percentage, rounded-down percent left, and reset time.
+Used percentages show up to one decimal place. Percent-left calculation is shared with A1 to keep one rule.
+Missing 5-hour and weekly windows remain explicit.
+
+Each source shows fresh/stale state, receipt and measurement dates, account confidence, and any failure status.
+Missing measurement dates remain explicit. Receipt time does not substitute for measurement time.
+Account confidence never prints the raw account ID. All six failure cases have fixed messages.
+Only a provider without observations uses `missingSourceStatus`, supplied later by A4's caller.
+This prevents the controller's initial status from appearing beside an existing reading.
+Dates and numeric text use explicit locale and time-zone inputs. Presentation reads no clock and schedules no work.
+
+Approved verification, before implementation and afterward:
+
+```bash
+env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  swift test --scratch-path /private/tmp/notch-pet-a2/build \
+  --filter 'NotchAllowancePresentationTests|UsageStoreTests'
+git diff --check
+```
+
+The first run exited 1 because the sandbox denied Swift's compiler cache.
+The approved elevated retry exited 1 because the two A2 methods did not exist, establishing the failing baseline.
+After implementation, the focused command exited 0: 28 tests in two suites passed.
+Review strengthened the tests for distinct reset, receipt and measurement dates and locale-specific decimals.
+The final focused run also exited 0: 28 tests passed, comprising 23 presentation tests and 5 store tests.
+`git diff --check` exited 0.
+
+Tests cover countdown unit boundaries, missing/expired resets, extreme timestamps, both providers, separate sources/buckets,
+stable ordering, fractional percentages, locales/time zones, distinct timestamp roles, missing timing evidence,
+freshness, account confidence, all source failures, missing-provider status, and cross-provider filtering.
+The first successful build reported the existing `PetWindowPlaybackTests.swift:108` weak-variable warning from A1's evidence.
+That pet warning remains outside this task.
+Logs stay outside the repository at `/private/tmp/notch-pet-a2-red.log` and `/private/tmp/notch-pet-a2-green.log`.
+
+No full-suite run, standalone app build, app launch, helper injection, or capture ran for A2.
+A4 still owns rendering and the expanded-only refresh schedule. A5/C5 still own the batched runtime and visual review.
+
 ## Tasks
 
 - [x] A1: Add pure strip presentation: pick the 5-hour window or the weekly fallback per provider, percent left rounded down, its color level, and the stale, missing, and unverified states; presentation tests cover each case.
-- [ ] A2: Add countdown text (`3h45m`, `4d22h`) and tooltip text listing every window, reset time, freshness, account confidence, and source status; presentation tests cover each case.
+- [x] A2: Add countdown text (`3h45m`, `4d22h`) and tooltip text listing every window, reset time, freshness, account confidence, and source status; presentation tests cover each case.
 - [ ] A3: Add the Claude and Codex logo files to the app's resources with their sources recorded; the build passes and the packaged app contains both files.
 - [ ] A4: Show the strip left of the notch in the expanded top row with logos and tooltips, keep the collapsed paw and count, and remove the old limits sections; the build passes.
 - [ ] A5: Verify the strip in the real app with a real Codex reading and Claude's empty state, including a tooltip on hover; the user reviews it with session-cards C5.
