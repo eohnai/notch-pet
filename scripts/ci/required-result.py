@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Accept only the exact five successful foundation job results."""
+"""Validate foundation job results, with optional evidence reports for CI."""
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
+from pathlib import Path
 import sys
 
 MAX_INPUT = 16 * 1024
@@ -55,7 +57,51 @@ def required_result(raw: str | None) -> tuple[bool, list[str]]:
     return all_success, labels
 
 
+def write_reports() -> int:
+    reports = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci/reports'
+    success, lines = required_result(os.environ.get('CI_JOB_RESULTS'))
+
+    def load_object(key):
+        raw = os.environ.get(key, '')
+        if len(raw.encode('utf-8')) > MAX_INPUT:
+            raise ValueError('oversized evidence')
+        value = json.loads(raw, object_pairs_hook=unique_jobs)
+        if type(value) is not dict:
+            raise ValueError('invalid evidence shape')
+        return value
+
+    try:
+        receipts = load_object('CI_EVIDENCE_RESULTS')
+        evidence_ok = receipts.keys() == JOBS.keys() and all(value == 'true' for value in receipts.values())
+    except (ValueError, RecursionError):
+        receipts, evidence_ok = {}, False
+    try:
+        states = load_object('CI_JOB_RESULTS')
+    except (ValueError, RecursionError):
+        states = {}
+    status = 0 if success and evidence_ok else 1
+    text = ('\n'.join(lines) + '\n')[:4096] + ('Evidence: complete\n' if evidence_ok else 'Evidence: missing or invalid\n')
+    text += 'Overall Required: ' + ('success' if status == 0 else 'failure') + '\n'
+    (reports / 'required.log').write_text(text)
+    (reports / 'required-exit-code.txt').write_text(str(status) + '\n')
+    with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+        summary.write('## Required result\n\n| Job | Result | Evidence |\n|---|---|---|\n')
+        for key, name in JOBS.items():
+            state = states.get(key)
+            label = state if type(state) is str and state in KNOWN_RESULTS else 'unknown'
+            available = 'complete' if receipts.get(key) == 'true' else 'missing/unavailable'
+            summary.write('| ' + name + ' | ' + label + ' | ' + available + ' |\n')
+        summary.write('\nOverall Required: ' + ('success' if status == 0 else 'failure') + '\n')
+    print(text)
+    return status
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--reports', action='store_true', help='also validate evidence and write the CI summary')
+    arguments = parser.parse_args()
+    if arguments.reports:
+        return write_reports()
     success, lines = required_result(os.environ.get("CI_JOB_RESULTS"))
     print("\n".join(lines))
     return 0 if success else 1

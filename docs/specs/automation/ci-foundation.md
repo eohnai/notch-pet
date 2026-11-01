@@ -11,6 +11,7 @@ That activation authorizes those tasks and their bounded local checks. The user 
 subject to AGENTS.md's commit-plan approval procedure. On 2026-11-01, the user approved splitting F8 and doing
 F8a's read-only hosted inspection, focused local test, and disposable diagnostic probes. New hosted drills,
 repairs, and repository settings changes still require their own approval. The user handles commits and pushes.
+After PR #10's main run passed, the user approved F9's script extraction and its local fixture verification.
 
 ## Done when
 
@@ -59,6 +60,7 @@ repairs, and repository settings changes still require their own approval. The u
   Do not dispatch workflows, open PRs, or push failure probes on the user's behalf without explicit instructions.
 - Keep the eight implementation tasks within the plan-feature size limits, including spec/STATUS updates.
   Each task below changes at most one implementation file. Review signatures and any needed split in its next-task plan.
+  F9 is an approved exception: extracting the blocks and changing their callers together touches six implementation files.
 
 ## Workflow contract
 
@@ -153,8 +155,8 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
   Keep it enabled. A recurrence blocks a passing baseline and needs a separately approved diagnosis or repair.
 - `scripts/check-event-contract.py` permits a conflicting turn ID to restore working state, unlike SessionStore's accepted unseen-turn rule.
   Preserve this warning until its own repair is approved. CI running that checker does not resolve the mismatch.
-- `ContractAndSocketTests.swift` assumes the extra byte in its maximum-size frame check is already buffered.
-  Its correction remains separate from this feature.
+- PR #10 repaired the maximum-frame fixture's buffering assumption and added explicitly queued-byte checks.
+  Its passing main run records one known usage datagram issue. That production transport limit still needs a separate decision and repair.
 - No captures or native GUI acceptance run here. Existing deferred feature checkboxes stay unchanged.
 
 ## Decisions
@@ -163,6 +165,8 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [0015: Adopt formatting and selected lint rules later](../../decisions/0015-adopt-swift-format-and-selected-swiftlint-rules.md).
 - **Cancel superseded PR runs and finish default-branch runs, 2026-10-31.** The user approved this SMRT pattern over cancelling every older branch run.
 - **Report coverage before setting thresholds, 2026-10-31.** The user approved a measured baseline followed by enforcement in coverage-gates.
+- **Extract inline CI logic into focused Python scripts, 2026-11-01.** The user approved a shorter workflow over retaining embedded Python.
+  Keep orchestration in YAML, reuse the existing result predicate, and expose each extracted phase as a directly runnable CLI.
 
 ## My calls
 
@@ -174,6 +178,8 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - Start without caches or external coverage services. Use the job limits and retention above as initial bounded settings.
 - Each implementation task reserves two file changes for this spec and STATUS.md.
   A task that needs a second implementation file must be split and reviewed before coding.
+  F9's approved multi-file exception is recorded above. Its branch starts at passing main `08cb137`.
+  The former local branch is preserved as `archive/automation-ci-foundation-pr10` at `293a4dd`.
 
 ## Tasks
 
@@ -186,7 +192,8 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [x] F8a: Diagnose the failed hosted baseline using saved reports, a focused local test, and a disposable scheduling probe; record confirmed findings and evidence limits without changing the receiver or repository tests.
 - [x] F8r: Repair `receiverDeadlineDoesNotResetForEachByte()` so a paused sender retries instead of failing, while a per-byte deadline reset still fails; verify with disposable pause and reset probes and the full local suite.
-- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: diagnose and repair main run 41281493943's invalid-frame callback failure, then authorize the remaining hosted drills)
+- [ ] F8b: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run. (blocked: remaining hosted drills need authorization after the refactor is committed and pushed)
+- [x] F9: Extract inline CI metadata, bounded execution, native-result parsing, inventory, and Required reporting into Python scripts; preserve workflow behavior and verify old/new outputs with saved reports and fictional failure fixtures.
 
 ## F1 partial evidence, 2026-10-31
 
@@ -701,13 +708,13 @@ The bundle directory contains only `app.tar.gz` and `manifest.json`.
 Local identity is independently supplied before verification. Hosted jobs use commit/run/attempt from GitHub context instead.
 Never derive expected identity from a downloaded manifest.
 
-The workflow's `Validate native Swift results` run block is the exact native-summary reproduction command.
+The native-summary reproduction command is `python3 scripts/ci/test-results.py`.
 Set `RUNNER_TEMP` to a disposable job root containing `notch-pet-ci/reports/tests.jsonl` and `tests-exit-code.txt`.
-Set `GITHUB_STEP_SUMMARY` to an external Markdown path, then run that block unchanged.
+Set `GITHUB_STEP_SUMMARY` to an external Markdown path, then run that command.
 Use the actual Swift command status in the receipt. Do not create a zero receipt for a failed or unobserved execution.
 Its outputs are `test-summary.json` or a bounded `tests-summary-error.txt` and a nonzero exit.
 
-For the exact metadata, bounded-log, inventory and Required bindings, use their named run blocks in `.github/workflows/ci.yml`.
+For metadata, bounded logs, inventory and Required reporting, use the CLI table in F9 below.
 Supply `GITHUB_SHA`, `GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`, `GITHUB_JOB`, `CI_RUNNER_LABEL`, `RUNNER_TEMP`,
 `GITHUB_OUTPUT` and `GITHUB_STEP_SUMMARY` explicitly. They are identifiers and output paths, not credentials.
 Set `CI_JOB_RESULTS` to actual upstream results and `CI_EVIDENCE_RESULTS` to their actual `evidence-ok` strings.
@@ -1013,3 +1020,89 @@ Verification, all local with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Dev
 the two suites passed (20 tests, 1 known issue). The two suites also passed 30 of 30 runs with three `yes` processes loading the CPU.
 One full suite run passed (133 tests in 24 suites, 1 known issue). No hosted run was started.
 The receiver-deadline, write-backpressure, and stop tests still depend on timing, with wider margins.
+
+## PR #10 passing hosted baseline, 2026-11-01
+
+[PR #10](https://github.com/eohnai/notch-pet/pull/10) merged the test repairs as
+`08cb137152c0255063d14dc8c21525c48128ea70`.
+Its [PR run 41284668475](https://github.com/eohnai/notch-pet/actions/runs/41284668475) and
+[main run 41286560025](https://github.com/eohnai/notch-pet/actions/runs/41286560025) both passed all six jobs.
+The saved main native summary has 133 passed functions, zero failed/skipped/cancelled/incomplete functions, and one known issue.
+The known issue concerns oversized usage datagrams that cannot reach the receiver under its current buffer configuration.
+It is not proof of receiver-side rejection at the declared 8,192-byte limit.
+These passing runs resolve the preceding baseline failure. They do not complete F8b's deliberate acceptance drills.
+
+## F9 workflow script extraction, 2026-11-01
+
+The user approved the proposed extraction after PR #10 passed on main, including the multi-file exception.
+The workflow shrank from 608 to 214 lines. Its six jobs, scheduling, conditions, permissions, time limits,
+action pins, artifact bindings, retention, and report publication remain unchanged.
+The four new scripts use only the Python standard library. `bundle.py` and `coverage.py` are unchanged.
+
+### CLI boundaries and reproduction
+
+Run each command from the checkout. These commands read the same explicit environment as the previous inline blocks.
+Keep `RUNNER_TEMP`, `GITHUB_OUTPUT`, and `GITHUB_STEP_SUMMARY` outside the checkout.
+Existing task-specific execution authorization still applies when a command starts a real check.
+
+| Command | Responsibility | Outputs |
+|---|---|---|
+| `python3 scripts/ci/metadata.py` | Record allowlisted run and tool versions | `metadata.json` under the job's reports directory |
+| `python3 scripts/ci/metadata.py --identity` | Derive expected artifact identity from independent CI context | `identity.json` and `reports/expected-identity.json` |
+| `python3 scripts/ci/run-check.py` | Execute the command selected by `GITHUB_JOB`, retain bounded output and original exit status | The job log, exit receipt and metadata update |
+| `python3 scripts/ci/test-results.py` | Validate native Swift results and retain actual test outcomes | `test-summary.json`, or a bounded error report and nonzero exit |
+| `python3 scripts/ci/reports.py` | Validate the expected inventory for the current job | `inventory.json`, the `complete` output and Markdown summary |
+| `python3 scripts/ci/required-result.py --reports` | Check job results and evidence, then write the Required reports | `required.log`, its exit receipt and Markdown summary |
+
+The public CLI without `--reports` retains F6's original predicate-only behavior.
+Its existing `required_result(raw: str | None) -> tuple[bool, list[str]]` stays available.
+The new `write_reports() -> int` calls that predicate directly, avoiding a child process and duplicate job labels.
+Metadata exposes `collect_metadata() -> None` and `write_identity() -> None` behind its two CLI modes.
+The other extracted scripts each keep a `main() -> None` entry point.
+
+For example, after an actual test command has written the raw stream and its original exit receipt:
+
+```bash
+export RUNNER_TEMP="$ci_root"
+export GITHUB_STEP_SUMMARY="$ci_root/summary.md"
+python3 scripts/ci/test-results.py
+```
+
+For metadata, identity, inventory, and Required, also supply `GITHUB_SHA`, `GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`,
+`GITHUB_JOB`, `CI_RUNNER_LABEL`, and `GITHUB_OUTPUT`. Run metadata first to create the reports directory.
+Set the selected `DEVELOPER_DIR` for real macOS checks. Use observed upstream results in `CI_JOB_RESULTS`
+and their actual evidence receipts in `CI_EVIDENCE_RESULTS`. Never derive expected identity from a downloaded manifest.
+
+### Verification
+
+The original six Python blocks and predicate script were saved before editing, against base `08cb137`.
+A disposable harness compared their results with the extracted CLIs using the actual passing main reports,
+the saved failed main report, and fictional command/metadata fixtures. It did not run Swift tests, package the app,
+launch a helper, inspect installed integrations, or trigger a hosted workflow.
+
+```bash
+python3 /private/tmp/notch-pet-ci-refactor-zbhfr15w/check-equivalence.py
+/private/tmp/notch-pet-ci/tools/actionlint .github/workflows/ci.yml
+git diff --check
+```
+
+The comparison exited 0: `PASS: 144 old/new fixture comparisons`.
+It compared exit status, stdout/stderr, report bytes, evidence receipts, and Markdown summaries.
+Coverage included:
+
+- Native streams: actual passing and failed runs, one known issue, skipped/parameterized cases,
+  nonzero original exit, empty/truncated/malformed/duplicate records, missing run end, unknown test identity, and size limits.
+- Inventory: all six complete jobs, missing and malformed evidence, a symlink, and oversized reports.
+- Required: both CLI modes, exact success, failures/cancellations/skips, unknown states, malformed/missing/extra/duplicate jobs,
+  and missing, malformed, false, oversized, or non-string evidence receipts.
+- Metadata: Darwin/Linux fixtures, unavailable or excessive version output, invalid UTF-8, independent identity, and the allowlist.
+- Runner: all five command bindings, original exit 23, signal exit 143, missing executable exit 127,
+  report collection failure, and a 3 MiB stream retained within a 2 MiB log with its final marker.
+
+Expanded YAML comparison found only the 21 intended command substitutions across the six jobs.
+The rest of the workflow graph matched the saved original exactly. actionlint exited 0.
+A preliminary harness run stopped on case-insensitive fixture-name collisions. Distinct names fixed the harness, not production logic.
+Evidence is `/private/tmp/notch-pet-ci-refactor-zbhfr15w/equivalence.log` and its `checks-4s92a1o6/` directory.
+The harness uses locally installed PyYAML only to compare expanded YAML. Runtime CI scripts add no dependency.
+If temporary evidence is gone, recreate the comparison from base `08cb137` and the CLI boundaries above.
+Hosted confirmation of the extracted workflow still requires the user's commit and push. F8b remains open.
