@@ -1,220 +1,608 @@
+# Job names and CLI bindings are the ci-foundation contract.
+# Remote action pins: checkout v7.0.1, upload v7.0.2, download v8.0.2.
 name: CI
-
-on:
+'on':
   pull_request:
-    branches: [main]
+    branches:
+    - main
   push:
-    branches: [main]
-  workflow_dispatch:
-
+    branches:
+    - main
+  workflow_dispatch: null
 permissions:
   contents: read
-
 concurrency:
-  # A run ID keeps main pushes and manual runs independent.
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number
+    || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
+env:
+  CI_RUNNER_LABEL: ubuntu-24.04
 defaults:
   run:
     shell: bash
-
 jobs:
   workflow:
     name: Workflow
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      evidence-ok: ${{ steps.evidence.outputs.complete }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Validate workflow with actionlint 1.7.12
-        env:
-          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
-        run: |
-          ci_tools="$RUNNER_TEMP/notch-pet-ci/tools"
-          mkdir -p "$ci_tools"
-          curl --fail --silent --show-error --location --max-time 60 \
-            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
-            --output "$ci_tools/actionlint.tar.gz"
-          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$ci_tools/actionlint.tar.gz" | sha256sum --check
-          tar -xzf "$ci_tools/actionlint.tar.gz" -C "$ci_tools" actionlint
-          "$ci_tools/actionlint" -version
-          "$ci_tools/actionlint" .github/workflows/ci.yml
+    - &checkout_source
+      name: Check out source
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - &run_metadata
+      name: Record allowlisted run and tool versions
+      id: metadata
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        import platform
+        import subprocess
+        import sys
 
+        reports = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci/reports'
+        reports.mkdir(parents=True, exist_ok=True)
+        def version(command):
+            try:
+                result = subprocess.run(command, capture_output=True, timeout=10)
+                if result.returncode == 0 and len(result.stdout) <= 4096:
+                    return result.stdout.decode('utf-8').strip()
+            except (OSError, subprocess.SubprocessError, UnicodeError):
+                pass
+            return 'unavailable'
+        mac = sys.platform == 'darwin'
+        value = {
+            'schema_version': 1, 'commit': os.environ['GITHUB_SHA'],
+            'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+            'job': os.environ['GITHUB_JOB'], 'selected_runner': os.environ['CI_RUNNER_LABEL'],
+            'execution_context': 'github-actions' if os.environ.get('GITHUB_ACTIONS') == 'true' else 'local-replay',
+            'actual_os': platform.system(), 'os_version': platform.mac_ver()[0] if mac else platform.release(),
+            'architecture': platform.machine(), 'image_os': os.environ.get('ImageOS', 'unavailable'),
+            'image_version': os.environ.get('ImageVersion', 'unavailable'), 'python': platform.python_version(),
+            'selected_xcode': os.environ.get('DEVELOPER_DIR', 'not used'),
+            'xcode': version(['/usr/bin/xcodebuild', '-version']) if mac else 'not used',
+            'swift': version(['/usr/bin/xcrun', 'swift', '--version']) if mac else 'not used',
+            'llvm_cov': version(['/usr/bin/xcrun', 'llvm-cov', '--version']) if os.environ['GITHUB_JOB'] == 'tests' else 'not used',
+            'actionlint': 'not collected' if os.environ['GITHUB_JOB'] == 'workflow' else 'not used',
+        }
+        (reports / 'metadata.json').write_text(json.dumps(value, indent=2) + '\n')
+        print('Recorded allowlisted run and tool versions')
+        PY
+    - name: Install verified actionlint 1.7.12
+      env:
+        ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+      run: |
+        ci_reports="$RUNNER_TEMP/notch-pet-ci/reports"
+        exec > "$ci_reports/validator-setup.log" 2>&1
+        ci_tools="$RUNNER_TEMP/notch-pet-ci/tools"
+        mkdir -p "$ci_tools"
+        curl --fail --silent --show-error --location --max-time 60 \
+          https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+          --output "$ci_tools/actionlint.tar.gz"
+        printf '%s  %s
+        ' "$ACTIONLINT_SHA256" "$ci_tools/actionlint.tar.gz" | sha256sum --check
+        tar -xzf "$ci_tools/actionlint.tar.gz" -C "$ci_tools" actionlint
+        "$ci_tools/actionlint" -version > "$ci_reports/validator-version.txt"
+    - &bounded_check
+      name: Run check with bounded logs
+      id: check
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        import subprocess
+        import sys
+
+        root = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci'
+        reports = root / 'reports'
+        reports.mkdir(parents=True, exist_ok=True)
+        job = os.environ['GITHUB_JOB']
+        commands = {
+            'workflow': [str(root / 'tools/actionlint'), '.github/workflows/ci.yml'],
+            'tests': ['swift', 'test', '--scratch-path', str(root / 'test-build'), '--enable-code-coverage',
+                      '--event-stream-output-path', str(reports / 'tests.jsonl'), '--event-stream-version', '6.3'],
+            'build': ['bash', 'scripts/run.sh', '--build-only'],
+            'contract': [sys.executable, 'scripts/check-event-contract.py'],
+            'helper': [sys.executable, 'scripts/check-event-bridge.py', '--helper',
+                       str(root / 'extracted/Notch Pet.app/Contents/MacOS/NotchPetHook')],
+        }
+        if job not in commands:
+            raise SystemExit('Unsupported check job')
+        environment = dict(os.environ)
+        if job == 'build':
+            (root / 'package').mkdir(parents=True, exist_ok=True)
+            environment['TMPDIR'] = str(root / 'package')
+        limit = 2 * 1024 * 1024
+        log = reports / (job + '.log')
+        tail = bytearray()
+        total = 0
+        with log.open('wb') as stream:
+            try:
+                process = subprocess.Popen(commands[job], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment)
+                while chunk := process.stdout.read(65536):
+                    if total < limit:
+                        stream.write(chunk[:limit-total])
+                        stream.flush()
+                    total += len(chunk)
+                    tail.extend(chunk)
+                    if len(tail) > limit:
+                        del tail[:-limit]
+                returned = process.wait()
+                status = returned if returned >= 0 else 128 - returned
+            except OSError:
+                stream.write(b'Could not start the required check\n')
+                status = 127
+            if total > limit:
+                marker = b'[log truncated; final output follows]\n'
+                stream.seek(0)
+                stream.write(marker + tail[-(limit-len(marker)):])
+                stream.truncate()
+        try:
+            (reports / (job + '-exit-code.txt')).write_text(str(status) + '\n')
+            metadata_path = reports / 'metadata.json'
+            if metadata_path.exists():
+                value = json.loads(metadata_path.read_text())
+                value['check_exit_code'] = status
+                if job == 'workflow':
+                    value['actionlint'] = (reports / 'validator-version.txt').read_text()[:4096].strip()
+                metadata_path.write_text(json.dumps(value, indent=2) + '\n')
+            with log.open('rb') as stream:
+                stream.seek(max(0, log.stat().st_size - 4096))
+                print(stream.read().decode('utf-8', errors='replace'))
+            print('Check exit code:', status)
+        except (OSError, ValueError, TypeError):
+            print('Check report collection failed', file=sys.stderr)
+            if status == 0:
+                status = 1
+        sys.exit(status)
+        PY
+    - &report_inventory
+      name: Inventory expected evidence
+      id: evidence
+      if: ${{ !cancelled() }}
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        import stat
+        import sys
+
+        root = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci/reports'
+        root.mkdir(parents=True, exist_ok=True)
+        job = os.environ['GITHUB_JOB']
+        expected = {
+            'workflow': ['metadata.json', 'validator-setup.log', 'validator-version.txt', 'workflow.log', 'workflow-exit-code.txt'],
+            'tests': ['metadata.json', 'tests.log', 'tests-exit-code.txt', 'tests.jsonl', 'test-summary.json',
+                      'coverage-tool.log', 'coverage/coverage.json', 'coverage/summary.json',
+                      'coverage/summary.md', 'coverage/metadata.json', 'coverage/html/index.html'],
+            'build': ['metadata.json', 'expected-identity.json', 'build.log', 'build-exit-code.txt', 'archive.log', 'build-manifest.json'],
+            'contract': ['metadata.json', 'contract.log', 'contract-exit-code.txt'],
+            'helper': ['metadata.json', 'expected-identity.json', 'verification.log', 'helper.log', 'helper-exit-code.txt'],
+            'required': ['metadata.json', 'required.log', 'required-exit-code.txt'],
+        }[job]
+        def valid_report(name, value):
+            if type(value) is not dict:
+                return False
+            if name == 'metadata.json':
+                fields = {'schema_version', 'commit', 'run_id', 'run_attempt', 'job', 'selected_runner',
+                          'execution_context', 'actual_os', 'os_version', 'architecture', 'image_os', 'image_version',
+                          'python', 'selected_xcode', 'xcode', 'swift', 'llvm_cov', 'actionlint'}
+                return (fields <= value.keys() <= fields | {'check_exit_code'}
+                        and type(value.get('schema_version')) is int and value['schema_version'] == 1
+                        and value.get('commit') == os.environ['GITHUB_SHA']
+                        and value.get('run_id') == os.environ['GITHUB_RUN_ID']
+                        and type(value.get('run_attempt')) is int and value['run_attempt'] == int(os.environ['GITHUB_RUN_ATTEMPT'])
+                        and value.get('job') == job
+                        and all(type(value[key]) is str and 0 < len(value[key]) <= 4096
+                                for key in fields - {'schema_version', 'run_attempt'}))
+            if name == 'expected-identity.json':
+                return (value.keys() == {'commit','run_id','run_attempt','platform','architecture','configuration','xcode_build','swift_version'}
+                        and value.get('commit') == os.environ['GITHUB_SHA'] and value.get('run_id') == os.environ['GITHUB_RUN_ID']
+                        and type(value.get('run_attempt')) is int and value['run_attempt'] == int(os.environ['GITHUB_RUN_ATTEMPT'])
+                        and value.get('platform') == 'macos' and value.get('architecture') == 'arm64'
+                        and value.get('configuration') == 'debug' and value.get('xcode_build') == '17F42'
+                        and type(value.get('swift_version')) is str and bool(value['swift_version']))
+            if name == 'test-summary.json':
+                counts = value.get('counts', {})
+                return (value.get('schema_version') == 1 and value.get('native_schema') == '6.3.0'
+                        and value.get('complete') is True and type(value.get('test_functions')) is int and value['test_functions'] > 0
+                        and type(value.get('tests')) is list and len(value['tests']) == value['test_functions']
+                        and type(counts) is dict and counts.keys() == {'passed','failed','skipped','cancelled','incomplete'}
+                        and all(type(count) is int and count >= 0 for count in counts.values())
+                        and sum(counts.values()) == value['test_functions'] and value.get('outcome') in ('success','failure'))
+            if name == 'coverage/coverage.json':
+                data = value.get('data')
+                return (value.get('type') == 'llvm.coverage.json.export' and type(data) is list and len(data) == 1
+                        and type(data[0]) is dict and type(data[0].get('files')) is list and bool(data[0]['files']))
+            if name == 'coverage/summary.json':
+                return (value.get('schema_version') == 1 and type(value.get('modules')) is dict and bool(value['modules'])
+                        and type(value.get('file_count')) is int and value['file_count'] > 0)
+            if name == 'coverage/metadata.json':
+                hashes = [value.get(key) for key in ('profile_sha256','test_runner_sha256','helper_sha256')]
+                return (value.get('schema_version') == 1 and type(value.get('llvm_cov_version')) is str
+                        and all(type(digest) is str and len(digest) == 64 and all(c in '0123456789abcdef' for c in digest) for digest in hashes))
+            if name == 'build-manifest.json':
+                return (value.get('schema_version') == 1 and value.get('app') == 'Notch Pet.app'
+                        and type(value.get('identity')) is dict and value['identity'].get('commit') == os.environ['GITHUB_SHA']
+                        and type(value.get('entries')) is dict and bool(value['entries']))
+            return False
+        rows = {}
+        for name in expected:
+            path = root / name
+            label = 'missing'
+            try:
+                info = path.lstat()
+                if not stat.S_ISREG(info.st_mode) or info.st_size > 32 * 1024 * 1024:
+                    label = 'invalid'
+                elif name.endswith('.json'):
+                    value = json.loads(path.read_text())
+                    label = 'present' if valid_report(name, value) else 'invalid'
+                elif name.endswith('-exit-code.txt'):
+                    text = path.read_text().strip()
+                    label = 'present' if text.isascii() and text.isdecimal() and 0 <= int(text) <= 255 else 'invalid'
+                elif name.endswith('.jsonl'):
+                    with path.open('rb') as stream:
+                        stream.seek(max(0, info.st_size - 1))
+                        label = 'present' if info.st_size > 0 and stream.read() == b'\n' else 'invalid'
+                else:
+                    label = 'present'
+            except (OSError, ValueError, TypeError, KeyError, RecursionError):
+                pass
+            rows[name] = label
+        complete = all(label == 'present' for label in rows.values())
+        (root / 'inventory.json').write_text(json.dumps({'schema_version': 1, 'job': job,
+                                                        'complete': complete, 'reports': rows}, indent=2) + '\n')
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write('complete=' + ('true' if complete else 'false') + '\n')
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+            summary.write('## ' + job.title() + ' evidence\n\n| Report | Status |\n|---|---|\n')
+            for name, label in rows.items():
+                summary.write('| ' + name + ' | ' + label + ' |\n')
+            if job == 'contract':
+                summary.write('\nThe reference checker still differs from SessionStore\'s unseen-turn rule.\n')
+        print('Evidence:', 'complete' if complete else 'incomplete')
+        sys.exit(0 if complete else 1)
+        PY
+    - &publish_reports
+      name: Upload available reports
+      id: reports_upload
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: reports-${{ github.job }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/notch-pet-ci/reports
+        if-no-files-found: error
+        retention-days: 3
+        overwrite: false
   tests:
     name: Tests
     runs-on: macos-26
     timeout-minutes: 20
-    env:
+    env: &macos_toolchain
       DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+      CI_RUNNER_LABEL: macos-26
+    outputs:
+      evidence-ok: ${{ steps.evidence.outputs.complete }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Verify selected toolchain and record versions
-        run: |
-          test -d "$DEVELOPER_DIR"
-          test "$(uname -m)" = arm64
-          test "$(xcodebuild -version)" = $'Xcode 26.5\nBuild version 17F42'
-          printf 'selected_macos=macos-26\nselected_xcode=%s\n' "$DEVELOPER_DIR"
-          sw_vers
-          uname -m
-          xcodebuild -version
-          swift --version
-          python3 --version
-      - name: Run complete Swift suite with coverage
-        run: swift test --scratch-path "$RUNNER_TEMP/notch-pet-ci/test-build" --enable-code-coverage
+    - *checkout_source
+    - *run_metadata
+    - &verify_macos
+      name: Verify selected macOS toolchain
+      run: |
+        test -d "$DEVELOPER_DIR"
+        test "$(uname -m)" = arm64
+        test "$(xcodebuild -version)" = $'Xcode 26.5
+        Build version 17F42'
+    - *bounded_check
+    - name: Validate native Swift results
+      id: test_results
+      if: ${{ !cancelled() }}
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        import sys
 
+        reports = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci/reports'
+        def require(condition):
+            if not condition:
+                raise ValueError('malformed native results')
+        def unique(pairs):
+            result = {}
+            for key, value in pairs:
+                require(key not in result)
+                result[key] = value
+            return result
+        try:
+            path = reports / 'tests.jsonl'
+            require(path.is_file() and not path.is_symlink() and 0 < path.stat().st_size <= 32 * 1024 * 1024)
+            raw = path.read_bytes()
+            require(raw.endswith(b'\n'))
+            definitions, events = {}, []
+            lines = raw.splitlines()
+            require(len(lines) <= 100000)
+            for line in lines:
+                require(len(line) <= 1024 * 1024)
+                row = json.loads(line, object_pairs_hook=unique)
+                require(type(row) is dict and row.get('version') == '6.3.0')
+                value = row.get('payload')
+                require(type(value) is dict)
+                if row.get('kind') == 'test':
+                    identity = value.get('id')
+                    require(type(identity) is str and 0 < len(identity) <= 4096 and identity not in definitions)
+                    require(value.get('kind') in ('function', 'suite') and type(value.get('name')) is str)
+                    if value['kind'] == 'function':
+                        require(type(value.get('isParameterized')) is bool)
+                    definitions[identity] = value
+                elif row.get('kind') == 'event':
+                    require(type(value.get('kind')) is str)
+                    events.append(value)
+                else:
+                    raise ValueError('unsupported native record')
+            beginnings = [i for i, event in enumerate(events) if event['kind'] == 'runStarted']
+            endings = [i for i, event in enumerate(events) if event['kind'] == 'runEnded']
+            require(len(beginnings) == len(endings) == 1 and beginnings[0] < endings[0])
+            started, ended, skipped, failed, cancelled = set(), set(), set(), set(), set()
+            case_starts, case_ends = {}, {}
+            failures = warnings = known = 0
+            for i, event in enumerate(events):
+                kind, identity = event['kind'], event.get('testID')
+                if kind in ('runStarted', 'runEnded'):
+                    continue
+                require(beginnings[0] < i < endings[0])
+                if identity is not None:
+                    require(type(identity) is str and identity in definitions)
+                if kind in ('testStarted', 'testEnded', 'testSkipped', 'testCancelled', 'testCaseCancelled', 'testCaseStarted', 'testCaseEnded'):
+                    require(identity is not None)
+                if kind == 'testStarted':
+                    require(identity not in started)
+                    started.add(identity)
+                elif kind == 'testEnded':
+                    require(identity in started and identity not in ended)
+                    ended.add(identity)
+                elif kind == 'testSkipped':
+                    require(identity not in skipped and identity not in started)
+                    skipped.add(identity)
+                elif kind in ('testCancelled', 'testCaseCancelled'):
+                    cancelled.add(identity)
+                elif kind in ('testCaseStarted', 'testCaseEnded'):
+                    counts = case_starts if kind == 'testCaseStarted' else case_ends
+                    counts[identity] = counts.get(identity, 0) + 1
+                elif kind == 'issueRecorded':
+                    issue = event.get('issue')
+                    require(type(issue) is dict and type(issue.get('isFailure')) is bool)
+                    is_known = issue.get('isKnown', False)
+                    require(type(is_known) in (str, bool))
+                    if is_known is True or type(is_known) is str:
+                        known += 1
+                    elif issue['isFailure']:
+                        failures += 1
+                        if identity is not None:
+                            failed.add(identity)
+                    else:
+                        warnings += 1
+            functions = {identity: value for identity, value in definitions.items() if value['kind'] == 'function'}
+            require(bool(functions))
+            outcomes = []
+            counts = dict.fromkeys(('passed', 'failed', 'skipped', 'cancelled', 'incomplete'), 0)
+            for identity, value in sorted(functions.items()):
+                status = ('skipped' if identity in skipped else 'cancelled' if identity in cancelled
+                          else 'failed' if identity in failed else 'passed' if identity in ended else 'incomplete')
+                if case_starts.get(identity, 0) != case_ends.get(identity, 0) and status != 'cancelled':
+                    status = 'incomplete'
+                counts[status] += 1
+                outcomes.append({'id': identity, 'name': value['name'], 'status': status,
+                                 'is_parameterized': value['isParameterized'], 'parameterized_cases': case_ends.get(identity, 0)})
+            exit_code = int((reports / 'tests-exit-code.txt').read_text())
+            complete = not counts['incomplete']
+            success = (exit_code == 0 and complete and counts['passed'] > 0 and failures == 0
+                       and counts['failed'] == counts['cancelled'] == 0)
+            summary = {'schema_version': 1, 'native_schema': '6.3.0', 'command_exit_code': exit_code,
+                       'complete': complete, 'outcome': 'success' if success else 'failure', 'counts': counts,
+                       'test_functions': len(functions), 'suites': len(definitions)-len(functions),
+                       'parameterized_cases': sum(case_ends.values()), 'failing_issues': failures,
+                       'warnings': warnings, 'known_issues': known, 'tests': outcomes}
+            (reports / 'test-summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+                output.write('## Swift test results\n\n' + ', '.join(f'{name}: {count}' for name, count in counts.items()) + '\n')
+            print('Native Swift results:', len(functions), 'functions;', counts)
+            sys.exit(0 if success else 1)
+        except (OSError, ValueError, TypeError, KeyError, RecursionError):
+            reports.mkdir(parents=True, exist_ok=True)
+            (reports / 'tests-summary-error.txt').write_text('Native results are missing, malformed or incomplete\n')
+            print('Native results are missing, malformed or incomplete', file=sys.stderr)
+            sys.exit(1)
+        PY
+    - name: Export production coverage
+      run: |
+        python3 scripts/ci/coverage.py \
+          --build-root "$RUNNER_TEMP/notch-pet-ci/test-build" \
+          --output "$RUNNER_TEMP/notch-pet-ci/reports"
+    - *report_inventory
+    - *publish_reports
   build:
     name: Build
     runs-on: macos-26
     timeout-minutes: 15
+    env: *macos_toolchain
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+      evidence-ok: ${{ steps.evidence.outputs.complete }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Verify selected toolchain and record versions
-        run: |
-          test -d "$DEVELOPER_DIR"
-          test "$(uname -m)" = arm64
-          test "$(xcodebuild -version)" = $'Xcode 26.5\nBuild version 17F42'
-          printf 'selected_macos=macos-26\nselected_xcode=%s\n' "$DEVELOPER_DIR"
-          sw_vers
-          uname -m
-          xcodebuild -version
-          swift --version
-          python3 --version
-      - name: Prepare independent build identity
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          import subprocess
-
-          swift = subprocess.run(["/usr/bin/xcrun", "swift", "--version"],
-                                 capture_output=True, text=True, check=True, timeout=10)
-          identity = {
-              "commit": os.environ["GITHUB_SHA"],
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
-              "platform": "macos", "architecture": "arm64", "configuration": "debug",
-              "xcode_build": "17F42", "swift_version": swift.stdout.strip(),
-          }
-          path = Path(os.environ["RUNNER_TEMP"]) / "notch-pet-ci/identity.json"
-          path.parent.mkdir(parents=True, exist_ok=True)
-          path.write_text(json.dumps(identity, indent=2) + "\n")
-          PY
-      - name: Package app and helper without launching
-        env:
-          TMPDIR: ${{ runner.temp }}/notch-pet-ci/package
-        run: |
-          mkdir -p "$TMPDIR"
-          ci_app="$(bash scripts/run.sh --build-only)"
-          test -x "$ci_app/Contents/MacOS/NotchPet"
-          test -x "$ci_app/Contents/MacOS/NotchPetHook"
-          test -d "$ci_app/Contents/Resources/NotchPet_Pet.bundle"
-          /usr/bin/plutil -lint "$ci_app/Contents/Info.plist"
-          printf 'Packaged %s\n' "$ci_app"
-      - name: Archive and verify build
-        run: |
-          python3 scripts/ci/bundle.py \
-            --app "$RUNNER_TEMP/notch-pet-ci/package/notch-pet-dev/Notch Pet.app" \
-            --output "$RUNNER_TEMP/notch-pet-ci/bundle" \
-            --identity "$RUNNER_TEMP/notch-pet-ci/identity.json"
-          python3 scripts/ci/bundle.py \
-            --verify "$RUNNER_TEMP/notch-pet-ci/bundle" \
-            --identity "$RUNNER_TEMP/notch-pet-ci/identity.json"
-      - name: Upload exact build
-        id: upload
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: notch-pet-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/notch-pet-ci/bundle
-          if-no-files-found: error
-          retention-days: 1
-          compression-level: 0
-          overwrite: false
-
+    - *checkout_source
+    - *run_metadata
+    - *verify_macos
+    - &artifact_identity
+      name: Prepare independent artifact identity
+      id: identity
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        import subprocess
+        swift = subprocess.run(['/usr/bin/xcrun', 'swift', '--version'],
+                               capture_output=True, text=True, check=True, timeout=10)
+        identity = {'commit': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                    'run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']), 'platform': 'macos',
+                    'architecture': 'arm64', 'configuration': 'debug', 'xcode_build': '17F42',
+                    'swift_version': swift.stdout.strip()}
+        root = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci'
+        root.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(identity, indent=2) + '\n'
+        (root / 'identity.json').write_text(text)
+        (root / 'reports/expected-identity.json').write_text(text)
+        PY
+    - *bounded_check
+    - name: Archive and verify build
+      run: |
+        ci_root="$RUNNER_TEMP/notch-pet-ci"
+        python3 scripts/ci/bundle.py \
+          --app "$ci_root/package/notch-pet-dev/Notch Pet.app" \
+          --output "$ci_root/bundle" --identity "$ci_root/identity.json" \
+          > "$ci_root/reports/archive.log" 2>&1
+        python3 scripts/ci/bundle.py --verify "$ci_root/bundle" --identity "$ci_root/identity.json" \
+          >> "$ci_root/reports/archive.log" 2>&1
+        cp "$ci_root/bundle/manifest.json" "$ci_root/reports/build-manifest.json"
+    - name: Upload exact build
+      id: upload
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: notch-pet-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/notch-pet-ci/bundle
+        if-no-files-found: error
+        retention-days: 1
+        compression-level: 0
+        overwrite: false
+    - *report_inventory
+    - *publish_reports
   helper:
     name: Helper
     needs: build
     runs-on: macos-26
     timeout-minutes: 10
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    env: *macos_toolchain
+    outputs:
+      evidence-ok: ${{ steps.evidence.outputs.complete }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Verify selected toolchain and record versions
-        run: |
-          test -d "$DEVELOPER_DIR"
-          test "$(uname -m)" = arm64
-          test "$(xcodebuild -version)" = $'Xcode 26.5\nBuild version 17F42'
-          printf 'selected_macos=macos-26\nselected_xcode=%s\n' "$DEVELOPER_DIR"
-          sw_vers
-          uname -m
-          xcodebuild -version
-          swift --version
-          python3 --version
-      - name: Prepare independent helper identity
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          import subprocess
-
-          swift = subprocess.run(["/usr/bin/xcrun", "swift", "--version"],
-                                 capture_output=True, text=True, check=True, timeout=10)
-          identity = {
-              "commit": os.environ["GITHUB_SHA"],
-              "run_id": os.environ["GITHUB_RUN_ID"],
-              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
-              "platform": "macos", "architecture": "arm64", "configuration": "debug",
-              "xcode_build": "17F42", "swift_version": swift.stdout.strip(),
-          }
-          path = Path(os.environ["RUNNER_TEMP"]) / "notch-pet-ci/identity.json"
-          path.parent.mkdir(parents=True, exist_ok=True)
-          path.write_text(json.dumps(identity, indent=2) + "\n")
-          PY
-      - name: Require Build artifact ID
-        env:
-          BUILD_ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
-        run: '[[ "$BUILD_ARTIFACT_ID" =~ ^[0-9]+$ ]]'
-      - name: Download exact build
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          artifact-ids: ${{ needs.build.outputs.artifact-id }}
-          path: ${{ runner.temp }}/notch-pet-ci/bundle
-          digest-mismatch: error
-      - name: Verify and extract downloaded build
-        run: |
-          python3 scripts/ci/bundle.py \
-            --verify "$RUNNER_TEMP/notch-pet-ci/bundle" \
-            --identity "$RUNNER_TEMP/notch-pet-ci/identity.json" \
-            --extract-to "$RUNNER_TEMP/notch-pet-ci/extracted"
-      - name: Check downloaded helper without rebuilding
-        run: |
-          python3 scripts/check-event-bridge.py \
-            --helper "$RUNNER_TEMP/notch-pet-ci/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"
-
+    - *checkout_source
+    - *run_metadata
+    - *verify_macos
+    - *artifact_identity
+    - name: Require Build artifact ID
+      env:
+        BUILD_ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+      run: |
+        [[ "$BUILD_ARTIFACT_ID" =~ ^[0-9]+$ ]]
+    - name: Download exact build
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+      with:
+        artifact-ids: ${{ needs.build.outputs.artifact-id }}
+        path: ${{ runner.temp }}/notch-pet-ci/bundle
+        digest-mismatch: error
+    - name: Verify and extract downloaded build
+      run: |
+        ci_root="$RUNNER_TEMP/notch-pet-ci"
+        python3 scripts/ci/bundle.py --verify "$ci_root/bundle" --identity "$ci_root/identity.json" \
+          --extract-to "$ci_root/extracted" > "$ci_root/reports/verification.log" 2>&1
+    - *bounded_check
+    - *report_inventory
+    - *publish_reports
   contract:
     name: Contract
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      evidence-ok: ${{ steps.evidence.outputs.complete }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Check reference contract
-        # This reference still differs from SessionStore's unseen-turn rule.
-        run: |
-          python3 --version
-          python3 scripts/check-event-contract.py
+    - *checkout_source
+    - *run_metadata
+    - *bounded_check
+    - *report_inventory
+    - *publish_reports
+  required:
+    name: Required
+    if: ${{ always() }}
+    needs:
+    - workflow
+    - tests
+    - build
+    - contract
+    - helper
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+    - *checkout_source
+    - *run_metadata
+    - name: Check exact results and evidence
+      id: required_check
+      env:
+        CI_JOB_RESULTS: '{"workflow":${{ toJSON(needs.workflow.result) }},"tests":${{ toJSON(needs.tests.result) }},"build":${{
+          toJSON(needs.build.result) }},"contract":${{ toJSON(needs.contract.result) }},"helper":${{ toJSON(needs.helper.result)
+          }}}'
+        CI_EVIDENCE_RESULTS: '{"workflow":${{ toJSON(needs.workflow.outputs.evidence-ok) }},"tests":${{ toJSON(needs.tests.outputs.evidence-ok)
+          }},"build":${{ toJSON(needs.build.outputs.evidence-ok) }},"contract":${{ toJSON(needs.contract.outputs.evidence-ok)
+          }},"helper":${{ toJSON(needs.helper.outputs.evidence-ok) }}}'
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+        import subprocess
+        import sys
+
+        reports = Path(os.environ['RUNNER_TEMP']) / 'notch-pet-ci/reports'
+        names = {'workflow': 'Workflow', 'tests': 'Tests', 'build': 'Build', 'contract': 'Contract', 'helper': 'Helper'}
+        result = subprocess.run([sys.executable, 'scripts/ci/required-result.py'], capture_output=True, text=True)
+        def unique(pairs):
+            value = {}
+            for key, item in pairs:
+                if key in value:
+                    raise ValueError('duplicate evidence')
+                value[key] = item
+            return value
+        def load_object(key):
+            raw = os.environ.get(key, '')
+            if len(raw.encode('utf-8')) > 16384:
+                raise ValueError('oversized evidence')
+            value = json.loads(raw, object_pairs_hook=unique)
+            if type(value) is not dict:
+                raise ValueError('invalid evidence shape')
+            return value
+        try:
+            receipts = load_object('CI_EVIDENCE_RESULTS')
+            evidence_ok = type(receipts) is dict and receipts.keys() == names.keys() and all(value == 'true' for value in receipts.values())
+        except (ValueError, RecursionError):
+            receipts, evidence_ok = {}, False
+        try:
+            states = load_object('CI_JOB_RESULTS')
+            if type(states) is not dict:
+                states = {}
+        except (ValueError, RecursionError):
+            states = {}
+        status = result.returncode if result.returncode else (0 if evidence_ok else 1)
+        text = result.stdout[:4096] + ('Evidence: complete\n' if evidence_ok else 'Evidence: missing or invalid\n')
+        text += 'Overall Required: ' + ('success' if status == 0 else 'failure') + '\n'
+        (reports / 'required.log').write_text(text)
+        (reports / 'required-exit-code.txt').write_text(str(status) + '\n')
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+            summary.write('## Required result\n\n| Job | Result | Evidence |\n|---|---|---|\n')
+            for key, name in names.items():
+                state = states.get(key)
+                label = state if type(state) is str and state in ('success', 'failure', 'cancelled', 'skipped') else 'unknown'
+                available = 'complete' if type(receipts) is dict and receipts.get(key) == 'true' else 'missing/unavailable'
+                summary.write('| ' + name + ' | ' + label + ' | ' + available + ' |\n')
+            summary.write('\nOverall Required: ' + ('success' if status == 0 else 'failure') + '\n')
+        print(text)
+        sys.exit(status)
+        PY
+    - *report_inventory
+    - *publish_reports

@@ -1,7 +1,7 @@
 # CI foundation: local implementation goal
 
 The user activated this goal on 2026-10-31 and authorized a commit after each verified task.
-The separately approved I2d repair and CI F1/F2 are committed. F3 is locally verified.
+The separately approved I2d repair and CI F1–F6 are committed. F7 is locally verified and awaits commit review.
 F8 and completion of the whole specification remain separate hosted acceptance work.
 
 ## Paste after `/goal`
@@ -9,17 +9,17 @@ F8 and completion of the whole specification remain separate hosted acceptance w
 ```text
 GOAL: Implement and verify ci-foundation F1-F7 on feat/automation-ci-foundation; hand off hosted F8.
 
-F1-F7 and their local checks are approved. Read docs/goals/ci-foundation-local.md first. Other goals stay paused.
+F1-F7 local checks are approved. Other goals remain paused.
 
-Set ci_root=/private/tmp/notch-pet-ci, ci_build=/private/tmp/notch-pet-dev/build, ci_app="$ci_root/package/notch-pet-dev/Notch Pet.app"; export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer. Put verified pinned actionlint on PATH.
+Create ci_root/reports first. Set ci_root=/private/tmp/notch-pet-ci, ci_build=/private/tmp/notch-pet-dev/build, ci_app="$ci_root/package/notch-pet-dev/Notch Pet.app"; export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer. Put verified pinned actionlint on PATH.
 
-DONE WHEN all hold, with command outputs and exit codes printed here:
+DONE WHEN all hold, with outputs and exit codes printed here:
 1. `actionlint .github/workflows/ci.yml` and `git diff --check` exit 0. Review Workflow/Tests/Build/Contract/Helper/Required: PR-to-main/main-push/manual triggers, no path filters, PR-only cancellation, explicit macos-26/Xcode, verified pins, minimal permissions, timeouts, exact-run artifact reuse without rebuilds, failure reports, and always() Required checking all five jobs. Hosted qualification stays open.
-2. `swift test --scratch-path "$ci_build" --enable-code-coverage` exits 0 with 0 failures; native machine-readable results preserve identity/failure/skip status. `env TMPDIR="$ci_root/package" bash scripts/run.sh --build-only` exits 0 with both executables, Info.plist and Pet resources. Uploaded builds stay uninstrumented, separate from coverage builds.
+2. `swift test --scratch-path "$ci_build" --enable-code-coverage --event-stream-output-path "$ci_root/reports/tests.jsonl" --event-stream-version 6.3` exits 0 with 0 failures; native machine-readable results preserve identity/failure/skip status. `env TMPDIR="$ci_root/package" bash scripts/run.sh --build-only` exits 0 with both executables, Info.plist and Pet resources. Uploaded builds stay uninstrumented, separate from coverage builds.
 3. `python3 scripts/check-event-contract.py` exits 0. `python3 scripts/check-event-bridge.py` and its `--helper "$ci_root/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"` form exit 0 with 'Bridge process checks passed'; preserve assertions/socket protections.
 4. `python3 scripts/ci/bundle.py --app "$ci_app" --output "$ci_root/bundle" --identity "$ci_root/identity.json"` and `python3 scripts/ci/bundle.py --verify "$ci_root/bundle" --identity "$ci_root/identity.json"` exit 0; extract safely for criterion 3. Print rejection-fixture outputs: missing resources, altered content, mismatched independently expected identity, and escaping archive paths all fail before execution.
 5. `python3 scripts/ci/coverage.py --build-root "$ci_build" --output "$ci_root/reports"` exits 0 with real production-source HTML, JSON and module summaries. Print missing/malformed-input fixture outputs: both fail. No thresholds or fabricated results.
-6. `python3 scripts/ci/required-result.py` with CI_JOB_RESULTS: only the exact five successful jobs exit 0. Five fixture groups: success; failure/cancel/skip/unknown; missing/extra jobs; malformed input; empty input. All invalid cases exit nonzero. Print commands/counts/results. Record reproduction/troubleshooting commands and 7/7 verified F1-F7 evidence. Leave F8 and the spec open.
+6. `python3 scripts/ci/required-result.py` with CI_JOB_RESULTS: only the exact five successful jobs exit 0. Five fixture groups: success; failure/cancel/skip/unknown; missing/extra jobs; malformed input; empty input. All invalid cases exit nonzero. Print counts/results. Record reproduction/troubleshooting and 7/7 F1-F7 evidence. Leave F8 and the spec open.
 
 EVERY TURN: run available checks above, print bounded output and pass/fail/incomplete per criterion; append a timestamped row to docs/goals/ci-foundation-local-log.md, continuing turn numbers. Never rerun a failed baseline to erase failure.
 
@@ -35,7 +35,7 @@ ON FINISH OR STOP: set log Status done/stopped/blocked and Final result; use che
 - The eight-spec automation roadmap is accepted. Seven entries still have no specification file.
 - The user activated ci-foundation F1–F7 and their listed local checks on 2026-10-31.
 - The user permits a commit after every completed task. Follow AGENTS.md's commit-plan approval procedure.
-  I2d, F1 and F2 are committed as `7cb67f2`, `5bf0a6c` and `5464292`. F3 is verified locally.
+  I2d and F1–F6 are committed through `2ac1a85`. F7 is verified locally.
 - After the initial baseline failure, the user separately approved I2d: serialize `IntegrationHealthProbeTests`,
   update its integration-health spec and goal records, verify isolated/full suites, then resume CI.
   That one-file test repair is verified. This explicit exception does not authorize other unrelated repairs.
@@ -93,3 +93,11 @@ Local checks cannot prove hosted runner availability, scheduling, permissions, u
 
 Do not activate or dispatch hosted work from this goal.
 After local task commits, ask the user to push, `/clear`, and run `next-task` for F8.
+
+## Final local evidence
+
+All six criteria and F1–F7 passed. The final recipe and failure controls are recorded in the spec's F7 verification section.
+The replay used fresh separate job roots under `/private/tmp/notch-pet-ci/f7/final-replay-fd_igm3b`,
+with 132 passing tests, real production coverage, a fresh verified transfer and complete report inventories.
+The recipe above retains historical path bindings. Use the spec's fresh-root recipe for a new execution.
+F8 and hosted service behavior remain unverified. F7 commit review remains pending.

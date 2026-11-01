@@ -3,7 +3,7 @@
 - Goal file: docs/goals/ci-foundation-local.md
 - Created: 2026-10-31 22:42 +08
 - Turn limit: 30
-- Status: running
+- Status: done
 
 ## Turns
 
@@ -19,10 +19,14 @@
 | 8 | 2026-11-01 | F5 verified, 5/7 CI tasks; criteria 3/4/5 pass | F4 committed as aa2c6b2. Exported the real passing Swift suite profile with test-runner and helper mappings. Native JSON, portable LLVM HTML, module summaries and input fingerprints cover all 38 production files/five modules; tests/generated sources excluded. All 22 acceptance checks passed, including exact main source rows, malformed metadata/counters, absent/corrupt profiles, uninstrumented helper rejection and existing-output preservation. Corrected the acceptance reader's handling of native nested instantiation tables; exporter unchanged. No new test/build command or Swift edits. Preparing per-task commit. |
 | 9 | 2026-11-01 00:32 +08 | F6 verified, 6/7 CI tasks; Required predicate passes | F5 committed as dbe1912. Added a 16 KiB-bounded flat CI_JOB_RESULTS checker for the exact five stable job IDs. All 90 CLI cases across the five fixed groups passed: 3 valid encodings, 65 non-success/type cases, 8 job-set cases, 10 malformed/duplicate/oversized/encoding cases, 4 empty cases. Only all-success exits 0. Invalid input values/keys never printed; outputs stayed under 1 KiB. No runtime/native checks rerun. F7 remains for job wiring and complete local evidence. |
 
+| 10 | 2026-11-01 12:36 +08 | 6/6 criteria; 7/7 local tasks verified | F6 committed as 2ac1a85. Final six-job YAML replay passed with 132 passing Swift functions, native schema 6.3.0, all 38 production files/five modules covered, a fresh uninstrumented verified artifact and actual transferred-helper checks. All report inventories and Required passed. 44 executed control steps preserved failure/skip/parameterized identities, original exit 23 and bounded log tails, and rejected malformed/truncated/missing records, missing reports, duplicate receipts and cancellation. Final actionlint/diff checks passed. Evidence: /private/tmp/notch-pet-ci/reports/f7-final-replay.log and f7-final-controls.log. F7 commit review pending. F8 remains open. |
+
 ## Final result
 
-Run active again after the separately approved and verified I2d repair.
-F1–F5 are committed; F6 is locally verified. F7/F8 remain open. Per-task commits are authorized by the user.
+Local objective complete: all six goal criteria and F1–F7 are verified.
+F1–F6 are committed. F7 awaits commit-plan approval. F8 and the whole specification remain open.
+The spec records final reproduction/troubleshooting commands and the hosted handoff.
+No push, workflow dispatch, PR or repository settings change occurred.
 The original baseline failure and its diagnostic evidence remain below.
 
 `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build --enable-code-coverage`

@@ -5,13 +5,13 @@
 On `feat/automation-ci-foundation`, created from `origin/main` at `7735ec6` with the user's approval.
 The user activated the 30-turn F1–F7 CI goal and authorized commits after verified tasks.
 The separate I2d probe-fixture scheduling repair is committed as `7cb67f2`.
-CI F1–F5 are committed. F5 is `dbe1912`; F6's strict final-result checker is locally verified.
+CI F1–F6 are committed through `2ac1a85`. F7 is locally verified and awaits its commit review.
 Session-cards C1 remains on `feat/notch-session-cards` as `1f30a3c`; its implementation is not on this branch.
 Installed configuration changes and older goals stay paused. Hosted F8 acceptance remains open.
 
 ## Next
 
-1. Complete ci-foundation F7 on this branch: qualify native machine-readable Swift results, wire coverage/failure reports and summaries, and add the always-evaluated Required job. Verify the final local workflow contracts. F8 still needs the user's push.
+1. Review and commit ci-foundation F7, then let the user push this branch. Start F8 from `docs/specs/automation/ci-foundation.md` with explicit hosted-work authorization. Record passing/failure/docs-only/artifact/cancellation evidence before closing the spec.
 2. Complete ci-foundation before session-cards C2. Plan automation/quality-gates next when its baseline exists; the other seven automation entries remain roadmaps.
 3. Resume session-cards on its branch, retaining C1 in `1f30a3c`, then plan C2–C5 and allowance-strip A1–A5 with task-specific test authorization. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
 4. Do codex-setup R4 (architecture docs), then plan R2 (target split) and R3 (typed identities) with design review and renewed test authorization. Follow with R5/R6; R6 needs a user decision on the 128-session limit.

@@ -120,7 +120,7 @@ Do not quit another app instance or remove its socket to make the check run.
 Passing means zero exit status, no failed Swift tests, and `Bridge process checks passed` from the process checker.
 The contract reference checker must exit zero. Its own output is not proof that its model matches SessionStore.
 
-Proposed foundation CLI commands, to implement and finalize in their owning task plans:
+Foundation CLI commands (see the finalized F7 recipe below for fresh paths and native result flags):
 
 ```bash
 actionlint .github/workflows/ci.yml
@@ -181,7 +181,7 @@ Record incomplete drills as incomplete. Do not mark F8 done from local checks or
 - [x] F4: Wire Build and Helper in `.github/workflows/ci.yml` to upload, download, and verify the same build artifact, then run F2 against its helper without rebuilding; verify the local artifact round trip and workflow syntax.
 - [x] F5: Add `scripts/ci/coverage.py` to export real Swift coverage as HTML, JSON, and per-module summaries; verify real output and missing/malformed-input rejection without adding thresholds.
 - [x] F6: Add `scripts/ci/required-result.py` accepting exactly the expected successful job results; verify the five grouped success/failure fixture cases in the Verify section.
-- [ ] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
+- [x] F7: Complete `.github/workflows/ci.yml` with machine-readable test results, coverage export, failure-report uploads, summaries, and the always-evaluated Required job; finalize this spec's reproduction/troubleshooting recipes and verify syntax plus local checks.
 - [ ] F8: Verify hosted passing and deliberate-failure runs, a documentation-only PR, artifact rejection, and superseded-run cancellation after the user pushes; record commit-linked evidence and restore a final passing run.
 
 ## F1 partial evidence, 2026-10-31
@@ -574,3 +574,159 @@ For a local failure reproduction, change only `tests` to `cancelled` in the call
 The script must exit 1 and show `Tests: cancelled` plus `Required: failure`.
 If the job set is unexpected, compare the five stable workflow IDs with the explicit input object.
 Do not remove a failed/missing job from that object or map a non-success state to success.
+
+## F7 final workflow contract
+
+Use native `swift test --event-stream-output-path PATH --event-stream-version 6.3`.
+The selected Xcode emits schema `6.3.0`; a temporary real Swift Testing package qualified passing,
+failing, skipped and parameterized tests. Preserve the raw JSON Lines without conversion.
+Derive a separate summary from test IDs and terminal events. Require one complete run and at least one executed function.
+Fail on missing/malformed/truncated results, failing issues, cancellation or incomplete test outcomes.
+Keep skips and parameterized-case counts distinct from passed functions.
+The original test command's exit status is recorded and cannot be replaced by report-generation success.
+
+Keep shared metadata, command logging, report inventory and publication steps in YAML anchors.
+No additional implementation file or runtime dependency is needed.
+Record only allowlisted commit/run/attempt, selected runner/toolchain, actual OS/architecture/image and tool versions.
+Bound command logs to 2 MiB while draining output to preserve the child's actual exit status.
+Tests use a separate instrumented build; Build's artifact stays uninstrumented.
+
+Every job inventories its expected reports and publishes available reports after failure when not cancelled.
+Missing/malformed reports reject the evidence receipt and fail an otherwise successful job.
+Reports use the existing pinned upload action with three-day retention; binary retention remains one day.
+Each upstream job exposes `evidence-ok` as a bounded true/false receipt.
+Required uses `always()`, needs exactly Workflow/Tests/Build/Contract/Helper, passes their actual result strings
+to F6, and also rejects any missing/non-true evidence receipt. Its summary identifies failed jobs and absent evidence.
+No report step uses continue-on-error, retries or success substitution.
+
+Final local verification replays the actual YAML shell steps with separate job roots, the full Swift suite,
+native result validation, real coverage, a fresh artifact transfer and actual packaged-helper checks.
+Use the temporary real pass/fail/skip stream and bounded malformed-report fixtures to verify result handling.
+Exercise failure-status preservation, bounded logs, missing-report receipts and Required's negative cases.
+Use pinned actionlint, inspect every expected job binding and finalize local reproduction/troubleshooting recipes.
+Hosted service scheduling, upload/download and cancellation remain F8.
+
+
+### F7 verification, 2026-11-01
+
+The final local replay executed the actual workflow shell steps with separate roots for all six jobs.
+It used the final workflow against source commit `2ac1a85`, with only F7 workflow/record changes uncommitted.
+The local Xcode application path substitutes for the hosted path. Both select Xcode 26.5 build `17F42`.
+Checkout, upload and download actions were simulated locally. The verified Darwin actionlint binary replaced the Linux installer.
+These substitutions do not qualify GitHub service behavior or its Linux installer.
+
+```bash
+python3 /private/tmp/notch-pet-ci/f7/replay-final.py
+python3 /private/tmp/notch-pet-ci/f7/check-final-controls.py
+/private/tmp/notch-pet-ci/tools/actionlint .github/workflows/ci.yml
+git diff --check
+```
+
+The replay and 44 executed failure-control steps exited 0. actionlint and the final diff check exited 0.
+The temporary harnesses are session evidence, not repository dependencies. Durable reproduction commands follow below.
+
+- Workflow: six names, triggers, permissions, full-SHA pins, timeouts, report conditions and job bindings checked.
+  Concurrency includes event type. A PR number cannot collide with a push/manual run ID.
+- Tests: all 132 functions passed with zero failed, skipped, cancelled or incomplete functions.
+  The complete native schema `6.3.0` stream was validated without modifying its bytes.
+  Real coverage includes all 38 production files, five modules and 39 HTML pages.
+- Build: a fresh uninstrumented app and helper were packaged, archived and verified against independent expected identity.
+  A byte-identical local artifact transfer supplied Helper. Its separate root contained no build directory.
+- Helper: archive verification and every existing fictional process assertion passed against the extracted helper.
+- Contract: the unchanged reference checker passed. Its SessionStore evidence limit remains open.
+- Required: all five actual local job results and complete evidence receipts passed.
+  All six report inventories completed and their report trees were archived locally.
+
+A real temporary Swift Testing package preserved two passed functions, one failed function, one skipped function,
+and two parameterized cases. Its deliberate issue returned exit 1, and the workflow summary also rejected it.
+Controls rejected eight invalid streams/statuses: nonzero original exit, empty/truncated/malformed/duplicate JSON,
+missing run end, missing function terminal event and unknown test identity.
+A failed command retained exit 23 even when metadata collection failed.
+A 3 MiB command stream produced a 2 MiB log containing the final failure marker and retained exit 23.
+All six early-setup inventories rejected missing evidence.
+Required rejected 12 cancellation/missing-result/receipt cases, plus a duplicate evidence key.
+Malformed metadata also failed inventory. None of these fictional failures reran or replaced a failed product baseline.
+
+Evidence: `/private/tmp/notch-pet-ci/reports/f7-final-replay.log` and `f7-final-controls.log`.
+The final replay root is `/private/tmp/notch-pet-ci/f7/final-replay-fd_igm3b`.
+Each job has `notch-pet-ci/reports/`, step logs and a summary. `simulated-actions-artifacts/` contains local report archives.
+The actual passing raw stream is `tests/notch-pet-ci/reports/tests.jsonl` under that root.
+Earlier F2, F3, F5 and F6 acceptance fixtures remain valid because their implementation files did not change in F7.
+
+### Final local reproduction
+
+Use an arm64 Mac with Xcode 26.5 build `17F42` and the verified actionlint 1.7.12 binary on PATH.
+Run each command from the checkout. Stop on any nonzero exit. Keep the failed output and do not retry to replace it.
+Choose a new external root. Existing bundle, extraction and coverage outputs are intentionally not overwritten.
+
+```bash
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+export ci_root="$(mktemp -d /private/tmp/notch-pet-ci-local.XXXXXX)"
+mkdir -p "$ci_root/reports" "$ci_root/package"
+actionlint .github/workflows/ci.yml
+git diff --check
+swift test --scratch-path "$ci_root/test-build" --enable-code-coverage \
+  --event-stream-output-path "$ci_root/reports/tests.jsonl" --event-stream-version 6.3
+python3 scripts/ci/coverage.py --build-root "$ci_root/test-build" --output "$ci_root/reports"
+env TMPDIR="$ci_root/package" bash scripts/run.sh --build-only
+env TMPDIR="$ci_root/package" python3 scripts/check-event-bridge.py
+python3 scripts/check-event-contract.py
+python3 - <<'PYIDENTITY'
+import json, os, subprocess
+from pathlib import Path
+value = {
+    'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+    'run_id': 'local', 'run_attempt': 1, 'platform': 'macos', 'architecture': 'arm64',
+    'configuration': 'debug', 'xcode_build': '17F42',
+    'swift_version': subprocess.check_output(['/usr/bin/xcrun', 'swift', '--version'], text=True).strip(),
+}
+(Path(os.environ['ci_root']) / 'identity.json').write_text(json.dumps(value) + '\n')
+PYIDENTITY
+python3 scripts/ci/bundle.py --app "$ci_root/package/notch-pet-dev/Notch Pet.app" \
+  --output "$ci_root/bundle" --identity "$ci_root/identity.json"
+python3 scripts/ci/bundle.py --verify "$ci_root/bundle" --identity "$ci_root/identity.json" \
+  --extract-to "$ci_root/extracted"
+python3 scripts/check-event-bridge.py --helper "$ci_root/extracted/Notch Pet.app/Contents/MacOS/NotchPetHook"
+CI_JOB_RESULTS='{"workflow":"success","tests":"success","build":"success","contract":"success","helper":"success"}' \
+  python3 scripts/ci/required-result.py
+```
+
+Expected results: every command exits 0, no failed Swift tests, both process modes print `Bridge process checks passed`,
+and Required prints `Required: success`. `reports/coverage/` contains JSON, HTML, module summaries and tool/input metadata.
+The bundle directory contains only `app.tar.gz` and `manifest.json`.
+Local identity is independently supplied before verification. Hosted jobs use commit/run/attempt from GitHub context instead.
+Never derive expected identity from a downloaded manifest.
+
+The workflow's `Validate native Swift results` run block is the exact native-summary reproduction command.
+Set `RUNNER_TEMP` to a disposable job root containing `notch-pet-ci/reports/tests.jsonl` and `tests-exit-code.txt`.
+Set `GITHUB_STEP_SUMMARY` to an external Markdown path, then run that block unchanged.
+Use the actual Swift command status in the receipt. Do not create a zero receipt for a failed or unobserved execution.
+Its outputs are `test-summary.json` or a bounded `tests-summary-error.txt` and a nonzero exit.
+
+For the exact metadata, bounded-log, inventory and Required bindings, use their named run blocks in `.github/workflows/ci.yml`.
+Supply `GITHUB_SHA`, `GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`, `GITHUB_JOB`, `CI_RUNNER_LABEL`, `RUNNER_TEMP`,
+`GITHUB_OUTPUT` and `GITHUB_STEP_SUMMARY` explicitly. They are identifiers and output paths, not credentials.
+Set `CI_JOB_RESULTS` to actual upstream results and `CI_EVIDENCE_RESULTS` to their actual `evidence-ok` strings.
+Manual all-success input tests the predicate only. It does not prove that any upstream job ran.
+
+### Troubleshooting by job
+
+| Job | First evidence to inspect | Next check |
+|---|---|---|
+| Workflow | `validator-setup.log`, `validator-version.txt`, `workflow.log` | Confirm download checksum and pinned validator. Never remove verification to accept a different binary. |
+| Tests | `tests.log`, `tests-exit-code.txt`, raw `tests.jsonl`, `test-summary.json` or `tests-summary-error.txt` | Confirm selected Swift/schema and the recorded failing test. Preserve the original exit. Missing native records fail acceptance. |
+| Tests coverage | `coverage-tool.log`, `coverage/metadata.json` | Confirm the successful test build has its matching profile, test runner and instrumented helper. Use a fresh output root. Missing coverage is not zero coverage. |
+| Build | `build.log`, `archive.log`, `expected-identity.json`, `build-manifest.json` | Confirm native executables, plist, Pet resources, modes and the exact toolchain. Do not weaken archive bounds or identities. |
+| Helper | `verification.log`, `expected-identity.json`, `helper.log` | Confirm Build's numeric artifact ID and same-run identity. Reject alteration before execution. An occupied socket stops the check. Never delete another instance's endpoint. |
+| Contract | `contract.log` | Inspect the reference failure. Its known difference from SessionStore still needs its separate owning repair. |
+| Required | `required.log` and summary's result/evidence table | Any non-success job or missing receipt fails. Inspect that job's inventory and original failure first. |
+| Any job | `inventory.json` and available report archive | Missing/invalid evidence fails an otherwise successful job. Report upload failure also fails the job. Early checkout/setup failure or cancellation may leave no archive. |
+
+Command logs retain at most 2 MiB, including final output after truncation. Native results allow at most 32 MiB,
+100,000 records and 1 MiB per record. Inventory bounds each expected report to 32 MiB and rejects nonregular files.
+Binaries expire after one day. Reports expire after three days. Preserve needed review evidence before expiry.
+Inventories and available-report uploads use `!cancelled()`, while Required uses `always()`.
+A cancelled or unavailable run never becomes passing because reports are absent.
+
+F1–F7 are locally verified. F8 remains unchecked. After the user pushes, verify the hosted PR/failure/docs-only/artifact/cancellation drills.
+Record commit-linked run URLs and finish with a passing hosted run before marking this specification done.
