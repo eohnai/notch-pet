@@ -67,7 +67,8 @@ public enum NotchPresentation {
     }
 
     public static func activeProviders(_ sessions: [SessionSnapshot]) -> Set<IntegrationAgent> {
-        Set(sessions.filter { $0.status != .ended }.compactMap { IntegrationAgent(rawValue: $0.key.agent) })
+        Set(sessions.filter { $0.status != .ended && $0.status != .unknown }
+            .compactMap { IntegrationAgent(rawValue: $0.key.agent) })
     }
 
     public static func ordered(_ sessions: [SessionSnapshot]) -> [SessionSnapshot] {

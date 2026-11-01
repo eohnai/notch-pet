@@ -19,11 +19,28 @@ struct NotchSelectionTests {
         #expect(NotchPresentation.activeProviders([snapshot("a"), snapshot("b", agent: "claude")]) == [.codex, .claude])
     }
 
-    @Test func endedAndUnsupportedProvidersDoNotAppear() {
+    @Test func inactiveAndUnsupportedProvidersDoNotAppear() {
         #expect(NotchPresentation.activeProviders([snapshot("a", status: .ended),
                                                    snapshot("b", agent: "unsupported")]).isEmpty)
-        #expect(NotchPresentation.activeProviders([snapshot("a", status: .unknown)]) == [.codex])
+        #expect(NotchPresentation.activeProviders([snapshot("a", status: .unknown)]).isEmpty)
         #expect(NotchPresentation.activeProviders([snapshot("a"), snapshot("b")]).count == 1)
+    }
+
+    @Test(arguments: IntegrationAgent.allCases)
+    func providerVisibilityRequiresItsOwnActiveSession(provider: IntegrationAgent) {
+        let other: IntegrationAgent = provider == .codex ? .claude : .codex
+        let inactive = [snapshot("unknown", agent: other.rawValue, status: .unknown),
+                        snapshot("ended", agent: other.rawValue, status: .ended)]
+        #expect(NotchPresentation.activeProviders(inactive).isEmpty)
+        for status in [SessionStatus.idle, .working, .questionNeeded, .approvalNeeded, .responseReady] {
+            let active = snapshot("active", agent: provider.rawValue, status: status)
+            #expect(NotchPresentation.activeProviders(inactive + [active]) == [provider])
+        }
+        for status in [SessionStatus.unknown, .ended] {
+            #expect(NotchPresentation.activeProviders(inactive + [
+                snapshot("inactive", agent: provider.rawValue, status: status)
+            ]).isEmpty)
+        }
     }
 
     @Test func confirmedAttentionPrecedesResponseAndUnknownNotices() {

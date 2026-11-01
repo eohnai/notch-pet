@@ -4,9 +4,6 @@ import SwiftUI
 struct NotchAllowanceStrip: View {
     let store: UsageStore
     let activeProviders: Set<IntegrationAgent>
-    @Environment(AgentUsageController.self) private var usageController
-    @Environment(\.locale) private var locale
-    @Environment(\.timeZone) private var timeZone
 
     var body: some View {
         // The parent creates this view only while expanded. With no providers,
@@ -23,7 +20,7 @@ struct NotchAllowanceStrip: View {
                             Rectangle().fill(.gray).frame(width: 1, height: 12)
                                 .accessibilityHidden(true)
                         }
-                        providerEntry(entry, snapshots: snapshots, nowMs: nowMs)
+                        providerEntry(entry, nowMs: nowMs)
                     }
                 }
                 .font(.caption2.weight(.medium))
@@ -32,18 +29,13 @@ struct NotchAllowanceStrip: View {
         }
     }
 
-    private func providerEntry(_ entry: NotchAllowanceEntry,
-                               snapshots: [UsageSnapshot], nowMs: Int64) -> some View {
+    private func providerEntry(_ entry: NotchAllowanceEntry, nowMs: Int64) -> some View {
         let name = entry.provider == .codex ? "Codex" : "Claude Code"
-        let status = entry.provider == .codex ? usageController.status : "Awaiting Claude status-line data."
-        let tooltip = NotchAllowancePresentation.tooltipText(
-            for: entry.provider, snapshots: snapshots, missingSourceStatus: status,
-            locale: locale, timeZone: timeZone)
         let countdown = NotchAllowancePresentation.countdownText(for: entry.window, at: nowMs)
         let summary = entry.percentLeft.map { "\(entry.windowLabel) \($0)% \(countdown)" }
             ?? "\(entry.windowLabel) —"
         let spoken = entry.percentLeft.map { "\(entry.windowLabel), \($0) percent left, resets in \(countdown)" }
-            ?? "\(entry.windowLabel), allowance unavailable"
+            ?? "\(entry.windowLabel), usage limits unavailable"
         return HStack(spacing: 3) {
             if let image = ProviderLogo.bundled[entry.provider] {
                 Image(nsImage: image)
@@ -61,7 +53,6 @@ struct NotchAllowanceStrip: View {
             }
         }
         .lineLimit(1)
-        .help(tooltip)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(name), \(spoken)\(entry.accountUnverified ? ", account unverified" : "")")
     }

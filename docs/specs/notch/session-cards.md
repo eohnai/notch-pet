@@ -1,5 +1,7 @@
 # Show sessions as compact cards in the notch
 
+Status: done
+
 ## Goal
 
 Replace the expanded notch's disclosure rows with compact session cards, based on the reference layout the user supplied on 2026-10-31.
@@ -47,6 +49,18 @@ The allowance strip above the cards is a separate spec, `allowance-strip`. See t
 - Build: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh --build-only`.
 - Real app: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/run.sh`, then send fictional observations through the bundled helper.
   Do not request screen-capture permission or retry the prohibited capture path. The user supplies the one visual review.
+
+## Results
+
+Checked 2026-11-02 on `feat/notch-allowance-strip`, stacked on C4 `a2a2ede`.
+
+- Final full Swift suite: 171 tests in 27 suites passed, exit 0; final app build passed.
+- The user's screenshots confirmed same-folder short IDs, full identity details, request cards, and idle/unknown/ended labels.
+- The user confirmed `abc002` stayed at three seconds while `abc001` advanced, and terminal focus survived clicking/hovering.
+- The review app quit normally, clearing fictional sessions and its socket. No agent configuration changed or agent-initiated capture ran.
+- VoiceOver and broader session-island acceptance remain unverified. The known version-probe timeout remains recorded.
+
+See [allowance-strip Results](allowance-strip.md#results) for final commands, logs, and the subsequent provider-filter test coverage.
 
 ## Decisions
 
@@ -265,10 +279,44 @@ The build included the final timer accessibility label, which contains the displ
 No full-suite run, app launch, helper injection, or capture ran for C4.
 Actual scheduler behavior, layout, focus, and fictional-event acceptance remain unverified for C5/A5's batched user review.
 
+## C5/A5 review preparation, 2026-11-02
+
+The user approved the combined runtime review on `feat/notch-allowance-strip`, including full tests,
+the app build, fictional helper injections, and real Codex allowance.
+The full-suite rerun passed 177 tests in 27 suites. The build passed.
+The first full-suite run hit the known version-probe timeout. The isolated probe tests passed.
+See [A5/C5 review preparation](allowance-strip.md#a5c5-review-preparation-2026-11-02)
+for exact commands, launch arguments, limitations, and external evidence paths.
+
+The temporary helper script prepares two Codex sessions in the same fictional `shared-project` folder:
+`a5-review-run-abc001` keeps a running timer and `a5-review-stop-abc002` stops after about three seconds.
+Additional cases cover a Claude `Bash` approval, Codex `request_user_input` question,
+unknown, idle, and ended sessions. The unknown case has no observed turn and must hide its timer.
+The user must confirm actual receipt, labels, short IDs, fixed/running timers, request cards,
+expanded identity details, collapse/reopen behavior, and focus in the running app.
+The script ran with exit 0; every helper invocation was silent with exit 0.
+This does not acknowledge delivery. The user has been asked for the batched review.
+The user's supplied screenshots establish visible receipt. They show the `Bash` approval and
+`request_user_input` question cards with the terminal guidance, the same-folder `abc001`/`abc002` IDs,
+an opened working card with full path/session identity, and idle/unknown/ended labels.
+The unknown session correctly shows `Project not observed` and no timer: its uncorrelated tool event
+does not establish trusted project metadata. The stopped card shows a three-second duration.
+The working and waiting sessions show elapsed durations; screenshots alone do not prove the stopped timer stays fixed.
+
+The user confirmed the timer advanced and keyboard focus remained in the terminal while hovering
+and after clicking the notch. In the final review, they confirmed the stopped timer stayed at three seconds while the other advanced.
+VoiceOver labels remain untested. Inactive observations expire after two minutes.
+C5 is complete. The paired A5 tooltips were later confirmed by screenshots,
+then explicitly removed at the user's request under [0014](../../decisions/0014-omit-usage-limit-tooltips.md).
+The final app has no hover details. After removal, the full-suite rerun passed 170 tests in 27 suites and the build passed.
+The final review used only the shared-folder timer pair and an idle Claude session to avoid scrolling through prior cases.
+See the allowance spec for the implementation and test evidence.
+No agent-initiated capture or capture-permission request ran; the user supplied the images.
+
 ## Tasks
 
 - [x] C1: Keep each turn's start and response-ready times in `SessionStore` and expose them on `SessionSnapshot`; store tests cover start, stop, repeated stop, and a new turn resetting both times.
 - [x] C2: Add pure card presentation to `NotchPresentation`: folder name, short session ID for a shared folder, numeric running/stopped timer states, elapsed-time calculation, and separate display formatting. Presentation tests cover each case.
 - [x] C3: Make the expanded panel 620 points wide and 240 points below the header in `NotchPlacement`; update the placement tests.
 - [x] C4: Replace `NotchSessionRow` with a session card (badge, folder · status, timer) and a request card (tool name, "Answer in the terminal"); recalculate elapsed time once per second only while expanded with a running timer; build passes.
-- [ ] C5: Verify the cards in the real app with fictional events through the bundled helper: same-folder sessions, running and stopped timers, a request card, and an unknown session; one batched visual review by the user.
+- [x] C5: Verify the cards in the real app with fictional events through the bundled helper: same-folder sessions, running and stopped timers, a request card, and an unknown session; one batched visual review by the user.

@@ -23,15 +23,6 @@ struct NotchAllowancePresentationTests {
             activeProviders: [provider], snapshots: [snapshot]).first)
     }
 
-    private func tooltip(_ snapshots: [UsageSnapshot], provider: IntegrationAgent = .codex,
-                         status: String = "Codex executable unavailable.",
-                         locale: Locale = Locale(identifier: "en_US_POSIX"),
-                         timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!) -> String {
-        NotchAllowancePresentation.tooltipText(
-            for: provider, snapshots: snapshots, missingSourceStatus: status,
-            locale: locale, timeZone: timeZone)
-    }
-
     @Test func countdownFloorsMinutesAndChangesUnitsAtHourAndDayBoundaries() {
         let cases: [(Int64, String)] = [
             (0, "0m"), (59_999, "0m"), (60_000, "1m"), (2_700_000, "45m"),
@@ -52,107 +43,6 @@ struct NotchAllowancePresentationTests {
         #expect(NotchAllowancePresentation.countdownText(
             for: window(reset: .max), at: .min) == "213503982334d14h")
         #expect(NotchAllowancePresentation.countdownText(for: window(reset: 0), at: -60_000) == "1m")
-    }
-
-    @Test(arguments: [IntegrationAgent.codex, .claude])
-    func tooltipListsEverySourceAndBucketWithoutCombiningThem(provider: IntegrationAgent) {
-        let sources = [
-            snapshot(provider, source: "private-source-z", windows: [window("weekly", used: 90, minutes: 10_080)]),
-            snapshot(provider, source: "private-source-a", windows: [
-                window("other", used: 30, minutes: 15), window("five-b", used: 60), window("five-a", used: 10)
-            ])
-        ]
-        let text = tooltip(sources, provider: provider)
-        #expect(text == tooltip(Array(sources.reversed()), provider: provider))
-        #expect(text.contains(provider == .codex ? "Codex allowance" : "Claude Code allowance"))
-        #expect(text.contains("Source 1 · Account known"))
-        #expect(text.contains("Source 2 · Account known"))
-        #expect(text.contains("5-hour [five-a]: 10% used · 90% left"))
-        #expect(text.contains("5-hour [five-b]: 60% used · 40% left"))
-        #expect(text.contains("15-minute window [other]: 30% used · 70% left"))
-        #expect(text.contains("Weekly [weekly]: 90% used · 10% left"))
-        #expect(text.contains("5-hour: not reported"))
-        #expect(text.contains("Weekly: not reported"))
-        #expect(!text.contains("private-source"))
-        let reordered = snapshot(provider, source: "private-source-a", windows: Array(sources[1].observation.windows.reversed()))
-        #expect(text == tooltip([sources[0], reordered], provider: provider))
-    }
-
-    @Test func tooltipPreservesFractionalUsedValuesAndFloorsLeftValues() {
-        let sources = [snapshot(windows: [window(used: 25.25)])]
-        let text = tooltip(sources)
-        #expect(text.contains("25.2% used · 74% left"))
-        #expect(tooltip(sources, locale: Locale(identifier: "fr_FR")).contains("25,2% used · 74% left"))
-        #expect(tooltip([snapshot(windows: [window(used: 100)])]).contains("100% used · 0% left"))
-        #expect(tooltip([snapshot(windows: [window(used: 0)])]).contains("0% used · 100% left"))
-    }
-
-    @Test func tooltipUsesExplicitLocaleAndTimeZoneForDates() {
-        let sources = [snapshot(receipt: 0, windows: [window(reset: 86_400_000)], measured: 172_800_000)]
-        let utc = tooltip(sources)
-        #expect(utc.contains("Resets: Jan 2, 1970"))
-        #expect(utc.contains("Received: Jan 1, 1970"))
-        #expect(utc.contains("Measured: Jan 3, 1970"))
-        let west = tooltip(sources, timeZone: TimeZone(secondsFromGMT: -3_600)!)
-        #expect(west.contains("Resets: Jan 1, 1970"))
-        #expect(west.contains("Received: Dec 31, 1969"))
-        #expect(west.contains("Measured: Jan 2, 1970"))
-        let french = tooltip(sources, locale: Locale(identifier: "fr_FR"))
-        #expect(french.contains("janv."))
-        #expect(!french.contains("Jan 1"))
-    }
-
-    @Test func tooltipShowsFreshnessAndMissingTimingEvidenceSeparately() {
-        let fresh = tooltip([snapshot(windows: [window("unknown-duration", minutes: nil)])])
-        #expect(fresh.contains("Fresh observation."))
-        #expect(fresh.contains("Window duration not reported [unknown-duration]"))
-        #expect(fresh.contains("Resets: not reported"))
-        #expect(fresh.contains("Received: Jan 1, 1970"))
-        #expect(fresh.contains("Measured: not reported"))
-        #expect(tooltip([snapshot(stale: true, windows: [])]).contains("Stale observation"))
-    }
-
-    @Test(arguments: [IntegrationAgent.codex, .claude])
-    func tooltipReportsAccountConfidenceWithoutAccountIdentity(provider: IntegrationAgent) {
-        let known = tooltip([snapshot(provider, account: "private-account", windows: [])], provider: provider)
-        #expect(known.contains("Account known"))
-        #expect(!known.contains("private-account"))
-        let unknown = tooltip([snapshot(provider, account: nil, windows: [])], provider: provider)
-        #expect(unknown.contains("Account unverified"))
-        #expect(!known.contains("Account unverified"))
-    }
-
-    @Test func tooltipShowsEveryFailureWhileRetainingReportedWindows() {
-        let cases: [(UsageFailure, String)] = [
-            (.awaitingSource, "Awaiting source data."), (.signedOut, "Source signed out."),
-            (.unsupportedAccount, "Account does not support allowance readings."),
-            (.sourceUnavailable, "Allowance source unavailable."), (.malformed, "Invalid allowance reading."),
-            (.timedOut, "Source timed out.")
-        ]
-        for (failure, message) in cases {
-            let text = tooltip([snapshot(stale: true, windows: [window()], failure: failure)])
-            #expect(text.contains(message))
-            #expect(text.contains("25% used · 75% left"))
-            #expect(text.contains("Stale observation"))
-            #expect(!text.contains("Codex executable unavailable."))
-        }
-    }
-
-    @Test(arguments: [IntegrationAgent.codex, .claude])
-    func tooltipFiltersProvidersAndUsesStatusOnlyWhenNoSourceExists(provider: IntegrationAgent) {
-        let other: IntegrationAgent = provider == .codex ? .claude : .codex
-        let status = provider == .codex ? "Codex executable unavailable." : "Awaiting Claude status-line data."
-        let unrelated = snapshot(other, windows: [window("unrelated", used: 99)])
-        let missing = tooltip([unrelated], provider: provider, status: status)
-        #expect(missing.contains(status))
-        #expect(missing.contains("5-hour: unavailable"))
-        #expect(missing.contains("Weekly: unavailable"))
-        #expect(!missing.contains("unrelated"))
-        #expect(!missing.contains("Account unverified"))
-        let existing = tooltip([unrelated, snapshot(provider, windows: [])], provider: provider, status: status)
-        #expect(!existing.contains(status))
-        #expect(!existing.contains("unrelated"))
-        #expect(existing.contains("5-hour: not reported"))
     }
 
     @Test func entriesIncludeEachActiveProviderOnceInStableOrder() {

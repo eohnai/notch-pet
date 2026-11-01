@@ -2,14 +2,15 @@
 
 ## Now
 
-On `feat/notch-allowance-strip`, stacked on session-cards C4 `a2a2ede`.
-Allowance-strip A1–A3 are committed, most recently A3 `03c937f`.
-A4's header strip, explicit logo lookup, fallback, tests, and records are complete and uncommitted.
-No main merge ran. Existing agent configuration is preserved. Older goals remain paused.
+On `feat/notch-allowance-strip`, stacked on session-cards C4 `a2a2ede`; A4 is committed as `96ff9c8`.
+A5/C5 are complete: screenshots cover usage limits/cards, and the user confirmed fixed/running timers and preserved focus.
+Tooltips are removed under 0014. Each provider now needs its own observed active session under 0015; Unknown/Ended do not count.
+The final full-suite rerun passed 171 tests in 27 suites and the build passed. The known version-probe timeout remains unresolved.
+The review app is closed; fictional sessions and the socket are cleared. Existing agent configuration is preserved. No main merge or pull request ran.
 
 ## Next
 
-1. Plan the single batched allowance-strip A5/session-cards C5 runtime and visual review on `feat/notch-allowance-strip`. Review real Codex allowance, Claude's empty state, logo loading, hover tooltips, header fit, focus/accessibility, and card/timer scenarios. Helper injection and runtime verification need separate approval. Preserve the capture prohibition.
+1. Commit and push the completed A5/C5 review and requested UI changes after the required exact-command plan approval. Review the stacked feature branches before merging; integrate main's CI/socket repairs separately. A5/C5 evidence is in their Results sections. Broader session-island acceptance and VoiceOver remain separate.
 2. Restore the CI cleanup on `feat/automation-ci-foundation` from stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`. Preserve completed C1–C4 when integrating its session-cards plan. Bring in latest main separately before PR review. Further automation work stays deferred while features take priority.
 3. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
 4. Plan codex-setup R2 (split targets), then R3 (typed agent/hook identities), with design review and renewed test authorization. Follow with R5 and R6; R6 needs a user decision on the 128-session limit.
@@ -17,11 +18,12 @@ No main merge ran. Existing agent configuration is preserved. Older goals remain
 
 ## Blockers
 
-- Running-app logo lookup, actual timer scheduling, header/card layout, hover tooltips, focus, accessibility, and allowance-strip runtime behavior remain unverified for A5/C5. Later tests, builds, helper injections, and runtime acceptance need their own task approval. The capture prohibition remains in force.
+- VoiceOver and broader session-island acceptance remain unverified. A5/C5's fixed/running timers, cards, usage limits, and focus are confirmed. The final active-provider filter has unit coverage for both providers/all states; no further visual pass ran after that pure filter change. Runtime evidence remains outside the repository under the `/private/tmp/notch-pet-a5-*` paths. The capture prohibition remains in force.
+- The current real Codex session was absent during A5/C5. A bounded hook-structure inspection found no direct `NotchPetHook` invocation in the supported event groups. Hook installation and Connect controls remain unimplemented in `sessions/codex-setup`. Existing configuration was preserved. Mock events triggering a real allowance read do not prove real-session integration.
 - The pet's generated `Bundle.module` accessor still searches the app root, then the absolute build directory, while packaging uses `Contents/Resources`. Its separate lookup behavior remains unchanged and unverified. A4's explicit provider-logo lookup does not correct the pet accessor.
 - The earlier CI cleanup and C2 plan are saved in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`, named `preserve ci cleanup and c2 plan before feature work`. A patch backup is `/private/tmp/notch-pet-c2-documentation-before-switch.patch`. The saved cleanup drops F8b's remaining hosted acceptance work and records F10's passing PR/main baseline. Restore it on its owning CI branch. The temporary worktree was removed.
-- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. C2–C4 and A1–A2 ran only their approved focused suites; C4 and A3 also built the app bundle.
-- Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
+- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. No main merge ran. Existing agent configuration is preserved. Older goals remain paused.
+- Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` hit `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` timeouts during this review. The last first-run failure was Claude at `IntegrationHealthTests.swift:103`: `.unavailable(.timedOut)` instead of `.unverified("99.0.0")`. The final rerun passed 171 tests in 27 suites. Logs are `/private/tmp/notch-pet-a5-active-providers-full.log` and `/private/tmp/notch-pet-a5-active-providers-rerun.log`. Earlier attempts also timed out at line 99 for `.reported("2.1.306")`. Parallel-load sensitivity remains an inference; no probe fix ran.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
 - Capture reproduction command: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer python3 scripts/check-standalone-pet.py --app "/private/var/folders/t3/6n_zw1rn5nn6vv7ccx9r6s240000gn/T/notch-pet-dev/Notch Pet.app" --artifacts /private/tmp/notch-pet-completion/evidence/standalone` failed with `could not create image from window` / screencapture exit 1. The native preflight returned screenCaptureAuthorized=false; the user explicitly prohibited further captures and later all further testing. Do not request that permission or retry the failing capture.
