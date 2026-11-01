@@ -2,21 +2,24 @@
 
 ## Now
 
-On `feat/notch-session-cards`, stacked on `feat/sessions-codex-setup` at `bab79ad` with the user's approval.
-Session-cards C1 is done and uncommitted: snapshots retain the current turn's event capture times for submit and first matching stop.
-R8 and the two notch layout specs are committed. Configuration changes and older goals stay paused.
+On `feat/notch-session-cards`, preserving committed C1 `1f30a3c`. C2 is complete and uncommitted, with evidence in the session-cards spec.
+Cards now have pure folder/ID presentation and numeric running/stopped timers, with separate text formatting. C4 owns connecting this to the UI.
+The user chose a normal branch switch. Earlier CI cleanup and the plan are preserved in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`.
+No main merge ran. Existing agent configuration and older goals remain paused.
 
 ## Next
 
-1. Plan session-cards C2 in `docs/specs/notch/session-cards.md`: pure folder, session ID, and timer presentation. Ask for test authorization for C2.
-2. Continue session-cards C3–C5, then allowance-strip A1–A5. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
+1. Review and commit C2, then plan session-cards C3's panel size change and focused placement tests. C4/C5 and allowance-strip A1–A5 follow separately. Preserve the single batched visual review for C5/A5; the user supplies logo files for A3.
+2. Restore the CI cleanup on `feat/automation-ci-foundation` from stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`. Keep completed C2 and C1 when integrating its session-cards plan. Bring in latest main separately before PR review. Further automation work stays deferred while features take priority.
 3. Do codex-setup R4 (docs only): update `docs/ARCHITECTURE.md` for stores, pure presentation functions, AppKit controllers, D3 and D5.
 4. Plan codex-setup R2 (split targets), then R3 (typed agent/hook identities), with design review and renewed test authorization. Follow with R5 and R6; R6 needs a user decision on the 128-session limit.
 5. Before I3b2, review integration-health evidence and session-island acceptance (start from I3b1's prerequisite table in `docs/contracts/codex-hook-setup.md`), then plan I3b2. Codex 0.164.0 still needs isolated qualification.
 
 ## Blockers
 
-- Existing no-testing instruction remains in force for tests, builds, captures, helper injections, and test-only instrumentation: do not start them unless requested. Task-specific authorization covered R7, R8, and session-cards C1; all are done. The user allowed app launches on 2026-10-31, and one fictional helper injection for the R8 check. C1 authorization does not extend to later tasks or runtime acceptance.
+- C2's task list and focused presentation tests were approved and are complete. Later tests, builds, helper injections, and runtime acceptance need their own task approval. The capture prohibition remains in force.
+- The earlier CI cleanup and C2 plan are saved in stash `0a6cb22a2cc1058c44ff87e01f8a1842ac6fdd60`, named `preserve ci cleanup and c2 plan before feature work`. A patch backup is `/private/tmp/notch-pet-c2-documentation-before-switch.patch`. The saved cleanup drops F8b's remaining hosted acceptance work and records F10's passing PR/main baseline. Restore it on its owning CI branch. The temporary worktree was removed.
+- This feature branch predates main's CI and socket-test repairs. Its old deadline and maximum-frame tests remain unchanged. C2 ran only the approved presentation suites.
 - Failed check, intermittent: `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --scratch-path /private/tmp/notch-pet-dev/build` failed 1 of 3 full runs on 2026-10-31 with `IntegrationHealthProbeTests.versionProbeBoundsItsProcessAndOutput` reporting `.unavailable(.timedOut)` instead of `.unverified("99.0.0")` for both agents. The suite alone passed 3 of 3. The probe's process timeout appears too tight under parallel test load. ^[inferred] R8 does not touch the probe.
 - Stale: `docs/specs/sessions/codex-setup.md` "My calls": the bullet "Preserve the source checklist…" is joined onto the end of the R7/R8 bullet with no line break.
 - Full built-in-pet acceptance is deferred: setup/slider/menu interaction, actual multi-frame scheduling, Reduce Motion changes and visual appearance remain unverified. Keep BP2/BP3/BP5/BP6b3/BP7 open; agent reactions and detachment remain separate unimplemented features. The implementation-only goal is closed.
@@ -30,6 +33,7 @@ R8 and the two notch layout specs are committed. Configuration changes and older
 - Real Claude forwarding and terminal-output/cancellation preservation remain incomplete. Codex reconnect/account switching and remaining physical-notch acceptance are unverified. Settle the five open Claude allowance decisions before U2c3.
 - Stale: `docs/specs/usage/codex-allowance.md` leaves U3b2 unchecked despite historical goal-log evidence. Review U3b2, U1 and I2a–I2c evidence before changing those checkboxes.
 - Stale: `scripts/check-event-contract.py` permits a previously conflicting turn ID to restore working state; SessionStore enforces the accepted unseen-turn rule.
+- Usage datagram limit remains unfixed: observations above the default 2,048-byte send limit or the receiver's 4,096-byte buffer can be silently dropped. The advertised 8,192-byte limit is unreachable with the current defaults. Main's records contain the probe evidence. Choosing a fix needs a separate decision.
 - Known test limitation: `ContractAndSocketTests.swift` assumes a maximum-size frame's extra byte is already buffered. Its correction remains proposed.
 - Stale: `README.md` still calls implemented session/notch/usage surfaces planned and decision 0013 proposed; `docs/ARCHITECTURE.md` still describes visible session/usage and health services, plus the now-written pet boundary, as planned. It also describes view models for every view; the code has none, and D3 now sets the rule (codex-setup R4). Leave their unrelated edits with their owning work.
 - Stale: `docs/specs/sessions/integration-health.md` describes health supplied through the menu environment. Current `AgentServices` keeps its health controller private and the menu has no health controls; codex-setup I6a owns exposing those actions.
